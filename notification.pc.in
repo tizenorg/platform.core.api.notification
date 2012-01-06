@@ -1,0 +1,11 @@
+prefix=@PREFIX@
+exec_prefix=@EXEC_PREFIX@
+libdir=@LIBDIR@
+includedir=@INCLUDEDIR@
+
+Name: notification
+Description: Notification Library
+Version: @VERSION@
+Requires: sqlite3 heynoti bundle db-util ail aul
+Libs: -L${libdir} -lnotification
+Cflags: -I${includedir}

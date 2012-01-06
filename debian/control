@@ -1,0 +1,27 @@
+Source: libnotification
+Section: libs
+Priority: optional
+Maintainer: Seungtaek Chung <seungtaek.chung@samsung.com>, Mi-Ju Lee <miju52.lee@samsung.com>, Xi Zhichan <zhichan.xi@samsung.com>
+Build-Depends: debhelper (>= 5), libsqlite3-dev, libslp-db-util-dev, libheynoti-dev, libvconf-dev, libbundle-dev, libdbus-1-dev, dlog-dev, libail-0-dev, libaul-1-dev, libappsvc-dev
+Standards-Version: 3.7.2
+
+Package: libnotification-dev
+Section: libdevel
+Architecture: any
+Depends: libnotification-0 (= ${Source-Version}), libsqlite3-dev, libslp-db-util-dev, libheynoti-dev, libvconf-dev, libbundle-dev, dlog-dev, libail-0-dev, libaul-1-dev
+Description: Notification library
+ This package contains devel content.
+
+Package: libnotification-0
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, sqlite3, libdlog-0
+Description: Notification library
+ This package contains notification library.
+
+Package: libnotification-dbg
+Section: debug
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libnotification-0 (= ${Source-Version})
+Description: Notification library
+ This package is for debug
