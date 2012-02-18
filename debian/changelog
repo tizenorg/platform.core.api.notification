@@ -1,3 +1,43 @@
+libnotification (0.1.1-9) unstable; urgency=low
+
+  * Add content update API
+  * Git: slp/pkgs/n/notification
+  * Tag: libnotification_0.1.1-9
+
+ -- Mi-Ju Lee <miju52.lee@samsung.com>  Wed, 25 Jan 2012 21:32:38 +0900
+
+libnotification (0.1.1-8) unstable; urgency=low
+
+  * Remove deprecated API
+  * Git: slp/pkgs/n/notification
+  * Tag: libnotification_0.1.1-8
+
+ -- Mi-Ju Lee <miju52.lee@samsung.com>  Thu, 12 Jan 2012 16:32:56 +0900
+
+libnotification (0.1.1-7) unstable; urgency=low
+
+  * Deprecate some of the unused API
+  * Git: slp/pkgs/n/notification
+  * Tag: libnotification_0.1.1-7
+
+ -- Mi-Ju Lee <miju52.lee@samsung.com>  Wed, 04 Jan 2012 18:54:12 +0900
+
+libnotification (0.1.1-6) unstable; urgency=low
+
+  * Add Error type for update API
+  * Git: slp/pkgs/n/notification
+  * Tag: libnotification_0.1.1-6
+
+ -- Mi-Ju Lee <miju52.lee@samsung.com>  Wed, 04 Jan 2012 15:47:28 +0900
+
+libnotification (0.1.1-5) unstable; urgency=low
+
+  * Add notification update function
+  * Git: slp/pkgs/n/notification
+  * Tag: libnotification_0.1.1-5
+
+ -- Mi-Ju Lee <miju52.lee@samsung.com>  Mon, 26 Dec 2011 17:54:37 +0900
+
 libnotification (0.1.1-4) unstable; urgency=low
 
   * Update pkgname to org.tizen

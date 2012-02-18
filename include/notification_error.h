@@ -37,6 +37,7 @@ typedef enum _notification_error {
 	NOTIFICATION_ERROR_FROM_DB = -3,	/**< Error from DB query */
 	NOTIFICATION_ERROR_ALREADY_EXIST_ID = -4,	/**< Already exist private ID */
 	NOTIFICATION_ERROR_FROM_DBUS = -5,	/**< Error from DBus */
+	NOTIFICATION_ERROR_NOT_EXIST_ID = -6,	/**< Not exist private ID */
 } notification_error_e;
 
 /** 

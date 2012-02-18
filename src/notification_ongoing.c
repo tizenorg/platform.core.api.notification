@@ -127,3 +127,58 @@ notification_error_e notification_ongoing_update_size(const char *caller_pkgname
 
 	return NOTIFICATION_ERROR_FROM_DBUS;
 }
+
+notification_error_e notification_ongoing_update_content(const char *caller_pkgname,
+						      int priv_id, const char *content)
+{
+	DBusConnection *connection = NULL;
+	DBusMessage *signal = NULL;
+	DBusError err;
+	dbus_bool_t ret;
+
+	dbus_error_init(&err);
+	connection = dbus_bus_get(DBUS_BUS_SYSTEM, &err);
+	if (!connection) {
+		NOTIFICATION_ERR("Fail to dbus_bus_get");
+		return NOTIFICATION_ERROR_FROM_DBUS;
+	}
+
+	signal =
+	    dbus_message_new_signal("/dbus/signal", "notification.ongoing",
+				    "update_content");
+	if (!signal) {
+		NOTIFICATION_ERR("Fail to dbus_message_new_signal");
+		return NOTIFICATION_ERROR_FROM_DBUS;
+	}
+
+	if(content == NULL) {
+		ret = dbus_message_append_args(signal,
+						   DBUS_TYPE_STRING, &caller_pkgname,
+						   DBUS_TYPE_INT32, &priv_id,
+						   DBUS_TYPE_INVALID);
+	} else {
+		ret = dbus_message_append_args(signal,
+						   DBUS_TYPE_STRING, &caller_pkgname,
+						   DBUS_TYPE_INT32, &priv_id,
+						   DBUS_TYPE_STRING, &content,
+						   DBUS_TYPE_INVALID);
+	}
+	if (ret) {
+		ret = dbus_connection_send(connection, signal, NULL);
+		NOTIFICATION_INFO("Send content : %s(%d) %s",
+				  caller_pkgname, priv_id, content);
+
+		if (ret) {
+			dbus_connection_flush(connection);
+		}
+	}
+
+	dbus_message_unref(signal);
+
+	if (ret) {
+		return NOTIFICATION_ERROR_NONE;
+	}
+
+	return NOTIFICATION_ERROR_FROM_DBUS;
+}
+

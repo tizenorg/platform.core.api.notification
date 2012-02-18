@@ -30,4 +30,7 @@ notification_error_e notification_ongoing_update_progress(const char *caller_pkg
 notification_error_e notification_ongoing_update_size(const char *caller_pkgname,
 						      int priv_id, double size);
 
+notification_error_e notification_ongoing_update_content(const char *caller_pkgname,
+						      int priv_id, const char *content);
+
 #endif				/* __NOTIFICATION_ONGOING_H__ */

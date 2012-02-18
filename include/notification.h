@@ -256,29 +256,6 @@ notification_error_e notification_get_title(notification_h noti,
  * @see notification_set_text()
  *
  */
-notification_error_e notification_set_group_title(const char *pkgname,
-						  int group_id,
-						  const char *title,
-						  const char *loc_title,
-						  notification_count_display_type_e
-						  count_display);
-
-/**
- * @brief This function will be deprecated.
- * @see notification_get_text()
- *
- */
-notification_error_e notification_get_group_title(const char *pkgname,
-						  int group_id,
-						  char **title,
-						  char **loc_title,
-						  notification_count_display_type_e *count_display);
-
-/**
- * @brief This function will be deprecated.
- * @see notification_set_text()
- *
- */
 notification_error_e notification_set_content(notification_h noti,
 					      const char *content,
 					      const char *loc_content);
@@ -291,46 +268,6 @@ notification_error_e notification_set_content(notification_h noti,
 notification_error_e notification_get_content(notification_h noti,
 					      char **content,
 					      char **loc_content);
-
-/**
- * @brief This function will be deprecated.
- * @see notification_set_text()
- *
- */
-notification_error_e notification_set_default_content(notification_h noti,
-						      const char *content,
-						      const char *loc_content);
-
-/**
- * @brief This function will be deprecated.
- * @see notification_get_text()
- *
- */
-notification_error_e notification_get_default_content(notification_h noti,
-						      char **content,
-						      char **loc_content);
-
-/**
- * @brief This function will be deprecated.
- * @see notification_set_text()
- *
- */
-notification_error_e notification_set_group_content(const char *pkgname,
-						    int group_id,
-						    const char *content,
-						    const char *loc_content,
-						    notification_count_display_type_e count_display);
-
-/**
- * @brief This function will be deprecated.
- * @see notification_get_text()
- *
- */
-notification_error_e notification_get_group_content(const char *pkgname,
-						    int group_id,
-						    char **content,
-						    char **loc_content,
-						    notification_count_display_type_e *count_display);
 
 /**
  * @brief This function set text.
@@ -646,24 +583,6 @@ notification_error_e notification_set_args(notification_h noti, bundle * args, b
 notification_error_e notification_get_args(notification_h noti, bundle ** args, bundle ** group_args);	/* Do not use this */
 
 /**
- * @brief This function will be deprecated.
- * @see notification_set_execute_option()
- *
- */
-notification_error_e notification_set_service_data(notification_h noti,
-						   bundle *service_data,
-						   bundle *group_service_data);
-
-/**
- * @brief This function will be deprecated.
- * @see notification_get_execute_option()
- *
- */
-notification_error_e notification_get_service_data(notification_h noti,
-						   bundle **service_data,
-						   bundle **group_service_data);
-
-/**
  * @brief This function set execute option.
  * @details When notification data selected in display application, application launched by appsvc_run_service with service_handle.
  * @remarks
@@ -678,6 +597,30 @@ notification_error_e notification_get_service_data(notification_h noti,
  * @pre
  * @post
  * @see
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	notification_h noti = NULL;
+	notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
+	bundle *b = NULL;
+
+	...
+
+	b = bundle_create();
+	appsvc_set_operation(b, APPSVC_OPERATION_VIEW);
+	appsvc_set_uri(b,"http://www.samsung.com");
+
+	noti_err  = notification_set_execute_option(noti, NOTIFICATION_EXECUTE_TYPE_SINGLE_LAUNCH, NULL, NULL, b);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		notification_free(noti);
+		return;
+	}
+
+	bundle_free(b);
+}
+ * @endcode
  */
 notification_error_e notification_set_execute_option(notification_h noti,
 						     notification_execute_type_e type,
@@ -1062,24 +1005,6 @@ notification_error_e notification_get_pkgname(notification_h noti,
 					      char **pkgname);
 
 /**
- * @brief This function will be deprecated.
- * @see notification_set_badge()
- *
- */
-notification_error_e notification_set_unread_count(const char *pkgname,
-						   int group_id,
-						   int unread_count);
-
-/**
- * @brief This function will be deprecated.
- * @see notification_get_badge()
- *
- */
-notification_error_e notification_get_unread_count(const char *pkgname,
-						   int group_id,
-						   int *unread_count);
-
-/**
  * @brief This function set application badge count.
  * @details
  * @remarks
@@ -1230,13 +1155,14 @@ notification_error_e notification_insert(notification_h noti,
 					 int *priv_id);
 
 /**
- * @brief This function update notification data. Not fully implemented yet.
+ * @brief This function update notification data.
  * @details Display application update UI.
  * @remarks
  * @param[in] noti notification handle that is created by notification_new().
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
  * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @retval NOTIFICATION_ERROR_NOT_EXIST_ID - not exist priv id
  * @pre
  * @post
  * @see #notification_h
@@ -1495,6 +1421,10 @@ notification_error_e notification_update_progress(notification_h noti,
 notification_error_e notification_update_size(notification_h noti,
 					      int priv_id, double size);
 
+notification_error_e notification_update_content(notification_h noti,
+							 int priv_id,
+							 const char *content);
+
 /**
  * @brief This function create internal structure data and return notification handle.
  * @details Available type is #NOTIFICATION_TYPE_NOTI and #NOTIFICATION_TYPE_ONGOING.
@@ -1532,6 +1462,34 @@ notification_error_e notification_update_size(notification_h noti,
  */
 notification_h notification_new(notification_type_e type, int group_id,
 				int priv_id);
+
+/**
+ * @brief This function create notification clone.
+ * @details Newly created notification handle is returned.
+ * @remarks This clone notification handle should be call notification_free().
+ * @param[in] noti notification handle
+ * @param[out] clone newly created notification handle that has same with input noti.
+ * @return NOTIFICATION_ERROR_NONE if success, other value if failure.
+ * @retval NOTIFICATION_ERROR_NONE - success
+ * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
+ * @pre
+ * @post
+ * @see #notification_type_e
+ * @see #notification_h
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	notification_h noti = notification_new(NOTIFICATION_TYPE_NOTI, APP_GROUP_ID, NOTIFICATION_PRIV_ID_NONE);
+	notification_h clone = NULL;
+
+	notification_clone(noti, &clone);
+	...
+}
+ * @endcode
+ */
+notification_error_e notification_clone(notification_h noti, notification_h *clone);
 
 /**
  * @brief This function free internal structure data of notification handle.

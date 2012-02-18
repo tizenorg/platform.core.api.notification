@@ -233,7 +233,7 @@ enum _notificaton_display_applist {
 						/**< Ticker notification */
 	NOTIFICATION_DISPLAY_APP_LOCK = 0x00000004,
 						/**< Lock screen */
-	NOTIFICATION_DISPLAY_APP_INDICATOR = 0x00000004,/**< Indicator */
+	NOTIFICATION_DISPLAY_APP_INDICATOR = 0x00000008,/**< Indicator */
 	NOTIFICATION_DISPLAY_APP_ALL = 0xffffffff,
 						/**< All display application */
 };

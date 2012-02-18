@@ -26,6 +26,8 @@
 
 int notification_noti_insert(notification_h noti);
 
+int notification_noti_update(notification_h noti);
+
 int notification_noti_delete_all(notification_type_e type, const char *pkgname);
 
 int notification_noti_delete_group_by_group_id(const char *pkgname,
