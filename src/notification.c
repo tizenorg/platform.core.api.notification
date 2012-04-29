@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2000 - 2011 Samsung Electronics Co., Ltd. All rights reserved.
  *
- * Contact: Seungtaek Chung <seungtaek.chung@samsung.com>, Mi-Ju Lee <miju52.lee@samsung.com>, Xi Zhichan <zhichan.xi@samsung.com>
+ * Contact: Jeonghoon Park <jh1979.park@samsung.com>, Youngjoo Park <yjoo93.park@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,12 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <libintl.h>
+#include <dbus/dbus.h>
+#include <dbus/dbus-glib-lowlevel.h>
 
 #include <aul.h>
 #include <ail.h>
 #include <appsvc.h>
-#include <heynoti.h>
 #include <vconf-keys.h>
 #include <vconf.h>
 
@@ -52,11 +53,15 @@ struct _notification_cb_list {
 };
 
 static notification_cb_list_s *g_notification_cb_list = NULL;
-static int g_notification_heynoti_fd = -1;
+static DBusConnection *g_dbus_handle;
 
 #define NOTI_PKGNAME_LEN	512
 #define NOTI_CHANGED_NOTI	"notification_noti_changed"
 #define NOTI_CHANGED_ONGOING	"notification_ontoing_changed"
+
+#define NOTI_DBUS_BUS_NAME 	"org.tizen.libnotification"
+#define NOTI_DBUS_PATH 		"/org/tizen/libnotification"
+#define NOTI_DBUS_INTERFACE 	"org.tizen.libnotification.signal"
 
 static char *_notification_get_pkgname_by_pid(void)
 {
@@ -213,8 +218,125 @@ static void _notification_chagned_ongoing_cb(void *data)
 
 static void _notification_changed(const char *type)
 {
-	heynoti_publish(type);
+	DBusConnection *connection = NULL;
+	DBusMessage *message = NULL;
+	DBusError err;
+	dbus_bool_t ret;
+
+	if (!type) {
+		NOTIFICATION_ERR("type is NULL");
+		return;
+	}
+
+	dbus_error_init(&err);
+	connection = dbus_bus_get(DBUS_BUS_SYSTEM, &err);
+	if (!connection) {
+		NOTIFICATION_ERR("Fail to dbus_bus_get : %s", err.message);
+		return;
+	}
+
+	message = dbus_message_new_signal(NOTI_DBUS_PATH,
+				NOTI_DBUS_INTERFACE,
+				type);
+
+	if (!message) {
+		NOTIFICATION_ERR("fail to create dbus message");
+		goto release_n_return;
+	}
+
+	ret = dbus_connection_send(connection, message, NULL);
+	if (!ret) {
+		NOTIFICATION_ERR("fail to send dbus message : %s", type);
+		goto release_n_return;
+	}
+
+	dbus_connection_flush(connection);
+	
+	NOTIFICATION_DBG("success to emit signal [%s]", type);
+
+release_n_return:
+	dbus_error_free(&err);
+
+	if (message)
+		dbus_message_unref(message);
+
+	if (connection)
+		dbus_connection_unref(connection);
 }
+
+static DBusHandlerResult _dbus_signal_filter(DBusConnection *conn,
+		DBusMessage *msg, void *user_data)
+{
+	const char *interface = NULL;
+	
+	interface = dbus_message_get_interface(msg);
+	NOTIFICATION_DBG("path : %s", dbus_message_get_path(msg));
+	NOTIFICATION_DBG("interface : %s", interface);
+
+	if (strcmp(NOTI_DBUS_INTERFACE, interface))
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+
+
+	switch (dbus_message_get_type(msg)) {
+		case DBUS_MESSAGE_TYPE_SIGNAL:
+			_notification_chagned_noti_cb(NULL);	
+			return DBUS_HANDLER_RESULT_HANDLED;
+		default:
+			break;
+	}
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+static DBusConnection *_noti_changed_monitor_init()
+{
+	DBusError err;
+	DBusConnection *conn = NULL;
+	char rule[1024];
+
+	dbus_error_init(&err);
+	conn = dbus_bus_get_private(DBUS_BUS_SYSTEM, &err);
+	if (!conn) {
+		printf("fail to get bus\n");
+		return NULL;
+	}
+	dbus_connection_setup_with_g_main(conn, NULL);
+	snprintf(rule, 1024, 
+		"path='%s',type='signal',interface='%s',member='%s'",
+		NOTI_DBUS_PATH, 
+		NOTI_DBUS_INTERFACE,
+		NOTI_CHANGED_NOTI);
+
+	dbus_bus_add_match(conn, rule, &err);
+	if (dbus_connection_add_filter(conn,_dbus_signal_filter, 
+					NULL, NULL) == FALSE) {
+		NOTIFICATION_ERR("fail to dbus_connection_add_filter");
+		dbus_connection_close(conn);
+		return NULL;
+	}
+
+	dbus_connection_set_exit_on_disconnect(conn, FALSE);
+	return conn;
+}
+
+static void _noti_chanaged_monitor_fini()
+{
+	DBusConnection *conn = g_dbus_handle;
+	char rule[1024];
+
+	if (!conn)
+		return;
+	dbus_connection_remove_filter(conn, _dbus_signal_filter, NULL);
+
+	snprintf(rule, 1024, 
+		"path='%s',type='signal',interface='%s',member='%s'",
+		NOTI_DBUS_PATH, 
+		NOTI_DBUS_INTERFACE,
+		NOTI_CHANGED_NOTI);
+	dbus_bus_remove_match(conn, rule, NULL);
+
+	dbus_connection_close(conn);
+	g_dbus_handle = NULL;
+}	
 
 /* notification_set_icon will be removed */
 EXPORT_API notification_error_e notification_set_icon(notification_h noti,
@@ -2497,6 +2619,12 @@ notification_resister_changed_cb(void (*changed_cb)
 	notification_cb_list_s *noti_cb_list_new = NULL;
 	notification_cb_list_s *noti_cb_list = NULL;
 
+	if (!g_dbus_handle) {
+		g_dbus_handle = _noti_changed_monitor_init();
+		if (!g_dbus_handle)
+			return NOTIFICATION_ERROR_FROM_DBUS;
+	}
+
 	noti_cb_list_new =
 	    (notification_cb_list_s *) malloc(sizeof(notification_cb_list_s));
 
@@ -2518,16 +2646,6 @@ notification_resister_changed_cb(void (*changed_cb)
 		noti_cb_list->next = noti_cb_list_new;
 		noti_cb_list_new->prev = noti_cb_list;
 	}
-
-	if (g_notification_heynoti_fd < 0) {
-		g_notification_heynoti_fd = heynoti_init();
-
-		heynoti_subscribe(g_notification_heynoti_fd, NOTI_CHANGED_NOTI,
-				  _notification_chagned_noti_cb, NULL);
-
-		heynoti_attach_handler(g_notification_heynoti_fd);
-	}
-
 	return NOTIFICATION_ERROR_NONE;
 }
 
@@ -2570,12 +2688,8 @@ notification_unresister_changed_cb(void (*changed_cb)
 
 			free(noti_cb_list);
 
-			if (g_notification_cb_list == NULL) {
-				heynoti_detach_handler
-				    (g_notification_heynoti_fd);
-				heynoti_close(g_notification_heynoti_fd);
-				g_notification_heynoti_fd = -1;
-			}
+			if (g_notification_cb_list == NULL)
+				_noti_chanaged_monitor_fini();
 
 			return NOTIFICATION_ERROR_NONE;
 		}

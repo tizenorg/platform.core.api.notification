@@ -1,3 +1,11 @@
+libnotification (0.1.1-10) unstable; urgency=low
+
+  * update latest changes
+  * Git: slp/pkgs/n/notification
+  * Tag: libnotification_0.1.1-10
+
+ -- Jeonghoon Park <jh1979.park@samsung.com>  Tue, 20 Mar 2012 19:00:25 +0900
+
 libnotification (0.1.1-9) unstable; urgency=low
 
   * Add content update API

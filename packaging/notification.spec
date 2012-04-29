@@ -1,12 +1,11 @@
 Name:       notification
 Summary:    notification library
 Version:    0.1.1
-Release:    4.11
-Group:      System/Library
+Release:    1
+Group:      TBD
 License:    Apache-2.0
 Source0:    %{name}-%{version}.tar.gz
 BuildRequires: pkgconfig(sqlite3)
-BuildRequires: pkgconfig(appsvc)
 BuildRequires: pkgconfig(db-util)
 BuildRequires: pkgconfig(heynoti)
 BuildRequires: pkgconfig(vconf)
@@ -15,13 +14,16 @@ BuildRequires: pkgconfig(dbus-1)
 BuildRequires: pkgconfig(dlog)
 BuildRequires: pkgconfig(ail)
 BuildRequires: pkgconfig(aul)
+BuildRequires: pkgconfig(appsvc)
+BuildRequires: pkgconfig(dbus-glib-1)
+
 BuildRequires: cmake
 Requires(post): /sbin/ldconfig
 Requires(post): /usr/bin/sqlite3
 requires(postun): /sbin/ldconfig
+
 %description
 Notificaiton library.
-
 
 %prep
 %setup -q
@@ -30,14 +32,6 @@ Notificaiton library.
 Summary:    Notification library (devel)
 Group:      Development/Libraries
 Requires:   %{name} = %{version}-%{release}
-Requires: pkgconfig(sqlite3)
-Requires: pkgconfig(db-util)
-Requires: pkgconfig(heynoti)
-Requires: pkgconfig(vconf)
-Requires: pkgconfig(bundle)
-Requires: pkgconfig(dlog)
-Requires: pkgconfig(ail)
-Requires: pkgconfig(aul)
 
 %description devel
 Notificaiton library (devel).
@@ -48,13 +42,19 @@ LDFLAGS="$LDFLAGS" cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix}
 make %{?jobs:-j%jobs}
 
 %install
+rm -rf %{buildroot}
 %make_install
 
+%clean
+rm -rf %{buildroot}
 
 %post
 /sbin/ldconfig
 
-mkdir -p /opt/dbspace
+if [ ! -d /opt/dbspace ]
+then
+	mkdir /opt/dbspace
+fi
 
 if [ ! -f /opt/dbspace/.notification.db ]
 then
@@ -131,7 +131,6 @@ then
 			UNIQUE (caller_pkgname, priv_id)  
 		); 
 	'
-
 fi
 
 chown root:5000 /opt/dbspace/.notification.db
@@ -142,13 +141,11 @@ chmod 660 /opt/dbspace/.notification.db-journal
 %postun -p /sbin/ldconfig
 
 %files
-%{_libdir}/libnotification.so.0*
+%defattr(-,root,root,-)
+%{_libdir}/libnotification.so*
 
 %files devel
-%{_includedir}/notification/notification.h
-%{_includedir}/notification/notification_error.h
-%{_includedir}/notification/notification_list.h
-%{_includedir}/notification/notification_type.h
-%{_libdir}/libnotification.so
+%defattr(-,root,root,-)
+%{_includedir}/notification/*.h
 %{_libdir}/pkgconfig/notification.pc
 

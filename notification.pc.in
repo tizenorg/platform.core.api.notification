@@ -6,6 +6,6 @@ includedir=@INCLUDEDIR@
 Name: notification
 Description: Notification Library
 Version: @VERSION@
-Requires: sqlite3 heynoti bundle db-util ail aul
+Requires: bundle 
 Libs: -L${libdir} -lnotification
 Cflags: -I${includedir}

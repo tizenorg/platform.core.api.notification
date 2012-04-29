@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2000 - 2011 Samsung Electronics Co., Ltd. All rights reserved.
  *
- * Contact: Seungtaek Chung <seungtaek.chung@samsung.com>, Mi-Ju Lee <miju52.lee@samsung.com>, Xi Zhichan <zhichan.xi@samsung.com>
+ * Contact: Jeonghoon Park <jh1979.park@samsung.com>, Youngjoo Park <yjoo93.park@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,16 +31,49 @@
 
 #ifndef _DLOG_H_
 #include <stdio.h>
-#define NOTIFICATION_ERR(fmt, arg...)\
-	do { fprintf(stderr, "["LOG_TAG"] %s(%d):"fmt"\n", __FUNCTION__, __LINE__, ##arg); } while (0)
-#define NOTIFICATION_INFO(fmt, arg...)\
-	do { fprintf(stdout, "["LOG_TAG"] %s(%d):"fmt"\n", __FUNCTION__, __LINE__, ##arg); } while (0)
-#define NOTIFICATION_DBG(fmt, arg...)\
-	do { fprintf(stdout, "["LOG_TAG"] %s(%d):"fmt"\n", __FUNCTION__, __LINE__, ##arg); } while (0)
-#else
-#define NOTIFICATION_ERR(...) LOGE(__VA_ARGS__)
-#define NOTIFICATION_INFO(...) LOGI(__VA_ARGS__)
-#define NOTIFICATION_DBG(...) LOGD(__VA_ARGS__)
-#endif
+
+#define NOTIFICATION_DBG(fmt , args...) \
+	do{ \
+		printf("[D][%s : %d] "fmt"\n", __func__,__LINE__,##args ); \
+	} while(0)
+
+#define NOTIFICATION_INFO(fmt , args...) \
+	do{ \
+		printf("[I][%s : %d] "fmt"\n", __func__,__LINE__,##args ); \
+	} while(0)
+
+#define NOTIFICATION_WARN(fmt , args...) \
+	do{ \
+		printf("[W][%s : %d] "fmt"\n", __func__,__LINE__,##args ); \
+	} while(0)
+
+#define NOTIFICATION_ERR(fmt , args...) \
+	do{ \
+		printf("[E][%s : %d] "fmt"\n", __func__,__LINE__,##args ); \
+	} while(0)
+
+#else /* _DLOG_H_ */
+
+#define NOTIFICATION_DBG(fmt , args...) \
+	do{ \
+		LOGD("[%s : %d] "fmt"\n",__func__,__LINE__,##args ); \
+	} while(0)
+
+#define NOTIFICATION_INFO(fmt , args...) \
+	do{ \
+		LOGI("[%s : %d] "fmt"\n",__func__,__LINE__,##args ); \
+	} while(0)
+
+#define NOTIFICATION_WARN(fmt , args...) \
+	do{ \
+		LOGI("[%s : %d] "fmt"\n",__func__,__LINE__,##args ); \
+	} while(0)
+
+#define NOTIFICATION_ERR(fmt , args...) \
+	do{ \
+		LOGI("[%s : %d] "fmt"\n",__func__,__LINE__,##args ); \
+	} while(0)
+
+#endif /* _DLOG_H_ */
 
 #endif				/* __NOTIFICATION_DEBUG_H__ */

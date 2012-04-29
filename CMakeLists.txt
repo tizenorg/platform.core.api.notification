@@ -25,7 +25,18 @@ SET(HEADERS ./include/notification.h
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include)
 
 INCLUDE(FindPkgConfig)
-pkg_check_modules(pkgs REQUIRED sqlite3 db-util heynoti vconf bundle dbus-1 dlog ail aul appsvc)
+pkg_check_modules(pkgs REQUIRED 
+	sqlite3 
+	db-util 
+	vconf 
+	bundle 
+	dlog 
+	ail 
+	aul 
+	appsvc
+	dbus-1
+	dbus-glib-1
+)
 
 FOREACH(flag ${pkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")
