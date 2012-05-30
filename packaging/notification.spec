@@ -5,6 +5,7 @@ Release:    1
 Group:      TBD
 License:    Apache-2.0
 Source0:    %{name}-%{version}.tar.gz
+Source1001: packaging/notification.manifest 
 BuildRequires: pkgconfig(sqlite3)
 BuildRequires: pkgconfig(db-util)
 BuildRequires: pkgconfig(heynoti)
@@ -37,6 +38,7 @@ Requires:   %{name} = %{version}-%{release}
 Notificaiton library (devel).
 
 %build
+cp %{SOURCE1001} .
 export LDFLAGS+="-Wl,--rpath=%{_prefix}/lib -Wl,--as-needed"
 LDFLAGS="$LDFLAGS" cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix}
 make %{?jobs:-j%jobs}
@@ -141,10 +143,12 @@ chmod 660 /opt/dbspace/.notification.db-journal
 %postun -p /sbin/ldconfig
 
 %files
+%manifest notification.manifest
 %defattr(-,root,root,-)
 %{_libdir}/libnotification.so*
 
 %files devel
+%manifest notification.manifest
 %defattr(-,root,root,-)
 %{_includedir}/notification/*.h
 %{_libdir}/pkgconfig/notification.pc
