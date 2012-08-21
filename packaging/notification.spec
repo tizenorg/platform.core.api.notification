@@ -133,8 +133,8 @@ then
 	'
 fi
 
-chown root:5000 /opt/dbspace/.notification.db
-chown root:5000 /opt/dbspace/.notification.db-journal
+chown :5000 /opt/dbspace/.notification.db
+chown :5000 /opt/dbspace/.notification.db-journal
 chmod 660 /opt/dbspace/.notification.db
 chmod 660 /opt/dbspace/.notification.db-journal
 

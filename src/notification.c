@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2000 - 2011 Samsung Electronics Co., Ltd. All rights reserved.
  *
- * Contact: Jeonghoon Park <jh1979.park@samsung.com>, Youngjoo Park <yjoo93.park@samsung.com>
+ * Contact: Seungtaek Chung <seungtaek.chung@samsung.com>, Mi-Ju Lee <miju52.lee@samsung.com>, Xi Zhichan <zhichan.xi@samsung.com>, Youngsub Ko <ys4610.ko@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -924,19 +924,6 @@ EXPORT_API notification_error_e notification_get_text(notification_h noti,
 	if (type <= NOTIFICATION_TEXT_TYPE_NONE
 	    || type >= NOTIFICATION_TEXT_TYPE_MAX) {
 		return NOTIFICATION_ERROR_INVALID_DATA;
-	}
-
-	/* Check content display option of setting */
-	if (type == NOTIFICATION_TEXT_TYPE_CONTENT
-	    || type == NOTIFICATION_TEXT_TYPE_GROUP_CONTENT) {
-		ret =
-		    vconf_get_bool
-		    (VCONFKEY_SETAPPL_STATE_TICKER_NOTI_DISPLAY_CONTENT_BOOL,
-		     &boolval);
-		if (ret == -1 || boolval == 0) {
-			/* Set flag as display option is OFF */
-			//display_option_flag = 1;
-		}
 	}
 
 	/* Check key */

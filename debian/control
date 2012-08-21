@@ -8,7 +8,7 @@ Standards-Version: 3.7.2
 Package: libnotification-dev
 Section: libdevel
 Architecture: any
-Depends: libnotification-0 (= ${Source-Version})
+Depends: libnotification-0 (= ${Source-Version}), libbundle-dev
 Description: Notification library
  This package contains devel content.
 
