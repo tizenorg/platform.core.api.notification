@@ -1,6 +1,6 @@
 Name:       notification
 Summary:    notification library
-Version:    0.1.6
+Version:    0.1.8
 Release:    1
 Group:      TBD
 License:    Apache-2.0
@@ -20,7 +20,7 @@ BuildRequires: pkgconfig(dbus-glib-1)
 BuildRequires: cmake
 Requires(post): /sbin/ldconfig
 Requires(post): /usr/bin/sqlite3
-requires(postun): /sbin/ldconfig
+Requires(postun): /sbin/ldconfig
 
 %description
 Notificaiton library.
@@ -37,19 +37,15 @@ Requires:   %{name} = %{version}-%{release}
 Notificaiton library (devel).
 
 %build
-export LDFLAGS+="-Wl,--rpath=%{_prefix}/lib -Wl,--as-needed"
-LDFLAGS="$LDFLAGS" cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix}
+export LDFLAGS+="-Wl,--rpath=%{_libdir} -Wl,--as-needed"
+%cmake .
 make %{?jobs:-j%jobs}
 
 %install
-rm -rf %{buildroot}
 %make_install
 
 mkdir -p %{buildroot}/usr/share/license
 cp -f LICENSE.APLv2.0 %{buildroot}/usr/share/license/%{name}
-
-%clean
-rm -rf %{buildroot}
 
 %post
 /sbin/ldconfig

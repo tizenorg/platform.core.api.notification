@@ -1434,18 +1434,30 @@ notification_error_e notification_noti_get_detail_list(const char *pkgname,
 		 "flags_for_property, display_applist, progress_size, progress_percentage "
 		 "from noti_list ");
 
-	internal_group_id =
-	    _notification_noti_get_internal_group_id_by_priv_id(pkgname,
-								priv_id, db);
-
-	if (status == VCONFKEY_TELEPHONY_SIM_INSERTED) {
-		snprintf(query_where, sizeof(query_where),
-			 "where  caller_pkgname = '%s' and internal_group_id = %d ",
-			 pkgname, internal_group_id);
+	if (priv_id == NOTIFICATION_PRIV_ID_NONE && group_id == NOTIFICATION_GROUP_ID_NONE) {
+		if (status == VCONFKEY_TELEPHONY_SIM_INSERTED) {
+			snprintf(query_where, sizeof(query_where),
+				 "where  caller_pkgname = '%s' ",
+				 pkgname, internal_group_id);
+		} else {
+			snprintf(query_where, sizeof(query_where),
+				 "where  caller_pkgname = '%s' and flag_simmode = 0 ",
+				 pkgname, internal_group_id);
+		}
 	} else {
-		snprintf(query_where, sizeof(query_where),
-			 "where  caller_pkgname = '%s' and internal_group_id = %d and flag_simmode = 0 ",
-			 pkgname, internal_group_id);
+		internal_group_id =
+		    _notification_noti_get_internal_group_id_by_priv_id(pkgname,
+									priv_id, db);
+
+		if (status == VCONFKEY_TELEPHONY_SIM_INSERTED) {
+			snprintf(query_where, sizeof(query_where),
+				 "where  caller_pkgname = '%s' and internal_group_id = %d ",
+				 pkgname, internal_group_id);
+		} else {
+			snprintf(query_where, sizeof(query_where),
+				 "where  caller_pkgname = '%s' and internal_group_id = %d and flag_simmode = 0 ",
+				 pkgname, internal_group_id);
+		}
 	}
 
 	snprintf(query, sizeof(query),

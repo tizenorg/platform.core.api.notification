@@ -3072,7 +3072,7 @@ notification_register_detailed_changed_cb(
 
 EXPORT_API notification_error_e
 notification_unregister_detailed_changed_cb(
-		void (*detailed_changed_cb)(void *data, notification_type_e type, notification_op_type_e op_type, int *list_priv_id, int num_priv_id),
+		void (*detailed_changed_cb)(void *data, notification_type_e type, notification_op *op_list, int num_op),
 		void *user_data)
 {
 	notification_cb_list_s *noti_cb_list = NULL;
