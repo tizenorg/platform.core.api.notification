@@ -590,6 +590,71 @@ notification_error_e notification_get_vibration(notification_h noti,
 						const char **path);
 
 /**
+ * @brief This function set led notification.
+ * @details
+ * @remarks
+ * @param[in] noti notification handle
+ * @param[in] operation led notification operation
+ * @param[in] led_argb notification led color
+ * @return NOTIFICATION_ERROR_NONE if success, other value if failure
+ * @retval NOTIFICATION_ERROR_NONE - success
+ * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+ * @pre
+ * @post
+ * @see
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	notification_h noti = NULL;
+	notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
+
+	noti_err  = notification_set_led(noti, NOTIFICATION_LED_TYPE_DEFAULT, NULL);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
+notification_error_e notification_set_led(notification_h noti,
+						notification_led_op_e operation,
+						int led_argb);
+
+/**
+  * @brief This function get notification led.
+  * @details
+  * @remarks
+  * @param[in] noti notification handle
+  * @param[out] operation led notification operation
+  * @param[out] led_argb notification led color
+  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
+  * @retval NOTIFICATION_ERROR_NONE - success
+  * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+  * @pre
+  * @post
+  * @see
+  * @par Sample code:
+  * @code
+#include <notification.h>
+...
+ {
+	notification_h noti = NULL;
+	notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
+	notification_led_type_e type = NOTIFICATION_LED_TYPE_NONE;
+
+	noti_err  = notification_get_led(noti, &type, NULL);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+  * @endcode
+  */
+notification_error_e notification_get_led(notification_h noti,
+						notification_led_op_e *operation,
+						int *led_argb);
+
+/**
  * @brief This function will be deprecated.
  * @see notification_set_execute_option()
  *

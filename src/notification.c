@@ -1661,6 +1661,53 @@ EXPORT_API notification_error_e notification_get_vibration(notification_h noti,
 	return NOTIFICATION_ERROR_NONE;
 }
 
+EXPORT_API notification_error_e notification_set_led(notification_h noti,
+							   notification_led_op_e operation,
+							   int led_argb)
+{
+	/* Check noti is valid data */
+	if (noti == NULL) {
+		return NOTIFICATION_ERROR_INVALID_DATA;
+	}
+
+	/* Check operation is valid */
+	if (operation < NOTIFICATION_LED_OP_OFF
+	    || operation >= NOTIFICATION_LED_OP_MAX) {
+		return NOTIFICATION_ERROR_INVALID_DATA;
+	}
+
+	/* Save led operation */
+	noti->led_operation = operation;
+
+	/* Save led argb if operation is turning on LED with custom color */
+	if (operation == NOTIFICATION_LED_OP_ON_CUSTOM_COLOR) {
+		noti->led_argb = led_argb;
+	}
+
+	return NOTIFICATION_ERROR_NONE;
+}
+
+EXPORT_API notification_error_e notification_get_led(notification_h noti,
+							   notification_led_op_e *operation,
+							   int *led_argb)
+{
+	/* check noti and operation is valid data */
+	if (noti == NULL || operation == NULL) {
+		return NOTIFICATION_ERROR_INVALID_DATA;
+	}
+
+	/* Set led operation */
+	*operation = noti->led_operation;
+
+	/* Save led argb if operation is turning on LED with custom color */
+	if (noti->led_operation == NOTIFICATION_LED_OP_ON_CUSTOM_COLOR
+	    && led_argb != NULL) {
+		*led_argb = noti->led_argb;
+	}
+
+	return NOTIFICATION_ERROR_NONE;
+}
+
 EXPORT_API notification_error_e notification_set_application(notification_h noti,
 							     const char *pkgname)
 {
@@ -2669,6 +2716,9 @@ static notification_h _notification_create(notification_type_e type) {
 	noti->vibration_type = NOTIFICATION_VIBRATION_TYPE_NONE;
 	noti->vibration_path = NULL;
 
+	noti->led_operation = NOTIFICATION_LED_OP_OFF;
+	noti->led_argb = 0;
+
 	noti->domain = NULL;
 	noti->dir = NULL;
 
@@ -2807,6 +2857,8 @@ EXPORT_API notification_error_e notification_clone(notification_h noti, notifica
 	} else {
 		new_noti->vibration_path = NULL;
 	}
+	new_noti->led_operation = noti->led_operation;
+	new_noti->led_argb = noti->led_argb;
 
 	if(noti->domain != NULL) {
 		new_noti->domain = strdup(noti->domain);

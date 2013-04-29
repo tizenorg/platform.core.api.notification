@@ -31,7 +31,7 @@
 #include <notification_debug.h>
 #include <notification_internal.h>
 
-static int _notification_noti_bind_query(sqlite3_stmt * stmt, const char *name,
+static int _notification_noti_bind_query_text(sqlite3_stmt * stmt, const char *name,
 					 const char *str)
 {
 	int ret = 0;
@@ -49,6 +49,29 @@ static int _notification_noti_bind_query(sqlite3_stmt * stmt, const char *name,
 	if (ret != SQLITE_OK) {
 		NOTIFICATION_ERR("Insert text : %s",
 				 NOTIFICATION_CHECK_STR(str));
+		return NOTIFICATION_ERROR_FROM_DB;
+	}
+
+	return NOTIFICATION_ERROR_NONE;
+}
+
+static int _notification_noti_bind_query_double(sqlite3_stmt * stmt, const char *name,
+					 double val)
+{
+	int ret = 0;
+	int index = 0;
+
+	index = sqlite3_bind_parameter_index(stmt, name);
+	if (index == 0) {
+		NOTIFICATION_ERR("Insert : invalid column name");
+		return NOTIFICATION_ERROR_FROM_DB;
+	}
+
+	ret =
+	    sqlite3_bind_double(stmt, index, val);
+	if (ret != SQLITE_OK) {
+		NOTIFICATION_ERR("Insert double : %f",
+				val);
 		return NOTIFICATION_ERROR_FROM_DB;
 	}
 
@@ -253,7 +276,7 @@ static int _notification_noti_get_internal_group_id(notification_h noti,
 	/* Bind query */
 	if (ret_title != NULL) {
 		ret =
-		    _notification_noti_bind_query(stmt, "$title_key",
+		    _notification_noti_bind_query_text(stmt, "$title_key",
 						  NOTIFICATION_CHECK_STR
 						  (ret_title));
 		if (ret != NOTIFICATION_ERROR_NONE) {
@@ -357,7 +380,7 @@ static int _notification_noti_make_query(notification_h noti, char *query,
 		 "args, group_args, "
 		 "b_execute_option, "
 		 "b_service_responding, b_service_single_launch, b_service_multi_launch, "
-		 "sound_type, sound_path, vibration_type, vibration_path, "
+		 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb,"
 		 "flags_for_property, flag_simmode, display_applist, "
 		 "progress_size, progress_percentage) values ("
 		 "%d, "
@@ -372,9 +395,9 @@ static int _notification_noti_make_query(notification_h noti, char *query,
 		 "'%s', '%s', "
 		 "'%s', "
 		 "'%s', '%s', '%s', "
-		 "%d, '%s', %d, '%s', "
+		 "%d, '%s', %d, '%s', %d, %d,"
 		 "%d, %d, %d, "
-		 "%f, %f)",
+		 "$progress_size, $progress_percentage)",
 		 noti->type,
 		 noti->layout,
 		 NOTIFICATION_CHECK_STR(noti->caller_pkgname),
@@ -394,8 +417,9 @@ static int _notification_noti_make_query(notification_h noti, char *query,
 		 noti->sound_type, NOTIFICATION_CHECK_STR(noti->sound_path),
 		 noti->vibration_type,
 		 NOTIFICATION_CHECK_STR(noti->vibration_path),
-		 noti->flags_for_property, flag_simmode, noti->display_applist,
-		 noti->progress_size, noti->progress_percentage);
+		 noti->led_operation,
+		 noti->led_argb,
+		 noti->flags_for_property, flag_simmode, noti->display_applist);
 
 	/* Free decoded data */
 	if (args) {
@@ -515,9 +539,10 @@ static int _notification_noti_make_update_query(notification_h noti, char *query
 		 "b_service_multi_launch = '%s', "
 		 "sound_type = %d, sound_path = '%s', "
 		 "vibration_type = %d, vibration_path = '%s', "
+		 "led_operation = %d, led_argb = %d, "
 		 "flags_for_property = %d, flag_simmode = %d, "
 		 "display_applist = %d, "
-		 "progress_size = %f, progress_percentage = %f "
+		 "progress_size = $progress_size, progress_percentage = $progress_percentage "
 		 "where priv_id = %d ",
 		 noti->type,
 		 noti->layout,
@@ -536,8 +561,9 @@ static int _notification_noti_make_update_query(notification_h noti, char *query
 		 noti->sound_type, NOTIFICATION_CHECK_STR(noti->sound_path),
 		 noti->vibration_type,
 		 NOTIFICATION_CHECK_STR(noti->vibration_path),
+		 noti->led_operation,
+		 noti->led_argb,
 		 noti->flags_for_property, flag_simmode, noti->display_applist,
-		 noti->progress_size, noti->progress_percentage,
 		 noti->priv_id);
 
 	/* Free decoded data */
@@ -617,6 +643,8 @@ static void _notification_noti_populate_from_stmt(sqlite3_stmt * stmt, notificat
 	noti->sound_path = notification_db_column_text(stmt, col++);
 	noti->vibration_type = sqlite3_column_int(stmt, col++);
 	noti->vibration_path = notification_db_column_text(stmt, col++);
+	noti->led_operation = sqlite3_column_int(stmt, col++);
+	noti->led_argb = sqlite3_column_int(stmt, col++);
 
 	noti->flags_for_property = sqlite3_column_int(stmt, col++);
 	noti->display_applist = sqlite3_column_int(stmt, col++);
@@ -767,10 +795,26 @@ int notification_noti_insert(notification_h noti)
 	}
 
 	/* Bind query */
-	ret = _notification_noti_bind_query(stmt, "$title_key", title_key);
+	ret = _notification_noti_bind_query_text(stmt, "$title_key", title_key);
 	if (ret != NOTIFICATION_ERROR_NONE) {
 		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
 		goto err;
+	}
+	ret = _notification_noti_bind_query_double(stmt, "$progress_size",noti->progress_size);
+	if (ret != NOTIFICATION_ERROR_NONE) {
+		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
+		if (stmt) {
+			sqlite3_finalize(stmt);
+		}
+		return ret;
+	}
+	ret = _notification_noti_bind_query_double(stmt, "$progress_percentage",noti->progress_percentage);
+	if (ret != NOTIFICATION_ERROR_NONE) {
+		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
+		if (stmt) {
+			sqlite3_finalize(stmt);
+		}
+		return ret;
 	}
 
 	ret = sqlite3_step(stmt);
@@ -817,7 +861,7 @@ int notification_noti_get_by_priv_id(notification_h noti, char *pkgname, int pri
 			 "b_text, b_key, b_format_args, num_format_args, "
 			 "text_domain, text_dir, time, insert_time, args, group_args, "
 			 "b_execute_option, b_service_responding, b_service_single_launch, b_service_multi_launch, "
-			 "sound_type, sound_path, vibration_type, vibration_path, "
+			 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb,"
 			 "flags_for_property, display_applist, progress_size, progress_percentage "
 			 "from noti_list ";
 
@@ -887,6 +931,23 @@ int notification_noti_update(notification_h noti)
 				 sqlite3_errmsg(db));
 		ret = NOTIFICATION_ERROR_FROM_DB;
 		goto err;
+	}
+
+	ret = _notification_noti_bind_query_double(stmt, "$progress_size",noti->progress_size);
+	if (ret != NOTIFICATION_ERROR_NONE) {
+		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
+		if (stmt) {
+			sqlite3_finalize(stmt);
+		}
+		return ret;
+	}
+	ret = _notification_noti_bind_query_double(stmt, "$progress_percentage",noti->progress_percentage);
+	if (ret != NOTIFICATION_ERROR_NONE) {
+		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
+		if (stmt) {
+			sqlite3_finalize(stmt);
+		}
+		return ret;
 	}
 
 	ret = sqlite3_step(stmt);
@@ -1327,7 +1388,7 @@ notification_error_e notification_noti_get_grouping_list(notification_type_e typ
 		 "b_text, b_key, b_format_args, num_format_args, "
 		 "text_domain, text_dir, time, insert_time, args, group_args, "
 		 "b_execute_option, b_service_responding, b_service_single_launch, b_service_multi_launch, "
-		 "sound_type, sound_path, vibration_type, vibration_path, "
+		 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb,"
 		 "flags_for_property, display_applist, progress_size, progress_percentage "
 		 "from noti_list ");
 
@@ -1430,7 +1491,7 @@ notification_error_e notification_noti_get_detail_list(const char *pkgname,
 		 "b_text, b_key, b_format_args, num_format_args, "
 		 "text_domain, text_dir, time, insert_time, args, group_args, "
 		 "b_execute_option, b_service_responding, b_service_single_launch, b_service_multi_launch, "
-		 "sound_type, sound_path, vibration_type, vibration_path, "
+		 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb,"
 		 "flags_for_property, display_applist, progress_size, progress_percentage "
 		 "from noti_list ");
 

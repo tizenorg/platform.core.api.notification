@@ -38,7 +38,7 @@ extern "C" {
  */
 
 /**
- * @breief Enumeration for notification operation code
+ * @brief Enumeration for notification operation code
  */
 typedef enum _notification_op_type {
 	NOTIFICATION_OP_NONE = 0,
@@ -50,7 +50,7 @@ typedef enum _notification_op_type {
 } notification_op_type_e;
 
 /**
- * @breief Enumeration for notification operation data code
+ * @brief Enumeration for notification operation data code
  */
 typedef enum _notification_op_data_type {
 	NOTIFICATION_OP_DATA_MIN = 0,
@@ -62,7 +62,7 @@ typedef enum _notification_op_data_type {
 } notification_op_data_type_e;
 
 /**
- * @breief Enumeration for notification layout type
+ * @brief Enumeration for notification layout type
  */
 typedef enum _notification_ly_type {
 	NOTIFICATION_LY_NONE = 0,
@@ -75,7 +75,7 @@ typedef enum _notification_ly_type {
 } notification_ly_type_e;
 
 /**
- * @breief Enumeration for notification sound type.
+ * @brief Enumeration for notification sound type.
  */
 typedef enum _notification_sound_type {
 	NOTIFICATION_SOUND_TYPE_NONE = -1,
@@ -89,7 +89,7 @@ typedef enum _notification_sound_type {
 } notification_sound_type_e;
 
 /**
- * @breief Enumeration for notification vibration type.
+ * @brief Enumeration for notification vibration type.
  */
 typedef enum _notification_vibration_type {
 	NOTIFICATION_VIBRATION_TYPE_NONE = -1,
@@ -101,7 +101,19 @@ typedef enum _notification_vibration_type {
 } notification_vibration_type_e;
 
 /**
- * @breief Will be deprecated.
+ * @brief Enumeration for notification led operation.
+ */
+typedef enum _notification_led_op {
+	NOTIFICATION_LED_OP_OFF = -1,
+					/**< Default value. Disable led */
+	NOTIFICATION_LED_OP_ON = 0,/**< turn on led with default color */
+	NOTIFICATION_LED_OP_ON_CUSTOM_COLOR,
+					/**< turn on led with custom color */
+	NOTIFICATION_LED_OP_MAX,/**< Max flag */
+} notification_led_op_e;
+
+/**
+ * @brief Will be deprecated.
  */
 typedef enum _notification_count_display_type {
 	NOTIFICATION_COUNT_DISPLAY_TYPE_NONE = -1,
@@ -112,7 +124,7 @@ typedef enum _notification_count_display_type {
 } notification_count_display_type_e;
 
 /**
- * @breief Enumeration for notification count position in the text.
+ * @brief Enumeration for notification count position in the text.
  */
 typedef enum _notifcation_count_pos_type {
 	NOTIFICATION_COUNT_POS_NONE = -1,
@@ -127,7 +139,7 @@ typedef enum _notifcation_count_pos_type {
 } notification_count_pos_type_e;
 
 /**
- * @breief Enumeration for notification variable parameter type
+ * @brief Enumeration for notification variable parameter type
  */
 typedef enum _notification_variable_type {
 	NOTIFICATION_VARIABLE_TYPE_NONE = -1,
@@ -145,7 +157,7 @@ typedef enum _notification_variable_type {
 } notification_variable_type_e;
 
 /**
- * @breief Enumeration for notification text type.
+ * @brief Enumeration for notification text type.
  */
 typedef enum _notification_text_type {
 	NOTIFICATION_TEXT_TYPE_NONE = -1,
@@ -181,7 +193,7 @@ typedef enum _notification_text_type {
 } notification_text_type_e;
 
 /**
- * @breief Enumeration for image text type.
+ * @brief Enumeration for image text type.
  */
 typedef enum _notification_image_type {
 	NOTIFICATION_IMAGE_TYPE_NONE = -1,
@@ -223,7 +235,7 @@ typedef enum _notification_image_type {
 }notification_button_type_e;*/
 
 /**
- * @breief Enumeration for application execution type.
+ * @brief Enumeration for application execution type.
  */
 typedef enum _notification_execute_type {
 	NOTIFICATION_EXECUTE_TYPE_NONE = -1,
@@ -238,7 +250,7 @@ typedef enum _notification_execute_type {
 } notification_execute_type_e;
 
 /**
- * @breief Enumeration for notification type.
+ * @brief Enumeration for notification type.
  */
 typedef enum _notification_type {
 	NOTIFICATION_TYPE_NONE = -1,
@@ -252,7 +264,7 @@ typedef enum _notification_type {
 } notification_type_e;
 
 /**
- * @breief Enumeration for Group ID.
+ * @brief Enumeration for Group ID.
  */
 enum _notification_group_id {
 	NOTIFICATION_GROUP_ID_NONE = -1,/**< Not Grouping */
@@ -261,7 +273,7 @@ enum _notification_group_id {
 };
 
 /**
- * @breief Enumeration for Private ID.
+ * @brief Enumeration for Private ID.
  */
 enum _notification_priv_id {
 	NOTIFICATION_PRIV_ID_NONE = -1,
@@ -269,7 +281,7 @@ enum _notification_priv_id {
 };
 
 /**
- * @breief Enumeration for notification property
+ * @brief Enumeration for notification property
  */
 enum _notification_property {
 	NOTIFICATION_PROP_DISPLAY_ONLY_SIMMODE = 0x00000001,
@@ -290,7 +302,7 @@ enum _notification_property {
 };
 
 /**
- * @breief Enumeration for display application list
+ * @brief Enumeration for display application list
  */
 enum _notificaton_display_applist {
 	NOTIFICATION_DISPLAY_APP_NOTIFICATION_TRAY = 0x00000001,/**< Notification Tray(Quickpanel) */

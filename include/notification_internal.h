@@ -58,6 +58,8 @@ struct _notification {
 	char *sound_path;
 	notification_vibration_type_e vibration_type;
 	char *vibration_path;
+	notification_led_op_e led_operation;
+	int led_argb;
 
 	time_t time;		/* time set by application */
 	time_t insert_time;	/* insert time */

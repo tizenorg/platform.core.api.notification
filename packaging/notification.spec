@@ -1,6 +1,6 @@
 Name:       notification
 Summary:    notification library
-Version:    0.1.8
+Version:    0.2.0
 Release:    1
 Group:      TBD
 License:    Apache-2.0
@@ -86,6 +86,8 @@ then
 			sound_path TEXT,
 			vibration_type INTEGER default 0,
 			vibration_path TEXT,
+			led_operation INTEGER default 0,
+			led_argb INTEGER default 0,
 			flags_for_property INTEGER default 0,
 			flag_simmode INTEGER default 0,
 			display_applist INTEGER,
