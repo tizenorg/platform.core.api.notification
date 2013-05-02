@@ -39,6 +39,7 @@ typedef enum _notification_error {
 	NOTIFICATION_ERROR_FROM_DBUS = -5,	/**< Error from DBus */
 	NOTIFICATION_ERROR_NOT_EXIST_ID = -6,	/**< Not exist private ID */
 	NOTIFICATION_ERROR_IO = -7,	/**< disk i/o error */
+	NOTIFICATION_ERROR_SERVICE_NOT_READY = -8,	/**< no reponse from master */
 } notification_error_e;
 
 /** 

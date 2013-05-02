@@ -1,6 +1,6 @@
 Name:       notification
 Summary:    notification library
-Version:    0.2.0
+Version:    0.2.1
 Release:    1
 Group:      TBD
 License:    Apache-2.0
@@ -16,6 +16,7 @@ BuildRequires: pkgconfig(ail)
 BuildRequires: pkgconfig(aul)
 BuildRequires: pkgconfig(appsvc)
 BuildRequires: pkgconfig(dbus-glib-1)
+BuildRequires: pkgconfig(com-core)
 
 BuildRequires: cmake
 Requires(post): /sbin/ldconfig

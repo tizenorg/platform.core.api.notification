@@ -41,6 +41,7 @@
 #include <notification_noti.h>
 #include <notification_ongoing.h>
 #include <notification_group.h>
+#include <notification_ipc.h>
 
 typedef struct _notification_cb_list notification_cb_list_s;
 
@@ -60,7 +61,6 @@ struct _notification_cb_list {
 };
 
 static notification_cb_list_s *g_notification_cb_list = NULL;
-static DBusConnection *g_dbus_handle;
 
 #define NOTI_TEXT_RESULT_LEN 2048
 #define NOTI_PKGNAME_LEN	512
@@ -73,15 +73,17 @@ static DBusConnection *g_dbus_handle;
 
 static char *_notification_get_pkgname_by_pid(void)
 {
-	char buf[NOTI_PKGNAME_LEN + 1] = { 0, };
 	char pkgname[NOTI_PKGNAME_LEN + 1] = { 0, };
 	int pid = 0, ret = AUL_R_OK;
 	int fd;
+	char  *dup_pkgname;
 
 	pid = getpid();
 
 	ret = aul_app_get_pkgname_bypid(pid, pkgname, sizeof(pkgname));
 	if (ret != AUL_R_OK) {
+		char buf[NOTI_PKGNAME_LEN + 1] = { 0, };
+
 		snprintf(buf, sizeof(buf), "/proc/%d/cmdline", pid);
 
 		fd = open(buf, O_RDONLY);
@@ -90,83 +92,29 @@ static char *_notification_get_pkgname_by_pid(void)
 		}
 
 		ret = read(fd, pkgname, sizeof(pkgname) - 1);
+		close(fd);
+
 		if (ret <= 0) {
-			close(fd);
 			return NULL;
 		}
 
-		if (ret > NOTI_PKGNAME_LEN)
-			pkgname[NOTI_PKGNAME_LEN] = '\0';
-		else
-			pkgname[ret] = '\0';
-
-		close(fd);
-	}
-
-	if (strlen(pkgname) <= 0) {
-		return NULL;
+		pkgname[ret] = '\0';
+		/*!
+		 * \NOTE
+		 * "ret" is not able to be larger than "sizeof(pkgname) - 1",
+		 * if the system is not going wrong.
+		 */
 	} else {
-		return strdup(pkgname);
-	}
-}
-
-static void _notification_pack_operation_msg(DBusMessageIter *iter, notification_op *op_list, int op_num)
-{
-	int i = 0;
-
-	if (op_list == NULL) {
-		int tmp_op_num = 0;
-
-		dbus_message_iter_append_basic(iter, DBUS_TYPE_INT32, &tmp_op_num);
-		return ;
-	}
-
-	dbus_message_iter_append_basic(iter, DBUS_TYPE_INT32, &op_num);
-	for (i = 0; i < op_num; i++) {
-		NOTIFICATION_ERR("pack:%d/%d", i, op_num);
-		notification_op *op = op_list + i;
-		dbus_message_iter_append_basic(iter, DBUS_TYPE_INT32, &(op->type));
-		dbus_message_iter_append_basic(iter, DBUS_TYPE_INT32, &(op->priv_id));
-		dbus_message_iter_append_basic(iter, DBUS_TYPE_INT32, &(op->extra_info_1));
-		dbus_message_iter_append_basic(iter, DBUS_TYPE_INT32, &(op->extra_info_2));
-	}
-}
-
-static void _notification_unpack_operation_msg(DBusMessageIter *iter, notification_op **op_list, int *op_num)
-{
-	int i = 0;
-
-	if (iter == NULL || op_list == NULL || op_num == NULL) {
-		return;
-	}
-
-	dbus_message_iter_get_basic(iter, op_num);
-
-	int tmp_op_num = *op_num;
-
-	if (tmp_op_num <= 0) {
-		*op_list = NULL;
-		*op_num = 0;
-		return;
-	}
-
-	*op_list = (notification_op*)malloc(sizeof(notification_op) * (tmp_op_num));
-
-	dbus_message_iter_next(iter);
-
-	if (*op_list != NULL) {
-		for (i = 0; i < tmp_op_num; i++) {
-			notification_op *op = (*op_list) + i;
-			dbus_message_iter_get_basic(iter, &(op->type));
-			dbus_message_iter_next(iter);
-			dbus_message_iter_get_basic(iter, &(op->priv_id));
-			dbus_message_iter_next(iter);
-			dbus_message_iter_get_basic(iter, &(op->extra_info_1));
-			dbus_message_iter_next(iter);
-			dbus_message_iter_get_basic(iter, &(op->extra_info_2));
-			dbus_message_iter_next(iter);
+		if (strlen(pkgname) <= 0) {
+			return NULL;
 		}
 	}
+
+	dup_pkgname = strdup(pkgname);
+	if (!dup_pkgname)
+		NOTIFICATION_ERR("Heap: %s\n", strerror(errno));
+
+	return dup_pkgname;
 }
 
 static char *_notification_get_icon(const char *package)
@@ -234,251 +182,6 @@ static void _notification_get_text_domain(notification_h noti)
 	if (noti->dir != NULL) {
 
 	}
-}
-
-static void _notification_chagned_noti_cb(DBusMessage *message, void *data)
-{
-	notification_cb_list_s *noti_cb_list = NULL;
-	DBusMessageIter iter;
-
-	int op_num = 0;
-	notification_op *op_list = NULL;
-
-	if (g_notification_cb_list == NULL) {
-		return;
-	}
-
-	noti_cb_list = g_notification_cb_list;
-
-	while (noti_cb_list->prev != NULL) {
-		noti_cb_list = noti_cb_list->prev;
-	}
-
-	if (message != NULL) {
-		if (dbus_message_iter_init(message, &iter)) {
-			_notification_unpack_operation_msg(&iter, &op_list, &op_num);
-			NOTIFICATION_ERR("operation num:%d", op_num);
-		}
-	}
-
-	while (noti_cb_list != NULL) {
-		if (noti_cb_list->cb_type == NOTIFICATION_CB_NORMAL && noti_cb_list->changed_cb) {
-			noti_cb_list->changed_cb(noti_cb_list->data,
-						 NOTIFICATION_TYPE_NOTI);
-		}
-		if (noti_cb_list->cb_type == NOTIFICATION_CB_DETAILED && noti_cb_list->detailed_changed_cb) {
-			noti_cb_list->detailed_changed_cb(noti_cb_list->data,
-						 NOTIFICATION_TYPE_NOTI, op_list, op_num);
-		}
-
-		noti_cb_list = noti_cb_list->next;
-	}
-
-	if (op_list != NULL) {
-		free(op_list);
-	}
-}
-
-#if 0
-static void _notification_chagned_ongoing_cb(void *data)
-{
-	notification_cb_list_s *noti_cb_list = NULL;
-
-	if (g_notification_cb_list == NULL) {
-		return;
-	}
-
-	noti_cb_list = g_notification_cb_list;
-
-	while (noti_cb_list->prev != NULL) {
-		noti_cb_list = noti_cb_list->prev;
-	}
-
-	while (noti_cb_list != NULL) {
-		if (noti_cb_list->changed_cb) {
-			noti_cb_list->changed_cb(noti_cb_list->data,
-						 NOTIFICATION_TYPE_ONGOING);
-		}
-
-		noti_cb_list = noti_cb_list->next;
-	}
-}
-#endif
-
-static void _notification_pack_and_send_dbus_message(const char *type, notification_op *op_list , int op_num)
-{
-	DBusConnection *connection = NULL;
-	DBusMessage *message = NULL;
-	DBusMessageIter iter;
-	DBusError err;
-	dbus_bool_t ret;
-	int i = 0;
-
-	if (!type) {
-		NOTIFICATION_ERR("type is NULL");
-		return;
-	}
-
-	dbus_error_init(&err);
-	connection = dbus_bus_get(DBUS_BUS_SYSTEM, &err);
-	if (!connection) {
-		NOTIFICATION_ERR("Fail to dbus_bus_get : %s", err.message);
-		return;
-	}
-
-	message = dbus_message_new_signal(NOTI_DBUS_PATH,
-				NOTI_DBUS_INTERFACE,
-				type);
-
-	if (!message) {
-		NOTIFICATION_ERR("fail to create dbus message");
-		goto release_n_return;
-	}
-
-	if (op_num > 0 && op_list != NULL) {
-		dbus_message_iter_init_append(message, &iter);
-		_notification_pack_operation_msg(&iter, op_list, op_num);
-	}
-
-	ret = dbus_connection_send(connection, message, NULL);
-	if (!ret) {
-		NOTIFICATION_ERR("fail to send dbus message : %s", type);
-		goto release_n_return;
-	}
-
-	dbus_connection_flush(connection);
-
-	NOTIFICATION_DBG("success to emit signal [%s]", type);
-
-release_n_return:
-	dbus_error_free(&err);
-
-	if (message)
-		dbus_message_unref(message);
-
-	if (connection)
-		dbus_connection_unref(connection);
-}
-
-#define SET_DBUS_MESSAGE 30
-
-static void _notification_changed(const char *type, notification_op *op_list , int op_num)
-{
-	int set = 0;
-	int set_total = 0;
-	int set_modular = 0;
-
-	if (op_num <= SET_DBUS_MESSAGE) {
-		_notification_pack_and_send_dbus_message(type, op_list, op_num);
-	} else {
-		set_total = op_num / SET_DBUS_MESSAGE;
-		set_modular = op_num - (set_total * SET_DBUS_MESSAGE);
-
-		for (set = 0; set < set_total; set++) {
-			_notification_pack_and_send_dbus_message(type, op_list + (set * SET_DBUS_MESSAGE), SET_DBUS_MESSAGE);
-		}
-
-		if (set_modular > 0) {
-			_notification_pack_and_send_dbus_message(type,
-					op_list + (set_total * SET_DBUS_MESSAGE), set_modular);
-		}
-	}
-}
-
-static DBusHandlerResult _dbus_signal_filter(DBusConnection *conn,
-		DBusMessage *msg, void *user_data)
-{
-	const char *interface = NULL;
-	
-	interface = dbus_message_get_interface(msg);
-	NOTIFICATION_DBG("path : %s", dbus_message_get_path(msg));
-	NOTIFICATION_DBG("interface : %s", interface);
-
-	if (strcmp(NOTI_DBUS_INTERFACE, interface))
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-
-
-	switch (dbus_message_get_type(msg)) {
-		case DBUS_MESSAGE_TYPE_SIGNAL:
-			_notification_chagned_noti_cb(msg, NULL);
-			return DBUS_HANDLER_RESULT_HANDLED;
-		default:
-			break;
-	}
-	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-}
-
-static DBusConnection *_noti_changed_monitor_init()
-{
-	DBusError err;
-	DBusConnection *conn = NULL;
-	char rule[1024];
-
-	dbus_error_init(&err);
-	conn = dbus_bus_get_private(DBUS_BUS_SYSTEM, &err);
-	if (!conn) {
-		printf("fail to get bus\n");
-		return NULL;
-	}
-	dbus_connection_setup_with_g_main(conn, NULL);
-	snprintf(rule, 1024, 
-		"path='%s',type='signal',interface='%s',member='%s'",
-		NOTI_DBUS_PATH, 
-		NOTI_DBUS_INTERFACE,
-		NOTI_CHANGED_NOTI);
-
-	dbus_bus_add_match(conn, rule, &err);
-	if (dbus_connection_add_filter(conn,_dbus_signal_filter, 
-					NULL, NULL) == FALSE) {
-		NOTIFICATION_ERR("fail to dbus_connection_add_filter");
-		dbus_connection_close(conn);
-		return NULL;
-	}
-
-	dbus_connection_set_exit_on_disconnect(conn, FALSE);
-	return conn;
-}
-
-static void _noti_chanaged_monitor_fini()
-{
-	DBusConnection *conn = g_dbus_handle;
-	char rule[1024];
-
-	if (!conn)
-		return;
-	dbus_connection_remove_filter(conn, _dbus_signal_filter, NULL);
-
-	snprintf(rule, 1024, 
-		"path='%s',type='signal',interface='%s',member='%s'",
-		NOTI_DBUS_PATH, 
-		NOTI_DBUS_INTERFACE,
-		NOTI_CHANGED_NOTI);
-	dbus_bus_remove_match(conn, rule, NULL);
-
-	dbus_connection_close(conn);
-	g_dbus_handle = NULL;
-}	
-
-notification_op *_notification_make_basic_op(notification_op_type_e type, int num_op, int *list_priv_id, int num_priv_id)
-{
-	int i = 0;
-	notification_op *op_list = NULL;
-
-	if (num_op <= 0) {
-		return NULL;
-	}
-
-	op_list = (notification_op *)malloc(sizeof(notification_op) * num_op);
-	memset(op_list, 0x0, sizeof(notification_op) * num_op);
-
-	for (i = 0; i < num_priv_id; i++) {
-		(op_list + i)->type = type;
-		if (list_priv_id != NULL) {
-			(op_list + i)->priv_id = *(list_priv_id + i);
-		}
-	}
-
-	return op_list;
 }
 
 /* notification_set_icon will be removed */
@@ -2272,6 +1975,7 @@ EXPORT_API notification_error_e notification_insert(notification_h noti,
 						    int *priv_id)
 {
 	int ret = 0;
+	int id = 0;
 
 	/* Check noti is vaild data */
 	if (noti == NULL) {
@@ -2286,25 +1990,12 @@ EXPORT_API notification_error_e notification_insert(notification_h noti,
 
 	/* Save insert time */
 	noti->insert_time = time(NULL);
-
-	/* Insert into DB */
-	ret = notification_noti_insert(noti);
+	ret = notification_ipc_request_insert(noti, &id);
 	if (ret != NOTIFICATION_ERROR_NONE) {
 		return ret;
 	}
-
-	/* Check disable update on insert property */
-	if (noti->flags_for_property
-		& NOTIFICATION_PROP_DISABLE_UPDATE_ON_INSERT) {
-		/* Disable changed cb */
-	} else {
-		/* Enable changed cb */
-		notification_op *noti_op = _notification_make_basic_op(NOTIFICATION_OP_INSERT, 1, &(noti->priv_id), 1);
-		if (noti_op != NULL) {
-			_notification_changed(NOTI_CHANGED_NOTI, noti_op, 1);
-			free(noti_op);
-		}
-	}
+	noti->priv_id = id;
+	NOTIFICATION_DBG("from master:%d", id);
 
 	/* If priv_id is valid data, set priv_id */
 	if (priv_id != NULL) {
@@ -2322,23 +2013,14 @@ EXPORT_API notification_error_e notification_update(notification_h noti)
 	if (noti != NULL) {
 		/* Update insert time ? */
 		noti->insert_time = time(NULL);
-
-		ret = notification_noti_update(noti);
+		ret = notification_ipc_request_update(noti);
 		if (ret != NOTIFICATION_ERROR_NONE) {
 			return ret;
 		}
-
-		notification_op *noti_op = _notification_make_basic_op(NOTIFICATION_OP_UPDATE, 1, &(noti->priv_id), 1);
-		if (noti_op != NULL) {
-			_notification_changed(NOTI_CHANGED_NOTI, noti_op, 1);
-			free(noti_op);
-		}
 	} else {
-		/* Send changed notification */
-		notification_op *noti_op = _notification_make_basic_op(NOTIFICATION_OP_REFRESH, 1, NULL, 0);
-		if (noti_op != NULL) {
-			_notification_changed(NOTI_CHANGED_NOTI, noti_op, 1);
-			free(noti_op);
+		ret = notification_ipc_request_refresh();
+		if (ret != NOTIFICATION_ERROR_NONE) {
+			return ret;
 		}
 	}
 	return NOTIFICATION_ERROR_NONE;
@@ -2347,28 +2029,10 @@ EXPORT_API notification_error_e notification_update(notification_h noti)
 EXPORT_API notification_error_e notifiation_clear(notification_type_e type)
 {
 	int ret = 0;
-	int num_deleted = 0;
-	int *list_deleted = NULL;
 
-	/* Delete all notification of type */
-	ret = notification_noti_delete_all(type, NULL, &num_deleted, &list_deleted);
+	ret = notification_ipc_request_delete_multiple(type, NULL);
 	if (ret != NOTIFICATION_ERROR_NONE) {
 		return ret;
-	}
-
-	/* Send chagned notification */
-
-	if (num_deleted > 0 && list_deleted != NULL) {
-		notification_op *noti_op = _notification_make_basic_op(NOTIFICATION_OP_DELETE, num_deleted, list_deleted, num_deleted);
-		if (noti_op != NULL) {
-			NOTIFICATION_ERR("noti_op %x", noti_op);
-			_notification_changed(NOTI_CHANGED_NOTI, noti_op, num_deleted);
-			free(noti_op);
-		}
-	}
-
-	if (list_deleted != NULL) {
-		free(list_deleted);
 	}
 
 	return NOTIFICATION_ERROR_NONE;
@@ -2378,8 +2042,6 @@ EXPORT_API notification_error_e notification_delete_all_by_type(const char *pkgn
 								notification_type_e type)
 {
 	int ret = 0;
-	int num_deleted = 0;
-	int *list_deleted = NULL;
 	char *caller_pkgname = NULL;
 
 	if (pkgname == NULL) {
@@ -2388,30 +2050,12 @@ EXPORT_API notification_error_e notification_delete_all_by_type(const char *pkgn
 		caller_pkgname = strdup(pkgname);
 	}
 
-	ret = notification_noti_delete_all(type, caller_pkgname, &num_deleted, &list_deleted);
+	ret = notification_ipc_request_delete_multiple(type, caller_pkgname);
 	if (ret != NOTIFICATION_ERROR_NONE) {
-		free(caller_pkgname);
 		return ret;
 	}
 
-	/* Send chagned notification */
-	if (num_deleted > 0 && list_deleted != NULL) {
-		notification_op *noti_op = _notification_make_basic_op(NOTIFICATION_OP_DELETE, num_deleted, list_deleted, num_deleted);
-		if (noti_op != NULL) {
-			_notification_changed(NOTI_CHANGED_NOTI, noti_op, num_deleted);
-			free(noti_op);
-		}
-	}
-	if (caller_pkgname != NULL) {
-		free(caller_pkgname);
-		caller_pkgname = NULL;
-	}
-	if (list_deleted != NULL) {
-		free(list_deleted);
-		list_deleted = NULL;
-	}
-
-	return ret;
+	return NOTIFICATION_ERROR_NONE;
 }
 
 EXPORT_API notification_error_e notification_delete_group_by_group_id(const char *pkgname,
@@ -2419,13 +2063,7 @@ EXPORT_API notification_error_e notification_delete_group_by_group_id(const char
 								      int group_id)
 {
 	int ret = 0;
-	int num_deleted = 0;
-	int *list_deleted = NULL;
 	char *caller_pkgname = NULL;
-
-	if (group_id < NOTIFICATION_GROUP_ID_NONE) {
-		return NOTIFICATION_ERROR_INVALID_DATA;
-	}
 
 	if (pkgname == NULL) {
 		caller_pkgname = _notification_get_pkgname_by_pid();
@@ -2433,32 +2071,12 @@ EXPORT_API notification_error_e notification_delete_group_by_group_id(const char
 		caller_pkgname = strdup(pkgname);
 	}
 
-	ret =
-	    notification_noti_delete_group_by_group_id(caller_pkgname,
-						       group_id, &num_deleted, &list_deleted);
+	ret = notification_ipc_request_delete_multiple(type, caller_pkgname);
 	if (ret != NOTIFICATION_ERROR_NONE) {
-		free(caller_pkgname);
 		return ret;
 	}
 
-	if (num_deleted > 0 && list_deleted != NULL) {
-		notification_op *noti_op = _notification_make_basic_op(NOTIFICATION_OP_DELETE, num_deleted, list_deleted, num_deleted);
-		if (noti_op != NULL) {
-			_notification_changed(NOTI_CHANGED_NOTI, noti_op, num_deleted);
-			free(noti_op);
-		}
-	}
-
-	if (caller_pkgname != NULL) {
-		free(caller_pkgname);
-		caller_pkgname = NULL;
-	}
-	if (list_deleted != NULL) {
-		free(list_deleted);
-		list_deleted = NULL;
-	}
-
-	return ret;
+	return NOTIFICATION_ERROR_NONE;
 }
 
 EXPORT_API notification_error_e notification_delete_group_by_priv_id(const char *pkgname,
@@ -2468,32 +2086,18 @@ EXPORT_API notification_error_e notification_delete_group_by_priv_id(const char 
 	int ret = 0;
 	char *caller_pkgname = NULL;
 
-	if (priv_id < NOTIFICATION_PRIV_ID_NONE) {
-		return NOTIFICATION_ERROR_INVALID_DATA;
-	}
-
 	if (pkgname == NULL) {
 		caller_pkgname = _notification_get_pkgname_by_pid();
 	} else {
 		caller_pkgname = strdup(pkgname);
 	}
 
-	ret =
-	    notification_noti_delete_group_by_priv_id(caller_pkgname, priv_id);
+	ret = notification_ipc_request_delete_single(type, caller_pkgname, priv_id);
 	if (ret != NOTIFICATION_ERROR_NONE) {
-		free(caller_pkgname);
 		return ret;
 	}
 
-	notification_op *noti_op = _notification_make_basic_op(NOTIFICATION_OP_DELETE, 1, NULL, 0);
-	if (noti_op != NULL) {
-		_notification_changed(NOTI_CHANGED_NOTI, noti_op, 1);
-		free(noti_op);
-	}
-
-	free(caller_pkgname);
-
-	return ret;
+	return NOTIFICATION_ERROR_NONE;
 }
 
 EXPORT_API notification_error_e notification_delete_by_priv_id(const char *pkgname,
@@ -2513,19 +2117,10 @@ EXPORT_API notification_error_e notification_delete_by_priv_id(const char *pkgna
 		caller_pkgname = strdup(pkgname);
 	}
 
-	ret = notification_noti_delete_by_priv_id(caller_pkgname, priv_id);
+	ret = notification_ipc_request_delete_single(type, caller_pkgname, priv_id);
 	if (ret != NOTIFICATION_ERROR_NONE) {
-		free(caller_pkgname);
 		return ret;
 	}
-
-	notification_op *noti_op = _notification_make_basic_op(NOTIFICATION_OP_DELETE, 1, &priv_id, 1);
-	if (noti_op != NULL) {
-		_notification_changed(NOTI_CHANGED_NOTI, noti_op, 1);
-		free(noti_op);
-	}
-
-	free(caller_pkgname);
 
 	return ret;
 }
@@ -2538,22 +2133,9 @@ EXPORT_API notification_error_e notification_delete(notification_h noti)
 		return NOTIFICATION_ERROR_INVALID_DATA;
 	}
 
-	ret =
-	    notification_noti_delete_by_priv_id(noti->caller_pkgname,
-						noti->priv_id);
+	ret = notification_ipc_request_delete_single(NOTIFICATION_TYPE_NONE, noti->caller_pkgname, noti->priv_id);
 	if (ret != NOTIFICATION_ERROR_NONE) {
 		return ret;
-	}
-
-	if (noti->flags_for_property
-		& NOTIFICATION_PROP_DISABLE_UPDATE_ON_DELETE) {
-		NOTIFICATION_INFO("Disabled update while delete.");
-	} else {
-		notification_op *noti_op = _notification_make_basic_op(NOTIFICATION_OP_DELETE, 1, &(noti->priv_id), 1);
-		if (noti_op != NULL) {
-			_notification_changed(NOTI_CHANGED_NOTI, noti_op, 1);
-			free(noti_op);
-		}
 	}
 
 	return NOTIFICATION_ERROR_NONE;
@@ -2674,7 +2256,8 @@ EXPORT_API notification_error_e notification_update_content(notification_h noti,
 	return NOTIFICATION_ERROR_NONE;
 }
 
-static notification_h _notification_create(notification_type_e type) {
+static notification_h _notification_create(notification_type_e type)
+{
 	notification_h noti = NULL;
 
 	if (type <= NOTIFICATION_TYPE_NONE || type >= NOTIFICATION_TYPE_MAX) {
@@ -2682,12 +2265,11 @@ static notification_h _notification_create(notification_type_e type) {
 		return NULL;
 	}
 
-	noti = (notification_h) malloc(sizeof(struct _notification));
+	noti = (notification_h) calloc(1, sizeof(struct _notification));
 	if (noti == NULL) {
 		NOTIFICATION_ERR("NO MEMORY : noti == NULL");
 		return NULL;
 	}
-	memset(noti, 0x00, sizeof(struct _notification));
 
 	noti->type = type;
 
@@ -2696,53 +2278,17 @@ static notification_h _notification_create(notification_type_e type) {
 	else if (type == NOTIFICATION_TYPE_ONGOING)
 		noti->layout = NOTIFICATION_LY_ONGOING_PROGRESS;
 
-	noti->group_id = NOTIFICATION_GROUP_ID_NONE;
-	noti->internal_group_id = 0;
-	noti->priv_id = NOTIFICATION_PRIV_ID_NONE;
-
 	noti->caller_pkgname = _notification_get_pkgname_by_pid();
-	noti->launch_pkgname = NULL;
-	noti->args = NULL;
-	noti->group_args = NULL;
-
-	noti->b_execute_option = NULL;
-	noti->b_service_responding = NULL;
-	noti->b_service_single_launch = NULL;
-	noti->b_service_multi_launch = NULL;
-
+	noti->group_id = NOTIFICATION_GROUP_ID_NONE;
+	noti->priv_id = NOTIFICATION_PRIV_ID_NONE;
 	noti->sound_type = NOTIFICATION_SOUND_TYPE_NONE;
-	noti->sound_path = NULL;
-
 	noti->vibration_type = NOTIFICATION_VIBRATION_TYPE_NONE;
-	noti->vibration_path = NULL;
-
 	noti->led_operation = NOTIFICATION_LED_OP_OFF;
-	noti->led_argb = 0;
-
-	noti->domain = NULL;
-	noti->dir = NULL;
-
-	noti->b_text = NULL;
-	noti->b_key = NULL;
-	noti->b_format_args = NULL;
-	noti->num_format_args = 0;
-
-	noti->b_image_path = NULL;
-
-	noti->time = 0;
-	noti->insert_time = 0;
-
-	noti->flags_for_property = 0;
 	noti->display_applist = NOTIFICATION_DISPLAY_APP_ALL;
-
-	noti->progress_size = 0.0;
-	noti->progress_percentage = 0.0;
-
-	noti->app_icon_path = NULL;
-	noti->app_name = NULL;
-	noti->temp_title = NULL;
-	noti->temp_content = NULL;
-
+	/*!
+	 * \NOTE
+	 * Other fields are already initialized with ZERO.
+	 */
 	return noti;
 }
 
@@ -3000,10 +2546,8 @@ notification_resister_changed_cb(void (*changed_cb)
 	notification_cb_list_s *noti_cb_list_new = NULL;
 	notification_cb_list_s *noti_cb_list = NULL;
 
-	if (!g_dbus_handle) {
-		g_dbus_handle = _noti_changed_monitor_init();
-		if (!g_dbus_handle)
-			return NOTIFICATION_ERROR_FROM_DBUS;
+	if (notification_ipc_monitor_init() != NOTIFICATION_ERROR_NONE) {
+		return NOTIFICATION_ERROR_IO;
 	}
 
 	noti_cb_list_new =
@@ -3072,7 +2616,7 @@ notification_unresister_changed_cb(void (*changed_cb)
 			free(noti_cb_list);
 
 			if (g_notification_cb_list == NULL)
-				_noti_chanaged_monitor_fini();
+				notification_ipc_monitor_fini();
 
 			return NOTIFICATION_ERROR_NONE;
 		}
@@ -3090,10 +2634,8 @@ notification_register_detailed_changed_cb(
 	notification_cb_list_s *noti_cb_list_new = NULL;
 	notification_cb_list_s *noti_cb_list = NULL;
 
-	if (!g_dbus_handle) {
-		g_dbus_handle = _noti_changed_monitor_init();
-		if (!g_dbus_handle)
-			return NOTIFICATION_ERROR_FROM_DBUS;
+	if (notification_ipc_monitor_init() != NOTIFICATION_ERROR_NONE) {
+		return NOTIFICATION_ERROR_IO;
 	}
 
 	noti_cb_list_new =
@@ -3163,7 +2705,7 @@ notification_unregister_detailed_changed_cb(
 			free(noti_cb_list);
 
 			if (g_notification_cb_list == NULL)
-				_noti_chanaged_monitor_fini();
+				notification_ipc_monitor_fini();
 
 			return NOTIFICATION_ERROR_NONE;
 		}
@@ -3293,7 +2835,7 @@ EXPORT_API notification_error_e notification_free_list(notification_list_h list)
 EXPORT_API notification_error_e notification_op_get_data(notification_op *noti_op, notification_op_data_type_e type,
 						       void *data)
 {
-	if (noti_op == NULL) {
+	if (noti_op == NULL || data == NULL) {
 		return NOTIFICATION_ERROR_INVALID_DATA;
 	}
 
@@ -3303,6 +2845,9 @@ EXPORT_API notification_error_e notification_op_get_data(notification_op *noti_o
 			break;
 		case NOTIFICATION_OP_DATA_PRIV_ID:
 			*((int*)data) = noti_op->priv_id;
+			break;
+		case NOTIFICATION_OP_DATA_NOTI:
+			*((notification_h *)data) = noti_op->noti;
 			break;
 		case NOTIFICATION_OP_DATA_EXTRA_INFO_1:
 			*((int*)data) = noti_op->extra_info_1;
@@ -3316,4 +2861,56 @@ EXPORT_API notification_error_e notification_op_get_data(notification_op *noti_o
 	}
 
 	return NOTIFICATION_ERROR_NONE;
+}
+
+void notification_call_changed_cb(notification_op *op_list, int op_num)
+{
+	notification_cb_list_s *noti_cb_list = NULL;
+
+
+	if (g_notification_cb_list == NULL) {
+		return;
+	}
+	noti_cb_list = g_notification_cb_list;
+
+	while (noti_cb_list->prev != NULL) {
+		noti_cb_list = noti_cb_list->prev;
+	}
+
+	if (op_list == NULL) {
+		NOTIFICATION_ERR("invalid data");
+		return ;
+	}
+
+	while (noti_cb_list != NULL) {
+		if (noti_cb_list->cb_type == NOTIFICATION_CB_NORMAL && noti_cb_list->changed_cb) {
+			noti_cb_list->changed_cb(noti_cb_list->data,
+						 NOTIFICATION_TYPE_NOTI);
+		}
+		if (noti_cb_list->cb_type == NOTIFICATION_CB_DETAILED && noti_cb_list->detailed_changed_cb) {
+			noti_cb_list->detailed_changed_cb(noti_cb_list->data,
+						 NOTIFICATION_TYPE_NOTI, op_list, op_num);
+		}
+
+		noti_cb_list = noti_cb_list->next;
+	}
+}
+
+EXPORT_API int notification_is_service_ready(void)
+{
+	return notification_ipc_is_master_ready();
+}
+
+EXPORT_API notification_error_e
+notification_add_deffered_task(
+		void (*deffered_task_cb)(void *data), void *user_data)
+{
+	return notification_ipc_add_deffered_task(deffered_task_cb, user_data);
+}
+
+EXPORT_API notification_error_e
+notification_del_deffered_task(
+		void (*deffered_task_cb)(void *data))
+{
+	return notification_ipc_del_deffered_task(deffered_task_cb);
 }

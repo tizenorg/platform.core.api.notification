@@ -47,6 +47,7 @@ typedef enum _notification_op_type {
 	NOTIFICATION_OP_DELETE,
 	NOTIFICATION_OP_DELETE_ALL,
 	NOTIFICATION_OP_REFRESH,
+	NOTIFICATION_OP_SERVICE_READY,
 } notification_op_type_e;
 
 /**
@@ -56,6 +57,7 @@ typedef enum _notification_op_data_type {
 	NOTIFICATION_OP_DATA_MIN = 0,
 	NOTIFICATION_OP_DATA_TYPE,
 	NOTIFICATION_OP_DATA_PRIV_ID,
+	NOTIFICATION_OP_DATA_NOTI,
 	NOTIFICATION_OP_DATA_EXTRA_INFO_1,
 	NOTIFICATION_OP_DATA_EXTRA_INFO_2,
 	NOTIFICATION_OP_DATA_MAX,
@@ -328,6 +330,7 @@ typedef struct _notification_op {
 	int priv_id;
 	int extra_info_1;
 	int extra_info_2;
+	notification_h noti;
 } notification_op;
 /** 
  * @}

@@ -67,11 +67,9 @@ static int _notification_noti_bind_query_double(sqlite3_stmt * stmt, const char 
 		return NOTIFICATION_ERROR_FROM_DB;
 	}
 
-	ret =
-	    sqlite3_bind_double(stmt, index, val);
+	ret = sqlite3_bind_double(stmt, index, val);
 	if (ret != SQLITE_OK) {
-		NOTIFICATION_ERR("Insert double : %f",
-				val);
+		NOTIFICATION_ERR("Insert double : %f", val);
 		return NOTIFICATION_ERROR_FROM_DB;
 	}
 
@@ -743,7 +741,7 @@ static int _notification_noti_update_priv_id(sqlite3 * db, int rowid)
 	return notification_db_exec(db, query);
 }
 
-int notification_noti_insert(notification_h noti)
+EXPORT_API int notification_noti_insert(notification_h noti)
 {
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
@@ -754,6 +752,9 @@ int notification_noti_insert(notification_h noti)
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
+	if (!db) {
+		return NOTIFICATION_ERROR_FROM_DB;
+	}
 
 	/* Initialize private ID */
 	noti->priv_id = NOTIFICATION_PRIV_ID_NONE;
@@ -855,6 +856,9 @@ int notification_noti_get_by_priv_id(notification_h noti, char *pkgname, int pri
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
+	if (!db) {
+		return NOTIFICATION_ERROR_FROM_DB;
+	}
 
 	char *base_query = "select "
 			 "type, layout, caller_pkgname, launch_pkgname, image_path, group_id, priv_id, "
@@ -901,7 +905,7 @@ err:
 	return ret;
 }
 
-int notification_noti_update(notification_h noti)
+EXPORT_API int notification_noti_update(notification_h noti)
 {
 	sqlite3 *db;
 	sqlite3_stmt *stmt = NULL;
@@ -910,6 +914,9 @@ int notification_noti_update(notification_h noti)
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
+	if (!db) {
+		return NOTIFICATION_ERROR_FROM_DB;
+	}
 
 	/* Check private ID is exist */
 	ret = _notification_noti_check_priv_id(noti, db);
@@ -936,18 +943,12 @@ int notification_noti_update(notification_h noti)
 	ret = _notification_noti_bind_query_double(stmt, "$progress_size",noti->progress_size);
 	if (ret != NOTIFICATION_ERROR_NONE) {
 		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
-		if (stmt) {
-			sqlite3_finalize(stmt);
-		}
-		return ret;
+		goto err;
 	}
 	ret = _notification_noti_bind_query_double(stmt, "$progress_percentage",noti->progress_percentage);
 	if (ret != NOTIFICATION_ERROR_NONE) {
 		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
-		if (stmt) {
-			sqlite3_finalize(stmt);
-		}
-		return ret;
+		goto err;
 	}
 
 	ret = sqlite3_step(stmt);
@@ -969,7 +970,7 @@ err:
 	return ret;
 }
 
-int notification_noti_delete_all(notification_type_e type, const char *pkgname, int *num_deleted, int **list_deleted_rowid)
+EXPORT_API int notification_noti_delete_all(notification_type_e type, const char *pkgname, int *num_deleted, int **list_deleted_rowid)
 {
 	int ret = NOTIFICATION_ERROR_NONE;
 	int i = 0, data_cnt = 0;
@@ -982,6 +983,9 @@ int notification_noti_delete_all(notification_type_e type, const char *pkgname, 
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
+	if (!db) {
+		return NOTIFICATION_ERROR_FROM_DB;
+	}
 
 	if (pkgname == NULL) {
 		if (type != NOTIFICATION_TYPE_NONE) {
@@ -999,6 +1003,9 @@ int notification_noti_delete_all(notification_type_e type, const char *pkgname, 
 		}
 	}
 
+	if (num_deleted != NULL) {
+		*num_deleted = 0;
+	}
 	if (list_deleted_rowid != NULL) {
 		*list_deleted_rowid = NULL;
 		snprintf(query, sizeof(query),
@@ -1016,8 +1023,22 @@ int notification_noti_delete_all(notification_type_e type, const char *pkgname, 
 
 		while(sqlite3_step(stmt) == SQLITE_ROW) {
 			if (data_cnt % 8 == 0) {
-				*list_deleted_rowid =
-						(int *)realloc(*list_deleted_rowid, sizeof(int) * (data_cnt + 8 + 1));
+				int *tmp;
+
+				tmp = (int *)realloc(*list_deleted_rowid, sizeof(int) * (data_cnt + 8 + 1));
+				if (tmp) {
+					*list_deleted_rowid = tmp;
+				} else {
+					NOTIFICATION_ERR("Heap: %s\n", strerror(errno));
+					/*!
+					 * \TODO
+					 * How can I handle this?
+					 */
+					free(*list_deleted_rowid);
+					*list_deleted_rowid = NULL;
+					ret = NOTIFICATION_ERROR_NO_MEMORY;
+					goto err;
+				}
 			}
 			*((*list_deleted_rowid) + data_cnt) = sqlite3_column_int(stmt, 0);
 			data_cnt++;
@@ -1038,7 +1059,7 @@ int notification_noti_delete_all(notification_type_e type, const char *pkgname, 
 			snprintf(query, sizeof(query), "%s where priv_id in (%s)", query_base, query_where);
 
 			NOTIFICATION_ERR("check : %s", query);
-			notification_db_exec(db, query);
+			ret = notification_db_exec(db, query);
 		} else {
 			free(*list_deleted_rowid);
 			*list_deleted_rowid = NULL;
@@ -1052,7 +1073,7 @@ int notification_noti_delete_all(notification_type_e type, const char *pkgname, 
 		snprintf(query_base, sizeof(query_base), "delete from noti_list ");
 		snprintf(query, sizeof(query), "%s %s", query_base, query_where);
 
-		notification_db_exec(db, query);
+		ret = notification_db_exec(db, query);
 
 		if (num_deleted != NULL) {
 			*num_deleted = sqlite3_changes(db);
@@ -1093,7 +1114,13 @@ int notification_noti_delete_group_by_group_id(const char *pkgname,
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
+	if (!db) {
+		return NOTIFICATION_ERROR_FROM_DB;
+	}
 
+	if (num_deleted != NULL) {
+		*num_deleted = 0;
+	}
 	if (list_deleted_rowid != NULL) {
 		*list_deleted_rowid = NULL;
 		snprintf(query, sizeof(query),
@@ -1111,8 +1138,16 @@ int notification_noti_delete_group_by_group_id(const char *pkgname,
 
 		while(sqlite3_step(stmt) == SQLITE_ROW) {
 			if (data_cnt % 8 == 0) {
-				*list_deleted_rowid =
-						(int *)realloc(*list_deleted_rowid, sizeof(int) * (data_cnt + 8 + 1));
+				int *tmp;
+				tmp = (int *)realloc(*list_deleted_rowid, sizeof(int) * (data_cnt + 8 + 1));
+				if (tmp) {
+					*list_deleted_rowid = tmp;
+				} else {
+					free(*list_deleted_rowid);
+					*list_deleted_rowid = NULL;
+					ret = NOTIFICATION_ERROR_NO_MEMORY;
+					goto err;
+				}
 			}
 			*((*list_deleted_rowid) + data_cnt) = sqlite3_column_int(stmt, 0);
 			data_cnt++;
@@ -1133,7 +1168,7 @@ int notification_noti_delete_group_by_group_id(const char *pkgname,
 			snprintf(query, sizeof(query), "%s where priv_id in (%s)", query_base, query_where);
 
 			NOTIFICATION_ERR("check : %s", query);
-			notification_db_exec(db, query);
+			ret = notification_db_exec(db, query);
 		} else {
 			free(*list_deleted_rowid);
 			*list_deleted_rowid = NULL;
@@ -1147,9 +1182,7 @@ int notification_noti_delete_group_by_group_id(const char *pkgname,
 		snprintf(query, sizeof(query), "delete from noti_list %s", query_where);
 
 		/* execute DB */
-		notification_db_exec(db, query);
-
-		return NOTIFICATION_ERROR_NONE;
+		ret = notification_db_exec(db, query);
 	}
 
 err:
@@ -1169,6 +1202,7 @@ int notification_noti_delete_group_by_priv_id(const char *pkgname, int priv_id)
 	sqlite3 *db = NULL;
 	char query[NOTIFICATION_QUERY_MAX] = { 0, };
 	int internal_group_id = 0;
+	int ret;
 
 	/* Check pkgname is valid */
 	if (pkgname == NULL) {
@@ -1177,6 +1211,9 @@ int notification_noti_delete_group_by_priv_id(const char *pkgname, int priv_id)
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
+	if (!db) {
+		return NOTIFICATION_ERROR_FROM_DB;
+	}
 
 	/* Get internal group id using priv id */
 	internal_group_id =
@@ -1189,20 +1226,19 @@ int notification_noti_delete_group_by_priv_id(const char *pkgname, int priv_id)
 		 pkgname, internal_group_id);
 
 	/* execute DB */
-	notification_db_exec(db, query);
+	ret = notification_db_exec(db, query);
 
 	/* Close DB */
-	if (db) {
-		notification_db_close(&db);
-	}
+	notification_db_close(&db);
 
-	return NOTIFICATION_ERROR_NONE;
+	return ret;
 }
 
-int notification_noti_delete_by_priv_id(const char *pkgname, int priv_id)
+EXPORT_API int notification_noti_delete_by_priv_id(const char *pkgname, int priv_id)
 {
 	sqlite3 *db = NULL;
 	char query[NOTIFICATION_QUERY_MAX] = { 0, };
+	int ret;
 
 	/* Check pkgname is valid */
 	if (pkgname == NULL) {
@@ -1211,6 +1247,9 @@ int notification_noti_delete_by_priv_id(const char *pkgname, int priv_id)
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
+	if (!db) {
+		return NOTIFICATION_ERROR_FROM_DB;
+	}
 
 	/* Make query */
 	snprintf(query, sizeof(query), "delete from noti_list "
@@ -1218,14 +1257,14 @@ int notification_noti_delete_by_priv_id(const char *pkgname, int priv_id)
 		 priv_id);
 
 	/* execute DB */
-	notification_db_exec(db, query);
+	ret = notification_db_exec(db, query);
 
 	/* Close DB */
 	if (db) {
 		notification_db_close(&db);
 	}
 
-	return NOTIFICATION_ERROR_NONE;
+	return ret;
 }
 
 notification_error_e notification_noti_get_count(notification_type_e type,
@@ -1248,6 +1287,9 @@ notification_error_e notification_noti_get_count(notification_type_e type,
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
+	if (!db) {
+		return NOTIFICATION_ERROR_FROM_DB;
+	}
 
 	/* Check current sim status */
 	ret_vconf = vconf_get_int(VCONFKEY_TELEPHONY_SIM_SLOT, &status);
@@ -1378,6 +1420,9 @@ notification_error_e notification_noti_get_grouping_list(notification_type_e typ
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
+	if (!db) {
+		return NOTIFICATION_ERROR_FROM_DB;
+	}
 
 	/* Check current sim status */
 	ret = vconf_get_int(VCONFKEY_TELEPHONY_SIM_SLOT, &status);
@@ -1422,8 +1467,7 @@ notification_error_e notification_noti_get_grouping_list(notification_type_e typ
 		goto err;
 	}
 
-	ret = sqlite3_step(stmt);
-	while (ret == SQLITE_ROW) {
+	while (sqlite3_step(stmt) == SQLITE_ROW) {
 		/* Make notification list */
 		noti = _notification_noti_get_item(stmt);
 		if (noti != NULL) {
@@ -1438,8 +1482,6 @@ notification_error_e notification_noti_get_grouping_list(notification_type_e typ
 				break;
 			}
 		}
-
-		ret = sqlite3_step(stmt);
 	}
 
 	ret = NOTIFICATION_ERROR_NONE;
@@ -1477,10 +1519,13 @@ notification_error_e notification_noti_get_detail_list(const char *pkgname,
 	notification_h noti = NULL;
 	int internal_count = 0;
 	int internal_group_id = 0;
-	int status;
+	int status = 0; /* If the vconf_get_int failed, the status will be the garbage value */
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
+	if (!db) {
+		return NOTIFICATION_ERROR_FROM_DB;
+	}
 
 	/* Check current sim status */
 	ret = vconf_get_int(VCONFKEY_TELEPHONY_SIM_SLOT, &status);
@@ -1535,8 +1580,7 @@ notification_error_e notification_noti_get_detail_list(const char *pkgname,
 		goto err;
 	}
 
-	ret = sqlite3_step(stmt);
-	while (ret == SQLITE_ROW) {
+	while (sqlite3_step(stmt) == SQLITE_ROW) {
 		/* Make notification list */
 		noti = _notification_noti_get_item(stmt);
 		if (noti != NULL) {
@@ -1551,8 +1595,6 @@ notification_error_e notification_noti_get_detail_list(const char *pkgname,
 				break;
 			}
 		}
-
-		ret = sqlite3_step(stmt);
 	}
 
 	ret = NOTIFICATION_ERROR_NONE;

@@ -2005,6 +2005,17 @@ notification_error_e notification_op_get_data(notification_op *noti_op,
 /**
  * @}
  */
+
+void notification_call_changed_cb(notification_op *op_list, int op_num);
+
+int notification_is_service_ready(void);
+
+notification_error_e notification_add_deffered_task(
+		void (*deffered_task_cb)(void *data), void *user_data);
+
+notification_error_e notification_del_deffered_task(
+		void (*deffered_task_cb)(void *data));
+
 #ifdef __cplusplus
 }
 #endif
