@@ -2055,6 +2055,9 @@ EXPORT_API notification_error_e notification_delete_all_by_type(const char *pkgn
 		return ret;
 	}
 
+	if (caller_pkgname) {
+		free(caller_pkgname);
+	}
 	return NOTIFICATION_ERROR_NONE;
 }
 
@@ -2076,6 +2079,9 @@ EXPORT_API notification_error_e notification_delete_group_by_group_id(const char
 		return ret;
 	}
 
+	if (caller_pkgname) {
+		free(caller_pkgname);
+	}
 	return NOTIFICATION_ERROR_NONE;
 }
 
@@ -2097,6 +2103,9 @@ EXPORT_API notification_error_e notification_delete_group_by_priv_id(const char 
 		return ret;
 	}
 
+	if (caller_pkgname) {
+		free(caller_pkgname);
+	}
 	return NOTIFICATION_ERROR_NONE;
 }
 
@@ -2122,6 +2131,9 @@ EXPORT_API notification_error_e notification_delete_by_priv_id(const char *pkgna
 		return ret;
 	}
 
+	if (caller_pkgname) {
+		free(caller_pkgname);
+	}
 	return ret;
 }
 
