@@ -89,6 +89,8 @@ then
 			vibration_path TEXT,
 			led_operation INTEGER default 0,
 			led_argb INTEGER default 0,
+			led_on_ms INTEGER default -1,
+			led_off_ms INTEGER default -1,
 			flags_for_property INTEGER default 0,
 			flag_simmode INTEGER default 0,
 			display_applist INTEGER,

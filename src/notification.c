@@ -1411,6 +1411,42 @@ EXPORT_API notification_error_e notification_get_led(notification_h noti,
 	return NOTIFICATION_ERROR_NONE;
 }
 
+EXPORT_API notification_error_e notification_set_led_time_period(notification_h noti,
+									int on_ms, int off_ms)
+{
+	/* Check noti is valid data */
+	if (noti == NULL) {
+		return NOTIFICATION_ERROR_INVALID_DATA;
+	}
+
+	/* Save led operation */
+	noti->led_on_ms = on_ms;
+	noti->led_off_ms = off_ms;
+
+	return NOTIFICATION_ERROR_NONE;
+}
+
+EXPORT_API notification_error_e notification_get_led_time_period(notification_h noti,
+									int *on_ms, int *off_ms)
+{
+	/* check noti and operation is valid data */
+	if (noti == NULL) {
+		return NOTIFICATION_ERROR_INVALID_DATA;
+	}
+
+	/* Check noti is valid data */
+	if (noti == NULL) {
+		return NOTIFICATION_ERROR_INVALID_DATA;
+	}
+
+	if (on_ms)
+		*(on_ms) = noti->led_on_ms;
+	if (off_ms)
+		*(off_ms) = noti->led_off_ms;
+
+	return NOTIFICATION_ERROR_NONE;
+}
+
 EXPORT_API notification_error_e notification_set_application(notification_h noti,
 							     const char *pkgname)
 {
@@ -2417,6 +2453,8 @@ EXPORT_API notification_error_e notification_clone(notification_h noti, notifica
 	}
 	new_noti->led_operation = noti->led_operation;
 	new_noti->led_argb = noti->led_argb;
+	new_noti->led_on_ms = noti->led_on_ms;
+	new_noti->led_off_ms = noti->led_off_ms;
 
 	if(noti->domain != NULL) {
 		new_noti->domain = strdup(noti->domain);

@@ -655,6 +655,70 @@ notification_error_e notification_get_led(notification_h noti,
 						int *led_argb);
 
 /**
+ * @brief This function set time period of flashing LED
+ * @details
+ * @remarks
+ * @param[in] noti notification handle
+ * @param[in] on_ms time for turning on the LED
+ * @param[in] off_ms time for turning on the LED
+ * @return NOTIFICATION_ERROR_NONE if success, other value if failure
+ * @retval NOTIFICATION_ERROR_NONE - success
+ * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+ * @pre
+ * @post
+ * @see
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	notification_h noti = NULL;
+	notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
+
+	noti_err  = notification_set_led_time_period(noti, 100, 100);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
+notification_error_e notification_set_led_time_period(notification_h noti,
+						int on_ms, int off_ms);
+
+/**
+  * @brief This function get time period of flashing LED
+  * @details
+  * @remarks
+  * @param[in] noti notification handle
+  * @param[out] on_ms time for turning on the LED
+  * @param[out] off_ms time for turning on the LED
+  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
+  * @retval NOTIFICATION_ERROR_NONE - success
+  * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+  * @pre
+  * @post
+  * @see
+  * @par Sample code:
+  * @code
+#include <notification.h>
+...
+ {
+	notification_h noti = NULL;
+	notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
+	int led_on_ms = 0;
+	int led_off_ms = 0;
+
+	noti_err  = notification_get_led_time_period(noti, &led_on_ms, &led_off_ms);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+  * @endcode
+  */
+notification_error_e notification_get_led_time_period(notification_h noti,
+						int *on_ms, int *off_ms);
+
+/**
  * @brief This function will be deprecated.
  * @see notification_set_execute_option()
  *

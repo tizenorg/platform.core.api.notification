@@ -60,6 +60,8 @@ struct _notification {
 	char *vibration_path;
 	notification_led_op_e led_operation;
 	int led_argb;
+	int led_on_ms;
+	int led_off_ms;
 
 	time_t time;		/* time set by application */
 	time_t insert_time;	/* insert time */

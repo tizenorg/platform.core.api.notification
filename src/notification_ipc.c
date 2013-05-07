@@ -361,6 +361,8 @@ EXPORT_API notification_error_e notification_ipc_make_noti_from_packet(notificat
 	char *vibration_path = NULL;
 	int led_operation;
 	int led_argb;
+	int led_on_ms;
+	int led_off_ms;
 	time_t time;
 	time_t insert_time;
 	int flags_for_property;
@@ -378,7 +380,7 @@ EXPORT_API notification_error_e notification_ipc_make_noti_from_packet(notificat
 	}
 
 	ret = packet_get(packet,
-			"iiiiisssssssssssssisisisiiiiiiddssss",
+			"iiiiisssssssssssssisisisiiiiiiiiddssss",
 			&type,
 			&layout,
 			&group_id,
@@ -405,6 +407,8 @@ EXPORT_API notification_error_e notification_ipc_make_noti_from_packet(notificat
 			&vibration_path,
 			&led_operation,
 			&led_argb,
+			&led_on_ms,
+			&led_off_ms,
 			&time,
 			&insert_time,
 			&flags_for_property,
@@ -416,7 +420,7 @@ EXPORT_API notification_error_e notification_ipc_make_noti_from_packet(notificat
 			&temp_title,
 			&temp_content);
 
-	if (ret != 36) {
+	if (ret != 38) {
 		NOTIFICATION_ERR("failed to create a noti from packet");
 		return NOTIFICATION_ERROR_INVALID_DATA;
 	}
@@ -458,6 +462,8 @@ EXPORT_API notification_error_e notification_ipc_make_noti_from_packet(notificat
 	noti->vibration_type = vibration_type;
 	noti->led_operation = led_operation;
 	noti->led_argb = led_argb;
+	noti->led_on_ms = led_on_ms;
+	noti->led_off_ms = led_off_ms;
 	noti->time = time;
 	noti->insert_time = insert_time;
 	noti->flags_for_property = flags_for_property;
@@ -560,7 +566,7 @@ EXPORT_API struct packet *notification_ipc_make_packet_from_noti(notification_h 
 	}
 
 	result = func_to_create_packet(command,
-			"iiiiisssssssssssssisisisiiiiiiddssss",
+			"iiiiisssssssssssssisisisiiiiiiiiddssss",
 			noti->type,
 			noti->layout,
 			noti->group_id,
@@ -587,6 +593,8 @@ EXPORT_API struct packet *notification_ipc_make_packet_from_noti(notification_h 
 			NOTIFICATION_CHECK_STR(noti->vibration_path),
 			noti->led_operation,
 			noti->led_argb,
+			noti->led_on_ms,
+			noti->led_off_ms,
 			noti->time,
 			noti->insert_time,
 			noti->flags_for_property,

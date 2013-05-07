@@ -378,7 +378,7 @@ static int _notification_noti_make_query(notification_h noti, char *query,
 		 "args, group_args, "
 		 "b_execute_option, "
 		 "b_service_responding, b_service_single_launch, b_service_multi_launch, "
-		 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb,"
+		 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb, led_on_ms, led_off_ms, "
 		 "flags_for_property, flag_simmode, display_applist, "
 		 "progress_size, progress_percentage) values ("
 		 "%d, "
@@ -393,7 +393,7 @@ static int _notification_noti_make_query(notification_h noti, char *query,
 		 "'%s', '%s', "
 		 "'%s', "
 		 "'%s', '%s', '%s', "
-		 "%d, '%s', %d, '%s', %d, %d,"
+		 "%d, '%s', %d, '%s', %d, %d, %d, %d,"
 		 "%d, %d, %d, "
 		 "$progress_size, $progress_percentage)",
 		 noti->type,
@@ -417,6 +417,8 @@ static int _notification_noti_make_query(notification_h noti, char *query,
 		 NOTIFICATION_CHECK_STR(noti->vibration_path),
 		 noti->led_operation,
 		 noti->led_argb,
+		 noti->led_on_ms,
+		 noti->led_off_ms,
 		 noti->flags_for_property, flag_simmode, noti->display_applist);
 
 	/* Free decoded data */
@@ -538,6 +540,7 @@ static int _notification_noti_make_update_query(notification_h noti, char *query
 		 "sound_type = %d, sound_path = '%s', "
 		 "vibration_type = %d, vibration_path = '%s', "
 		 "led_operation = %d, led_argb = %d, "
+		 "led_on_ms = %d, led_off_ms = %d, "
 		 "flags_for_property = %d, flag_simmode = %d, "
 		 "display_applist = %d, "
 		 "progress_size = $progress_size, progress_percentage = $progress_percentage "
@@ -561,6 +564,8 @@ static int _notification_noti_make_update_query(notification_h noti, char *query
 		 NOTIFICATION_CHECK_STR(noti->vibration_path),
 		 noti->led_operation,
 		 noti->led_argb,
+		 noti->led_on_ms,
+		 noti->led_off_ms,
 		 noti->flags_for_property, flag_simmode, noti->display_applist,
 		 noti->priv_id);
 
@@ -643,6 +648,8 @@ static void _notification_noti_populate_from_stmt(sqlite3_stmt * stmt, notificat
 	noti->vibration_path = notification_db_column_text(stmt, col++);
 	noti->led_operation = sqlite3_column_int(stmt, col++);
 	noti->led_argb = sqlite3_column_int(stmt, col++);
+	noti->led_on_ms = sqlite3_column_int(stmt, col++);
+	noti->led_off_ms = sqlite3_column_int(stmt, col++);
 
 	noti->flags_for_property = sqlite3_column_int(stmt, col++);
 	noti->display_applist = sqlite3_column_int(stmt, col++);
@@ -865,7 +872,7 @@ int notification_noti_get_by_priv_id(notification_h noti, char *pkgname, int pri
 			 "b_text, b_key, b_format_args, num_format_args, "
 			 "text_domain, text_dir, time, insert_time, args, group_args, "
 			 "b_execute_option, b_service_responding, b_service_single_launch, b_service_multi_launch, "
-			 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb,"
+			 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb, led_on_ms, led_off_ms, "
 			 "flags_for_property, display_applist, progress_size, progress_percentage "
 			 "from noti_list ";
 
@@ -1433,7 +1440,7 @@ notification_error_e notification_noti_get_grouping_list(notification_type_e typ
 		 "b_text, b_key, b_format_args, num_format_args, "
 		 "text_domain, text_dir, time, insert_time, args, group_args, "
 		 "b_execute_option, b_service_responding, b_service_single_launch, b_service_multi_launch, "
-		 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb,"
+		 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb, led_on_ms, led_off_ms, "
 		 "flags_for_property, display_applist, progress_size, progress_percentage "
 		 "from noti_list ");
 
@@ -1536,7 +1543,7 @@ notification_error_e notification_noti_get_detail_list(const char *pkgname,
 		 "b_text, b_key, b_format_args, num_format_args, "
 		 "text_domain, text_dir, time, insert_time, args, group_args, "
 		 "b_execute_option, b_service_responding, b_service_single_launch, b_service_multi_launch, "
-		 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb,"
+		 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb, led_on_ms, led_off_ms, "
 		 "flags_for_property, display_applist, progress_size, progress_percentage "
 		 "from noti_list ");
 
