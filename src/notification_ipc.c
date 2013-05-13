@@ -950,8 +950,10 @@ notification_error_e notification_ipc_request_insert(notification_h noti, int *p
 		}
 
 		if (status != NOTIFICATION_ERROR_NONE) {
+			packet_unref(result);
 			return status;
 		}
+		packet_unref(result);
 	} else {
 		notification_ipc_is_master_ready();
 		return NOTIFICATION_ERROR_SERVICE_NOT_READY;
@@ -983,6 +985,7 @@ notification_error_e notification_ipc_request_delete_single(notification_type_e 
 			packet_unref(result);
 			return NOTIFICATION_ERROR_IO;
 		}
+		packet_unref(result);
 	} else {
 		notification_ipc_is_master_ready();
 		return NOTIFICATION_ERROR_SERVICE_NOT_READY;
@@ -1011,6 +1014,7 @@ notification_error_e notification_ipc_request_delete_multiple(notification_type_
 			return NOTIFICATION_ERROR_IO;
 		}
 		NOTIFICATION_ERR("num deleted:%d", num_deleted);
+		packet_unref(result);
 	} else {
 		notification_ipc_is_master_ready();
 		return NOTIFICATION_ERROR_SERVICE_NOT_READY;
@@ -1038,6 +1042,7 @@ notification_error_e notification_ipc_request_update(notification_h noti)
 			packet_unref(result);
 			return NOTIFICATION_ERROR_IO;
 		}
+		packet_unref(result);
 	} else {
 		notification_ipc_is_master_ready();
 		return NOTIFICATION_ERROR_SERVICE_NOT_READY;
@@ -1064,6 +1069,7 @@ notification_error_e notification_ipc_request_refresh(void)
 			packet_unref(result);
 			return NOTIFICATION_ERROR_IO;
 		}
+		packet_unref(result);
 	} else {
 		notification_ipc_is_master_ready();
 		return NOTIFICATION_ERROR_SERVICE_NOT_READY;
