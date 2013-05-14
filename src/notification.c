@@ -1434,11 +1434,6 @@ EXPORT_API notification_error_e notification_get_led_time_period(notification_h 
 		return NOTIFICATION_ERROR_INVALID_DATA;
 	}
 
-	/* Check noti is valid data */
-	if (noti == NULL) {
-		return NOTIFICATION_ERROR_INVALID_DATA;
-	}
-
 	if (on_ms)
 		*(on_ms) = noti->led_on_ms;
 	if (off_ms)
