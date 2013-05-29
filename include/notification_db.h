@@ -44,7 +44,7 @@ sqlite3 *notification_db_open(const char *dbfile);
 
 int notification_db_close(sqlite3 ** db);
 
-int notification_db_exec(sqlite3 * db, const char *query);
+int notification_db_exec(sqlite3 * db, const char *query, int *num_changes);
 
 char *notification_db_column_text(sqlite3_stmt * stmt, int col);
 

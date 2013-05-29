@@ -1,6 +1,6 @@
 Name:       notification
 Summary:    notification library
-Version:    0.2.3
+Version:    0.2.5
 Release:    1
 Group:      TBD
 License:    Apache-2.0
@@ -143,7 +143,7 @@ chown :5000 /opt/dbspace/.notification.db-journal
 chmod 660 /opt/dbspace/.notification.db
 chmod 660 /opt/dbspace/.notification.db-journal
 chsmack -a 'notification::db' /opt/dbspace/.notification.db*
-vconftool set -t string memory/private/libstatus/message "" -i -g 5000
+vconftool set -t string memory/private/libstatus/message "" -i -g 5000 -f
 
 %postun -p /sbin/ldconfig
 

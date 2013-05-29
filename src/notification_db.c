@@ -66,7 +66,7 @@ int notification_db_close(sqlite3 ** db)
 	return NOTIFICATION_ERROR_NONE;
 }
 
-int notification_db_exec(sqlite3 * db, const char *query)
+int notification_db_exec(sqlite3 * db, const char *query, int *num_changes)
 {
 	int ret = 0;
 	char *err_msg = NULL;
@@ -80,6 +80,9 @@ int notification_db_exec(sqlite3 * db, const char *query)
 		NOTIFICATION_ERR("SQL error(%d) : %s", ret, err_msg);
 		sqlite3_free(err_msg);
 		return NOTIFICATION_ERROR_FROM_DB;
+	}
+	if (num_changes != NULL) {
+		*num_changes = sqlite3_changes(db);
 	}
 
 	return NOTIFICATION_ERROR_NONE;

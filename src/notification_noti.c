@@ -745,7 +745,7 @@ static int _notification_noti_update_priv_id(sqlite3 * db, int rowid)
 			"priv_id = %d, internal_group_id = %d where rowid = %d",
 			rowid, rowid, rowid);
 
-	return notification_db_exec(db, query);
+	return notification_db_exec(db, query, NULL);
 }
 
 EXPORT_API int notification_noti_insert(notification_h noti)
@@ -1066,7 +1066,7 @@ EXPORT_API int notification_noti_delete_all(notification_type_e type, const char
 			snprintf(query, sizeof(query), "%s where priv_id in (%s)", query_base, query_where);
 
 			NOTIFICATION_ERR("check : %s", query);
-			ret = notification_db_exec(db, query);
+			ret = notification_db_exec(db, query, NULL);
 		} else {
 			free(*list_deleted_rowid);
 			*list_deleted_rowid = NULL;
@@ -1080,7 +1080,7 @@ EXPORT_API int notification_noti_delete_all(notification_type_e type, const char
 		snprintf(query_base, sizeof(query_base), "delete from noti_list ");
 		snprintf(query, sizeof(query), "%s %s", query_base, query_where);
 
-		ret = notification_db_exec(db, query);
+		ret = notification_db_exec(db, query, NULL);
 
 		if (num_deleted != NULL) {
 			*num_deleted = sqlite3_changes(db);
@@ -1175,7 +1175,7 @@ int notification_noti_delete_group_by_group_id(const char *pkgname,
 			snprintf(query, sizeof(query), "%s where priv_id in (%s)", query_base, query_where);
 
 			NOTIFICATION_ERR("check : %s", query);
-			ret = notification_db_exec(db, query);
+			ret = notification_db_exec(db, query, NULL);
 		} else {
 			free(*list_deleted_rowid);
 			*list_deleted_rowid = NULL;
@@ -1189,7 +1189,7 @@ int notification_noti_delete_group_by_group_id(const char *pkgname,
 		snprintf(query, sizeof(query), "delete from noti_list %s", query_where);
 
 		/* execute DB */
-		ret = notification_db_exec(db, query);
+		ret = notification_db_exec(db, query, NULL);
 	}
 
 err:
@@ -1233,7 +1233,7 @@ int notification_noti_delete_group_by_priv_id(const char *pkgname, int priv_id)
 		 pkgname, internal_group_id);
 
 	/* execute DB */
-	ret = notification_db_exec(db, query);
+	ret = notification_db_exec(db, query, NULL);
 
 	/* Close DB */
 	notification_db_close(&db);
@@ -1264,7 +1264,44 @@ EXPORT_API int notification_noti_delete_by_priv_id(const char *pkgname, int priv
 		 priv_id);
 
 	/* execute DB */
-	ret = notification_db_exec(db, query);
+	ret = notification_db_exec(db, query, NULL);
+
+	/* Close DB */
+	if (db) {
+		notification_db_close(&db);
+	}
+
+	return ret;
+}
+
+EXPORT_API int notification_noti_delete_by_priv_id_get_changes(const char *pkgname, int priv_id, int *num_changes)
+{
+	sqlite3 *db = NULL;
+	char query[NOTIFICATION_QUERY_MAX] = { 0, };
+	int ret;
+
+	/* Check pkgname is valid */
+	if (pkgname == NULL) {
+		return NOTIFICATION_ERROR_INVALID_DATA;
+	}
+
+	/* Open DB */
+	db = notification_db_open(DBPATH);
+	if (!db) {
+		return NOTIFICATION_ERROR_FROM_DB;
+	}
+
+	/* Make query */
+	snprintf(query, sizeof(query), "delete from noti_list "
+		 "where caller_pkgname = '%s' and priv_id = %d", pkgname,
+		 priv_id);
+
+	/* execute DB */
+	ret = notification_db_exec(db, query, num_changes);
+
+	if (num_changes != NULL) {
+		NOTIFICATION_DBG("deleted num:%d", *num_changes);
+	}
 
 	/* Close DB */
 	if (db) {
