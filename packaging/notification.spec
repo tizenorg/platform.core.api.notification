@@ -2,7 +2,7 @@ Name:       notification
 Summary:    notification library
 Version:    0.2.3
 Release:    1
-Group:      TBD
+Group:      Applications/Libraries
 License:    Apache-2.0
 Source0:    %{name}-%{version}.tar.gz
 BuildRequires: pkgconfig(sqlite3)
@@ -31,30 +31,21 @@ Notificaiton library.
 
 %package devel
 Summary:    Notification library (devel)
-Group:      Development/Libraries
+Group:      Development/Applications
 Requires:   %{name} = %{version}-%{release}
 
 %description devel
 Notificaiton library (devel).
 
 %build
-export LDFLAGS+="-Wl,--rpath=%{_libdir} -Wl,--as-needed"
 %cmake .
 make %{?jobs:-j%jobs}
 
 %install
 %make_install
 
-mkdir -p %{buildroot}/usr/share/license
-cp -f LICENSE.APLv2.0 %{buildroot}/usr/share/license/%{name}
-
 %post
 /sbin/ldconfig
-
-if [ ! -d /opt/dbspace ]
-then
-	mkdir /opt/dbspace
-fi
 
 if [ ! -f /opt/dbspace/.notification.db ]
 then
@@ -148,12 +139,13 @@ vconftool set -t string memory/private/libstatus/message "" -i -g 5000
 %postun -p /sbin/ldconfig
 
 %files
+%license LICENSE.APLv2.0
 %manifest notification.manifest
 %defattr(-,root,root,-)
-%{_libdir}/libnotification.so*
-/usr/share/license/%{name}
+%{_libdir}/libnotification.so.*
 
 %files devel
 %defattr(-,root,root,-)
 %{_includedir}/notification/*.h
+%{_libdir}/libnotification.so
 %{_libdir}/pkgconfig/notification.pc
