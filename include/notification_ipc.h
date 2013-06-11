@@ -41,6 +41,8 @@ struct packet *notification_ipc_make_packet_from_noti(notification_h noti, const
 
 notification_error_e notification_ipc_request_insert(notification_h noti, int *priv_id);
 notification_error_e notification_ipc_request_update(notification_h noti);
+notification_error_e notification_ipc_request_update_async(notification_h noti,
+		void (*result_cb)(int priv_id, int result, void *data), void *user_data);
 notification_error_e notification_ipc_request_refresh(void);
 notification_error_e notification_ipc_request_delete_single(notification_type_e type, char *pkgname, int priv_id);
 notification_error_e notification_ipc_request_delete_multiple(notification_type_e type, char *pkgname);

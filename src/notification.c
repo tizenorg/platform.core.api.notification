@@ -2057,6 +2057,23 @@ EXPORT_API notification_error_e notification_update(notification_h noti)
 	return NOTIFICATION_ERROR_NONE;
 }
 
+EXPORT_API notification_update_async(notification_h noti,
+		void (*result_cb)(int priv_id, int result, void *data), void *user_data)
+{
+	int ret = 0;
+
+	/* Check noti is valid data */
+	if (noti != NULL) {
+		/* Update insert time ? */
+		noti->insert_time = time(NULL);
+		ret = notification_ipc_request_update_async(noti, result_cb, user_data);
+		if (ret != NOTIFICATION_ERROR_NONE) {
+			return ret;
+		}
+	}
+	return NOTIFICATION_ERROR_NONE;
+}
+
 EXPORT_API notification_error_e notifiation_clear(notification_type_e type)
 {
 	int ret = 0;

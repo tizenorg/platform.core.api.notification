@@ -1379,6 +1379,37 @@ notification_error_e notification_insert(notification_h noti,
 notification_error_e notification_update(notification_h noti);
 
 /**
+ * @brief This function updates notification data.
+ * @details Display application update UI.
+ * @remarks
+ * @param[in] noti notification handle that is created by notification_new().
+ * @param[in] result_cb callback called when update completed
+ * @param[in] user_data user data which you want to use in callback
+ * @return NOTIFICATION_ERROR_NONE if success, other value if failure
+ * @retval NOTIFICATION_ERROR_NONE - success
+ * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @retval NOTIFICATION_ERROR_NOT_EXIST_ID - not exist priv id
+ * @pre
+ * @post
+ * @see #notification_h
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+ {
+	notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
+
+	noti_err  = notification_update_async(NULL, result_cb, data);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
+notification_error_e notification_update_async(notification_h noti,
+		void (*result_cb)(int priv_id, int result, void *data), void *user_data);
+
+/**
  * @brief This function clear all notification of type.
  * @details Not recommand API. Only for notification tray's clear button operation.
  * @remarks

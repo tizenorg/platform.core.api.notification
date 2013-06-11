@@ -70,8 +70,6 @@ notification_error_e notification_ongoing_update_progress(const char *caller_pkg
 	dbus_message_unref(signal);
 
 	if (ret) {
-		NOTIFICATION_INFO("Send progress info : %s(%d) %.2f",
-				  caller_pkgname, priv_id, progress);
 		return NOTIFICATION_ERROR_NONE;
 	}
 
@@ -106,11 +104,8 @@ notification_error_e notification_ongoing_update_size(const char *caller_pkgname
 				       DBUS_TYPE_INT32, &priv_id,
 				       DBUS_TYPE_DOUBLE, &size,
 				       DBUS_TYPE_INVALID);
-	NOTIFICATION_INFO("arg...");
 	if (ret) {
 		ret = dbus_connection_send(connection, signal, NULL);
-		NOTIFICATION_INFO("Send size info : %s(%d) %.2f",
-				  caller_pkgname, priv_id, size);
 
 		if (ret) {
 			dbus_connection_flush(connection);
@@ -165,8 +160,6 @@ notification_error_e notification_ongoing_update_content(const char *caller_pkgn
 	}
 	if (ret) {
 		ret = dbus_connection_send(connection, signal, NULL);
-		NOTIFICATION_INFO("Send content : %s(%d) %s",
-				  caller_pkgname, priv_id, content);
 
 		if (ret) {
 			dbus_connection_flush(connection);
