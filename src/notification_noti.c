@@ -31,6 +31,8 @@
 #include <notification_debug.h>
 #include <notification_internal.h>
 
+#define NOTI_BURST_DELETE_UNIT 10
+
 static int _notification_noti_bind_query_text(sqlite3_stmt * stmt, const char *name,
 					 const char *str)
 {
@@ -980,6 +982,7 @@ err:
 EXPORT_API int notification_noti_delete_all(notification_type_e type, const char *pkgname, int *num_deleted, int **list_deleted_rowid)
 {
 	int ret = NOTIFICATION_ERROR_NONE;
+	int ret_tmp = NOTIFICATION_ERROR_NONE;
 	int i = 0, data_cnt = 0;
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
@@ -1058,15 +1061,26 @@ EXPORT_API int notification_noti_delete_all(notification_type_e type, const char
 
 		if (data_cnt > 0) {
 			query_where[0] = '\0';
+			snprintf(query_base, sizeof(query_base) - 1, "delete from noti_list");
 			for (i = 0; i < data_cnt ; i++) {
-				snprintf(buf, sizeof(buf), "%s%d", (i == 0) ? "" : ",", *((*list_deleted_rowid) + i));
+				if (i % NOTI_BURST_DELETE_UNIT == 0 && i != 0) {
+					snprintf(query, sizeof(query) - 1, "%s where priv_id in (%s)", query_base, query_where);
+					ret_tmp = notification_db_exec(db, query, NULL);
+					query_where[0] = '\0';
+					if (ret == NOTIFICATION_ERROR_NONE) {
+						ret = ret_tmp;
+					}
+				}
+				snprintf(buf, sizeof(buf) - 1, "%s%d", (i % NOTI_BURST_DELETE_UNIT == 0) ? "" : ",", *((*list_deleted_rowid) + i));
 				strncat(query_where, buf,sizeof(query_where) - strlen(query_where) - 1);
 			}
-			snprintf(query_base, sizeof(query_base), "delete from noti_list");
-			snprintf(query, sizeof(query), "%s where priv_id in (%s)", query_base, query_where);
-
-			NOTIFICATION_ERR("check : %s", query);
-			ret = notification_db_exec(db, query, NULL);
+			if ((i <= NOTI_BURST_DELETE_UNIT) || ((i % NOTI_BURST_DELETE_UNIT) > 0) ) {
+				snprintf(query, sizeof(query) - 1, "%s where priv_id in (%s)", query_base, query_where);
+				ret_tmp = notification_db_exec(db, query, NULL);
+				if (ret == NOTIFICATION_ERROR_NONE) {
+					ret = ret_tmp;
+				}
+			}
 		} else {
 			free(*list_deleted_rowid);
 			*list_deleted_rowid = NULL;
@@ -1103,6 +1117,7 @@ int notification_noti_delete_group_by_group_id(const char *pkgname,
 					       int group_id, int *num_deleted, int **list_deleted_rowid)
 {
 	int ret = NOTIFICATION_ERROR_NONE;
+	int ret_tmp = NOTIFICATION_ERROR_NONE;
 	sqlite3 *db = NULL;
 	int i = 0, data_cnt = 0;
 	sqlite3_stmt *stmt = NULL;
@@ -1167,15 +1182,26 @@ int notification_noti_delete_group_by_group_id(const char *pkgname,
 
 		if (data_cnt > 0) {
 			query_where[0] = '\0';
+			snprintf(query_base, sizeof(query_base) - 1, "delete from noti_list");
 			for (i = 0; i < data_cnt ; i++) {
-				snprintf(buf, sizeof(buf), "%s%d", (i == 0) ? "" : ",", *((*list_deleted_rowid) + i));
+				if (i % NOTI_BURST_DELETE_UNIT == 0 && i != 0) {
+					snprintf(query, sizeof(query) - 1, "%s where priv_id in (%s)", query_base, query_where);
+					ret_tmp = notification_db_exec(db, query, NULL);
+					query_where[0] = '\0';
+					if (ret == NOTIFICATION_ERROR_NONE) {
+						ret = ret_tmp;
+					}
+				}
+				snprintf(buf, sizeof(buf) - 1, "%s%d", (i % NOTI_BURST_DELETE_UNIT == 0) ? "" : ",", *((*list_deleted_rowid) + i));
 				strncat(query_where, buf,sizeof(query_where) - strlen(query_where) - 1);
 			}
-			snprintf(query_base, sizeof(query_base), "delete from noti_list");
-			snprintf(query, sizeof(query), "%s where priv_id in (%s)", query_base, query_where);
-
-			NOTIFICATION_ERR("check : %s", query);
-			ret = notification_db_exec(db, query, NULL);
+			if ((i <= NOTI_BURST_DELETE_UNIT) || ((i % NOTI_BURST_DELETE_UNIT) > 0) ) {
+				snprintf(query, sizeof(query) - 1, "%s where priv_id in (%s)", query_base, query_where);
+				ret_tmp = notification_db_exec(db, query, NULL);
+				if (ret == NOTIFICATION_ERROR_NONE) {
+					ret = ret_tmp;
+				}
+			}
 		} else {
 			free(*list_deleted_rowid);
 			*list_deleted_rowid = NULL;

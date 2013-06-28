@@ -22,7 +22,7 @@
 #ifndef __NOTIFICATION_DEBUG_H__
 #define __NOTIFICATION_DEBUG_H__
 
-#define LOG_TAG "notification"
+#define LOG_TAG "NOTIFICATION"
 #include <dlog.h>
 
 #ifndef EXPORT_API

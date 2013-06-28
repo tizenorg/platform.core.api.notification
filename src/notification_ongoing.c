@@ -115,8 +115,6 @@ notification_error_e notification_ongoing_update_size(const char *caller_pkgname
 	dbus_message_unref(signal);
 
 	if (ret) {
-		NOTIFICATION_INFO("Send size info : %s(%d) %.2f",
-				  caller_pkgname, priv_id, size);
 		return NOTIFICATION_ERROR_NONE;
 	}
 
