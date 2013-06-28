@@ -5,6 +5,7 @@ Release:    1
 Group:      Applications/Libraries
 License:    Apache-2.0
 Source0:    %{name}-%{version}.tar.gz
+Source1001: 	notification.manifest
 BuildRequires: pkgconfig(sqlite3)
 BuildRequires: pkgconfig(db-util)
 BuildRequires: pkgconfig(heynoti)
@@ -28,6 +29,7 @@ Notificaiton library.
 
 %prep
 %setup -q
+cp %{SOURCE1001} .
 
 %package devel
 Summary:    Notification library (devel)
@@ -138,12 +140,14 @@ vconftool set -t string memory/private/libstatus/message "" -i -g 5000
 %postun -p /sbin/ldconfig
 
 %files
+%manifest %{name}.manifest
 %license LICENSE.APLv2.0
 %manifest notification.manifest
 %defattr(-,root,root,-)
 %{_libdir}/libnotification.so.*
 
 %files devel
+%manifest %{name}.manifest
 %defattr(-,root,root,-)
 %{_includedir}/notification/*.h
 %{_libdir}/libnotification.so
