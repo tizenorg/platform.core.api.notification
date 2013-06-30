@@ -40,6 +40,7 @@ typedef enum _notification_error {
 	NOTIFICATION_ERROR_NOT_EXIST_ID = -6,	/**< Not exist private ID */
 	NOTIFICATION_ERROR_IO = -7,	/**< disk i/o error */
 	NOTIFICATION_ERROR_SERVICE_NOT_READY = -8,	/**< no reponse from master */
+	NOTIFICATION_ERROR_PERMISSION_DENIED = -9, /**< Permission denied */
 } notification_error_e;
 
 /** 
