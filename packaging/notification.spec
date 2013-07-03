@@ -133,7 +133,6 @@ chown :5000 /opt/dbspace/.notification.db
 chown :5000 /opt/dbspace/.notification.db-journal
 chmod 660 /opt/dbspace/.notification.db
 chmod 660 /opt/dbspace/.notification.db-journal
-chsmack -a 'notification::db' /opt/dbspace/.notification.db*
 vconftool set -t string memory/private/libstatus/message "" -i -g 5000
 
 %postun -p /sbin/ldconfig
