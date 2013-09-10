@@ -29,9 +29,8 @@ extern "C" {
 #endif
 
 /**
- * @ingroup NOTIFICATION_LIBRARY
- * @defgroup NOTIFICATION_LIST notification list
- * @brief Notification List API
+ * @file notification.h
+ * @brief This file contains the notification list APIs
  */
 
 /**

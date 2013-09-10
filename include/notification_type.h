@@ -27,9 +27,8 @@ extern "C" {
 #endif
 
 /**
- * @ingroup NOTIFICATION_LIBRARY
- * @defgroup NOTIFICATION_TYPE notification type
- * @brief Notification type
+ * @file notification_type.h
+ * @brief This file contains defines and enumerations for Notification APIs
  */
 
 /**
@@ -38,41 +37,20 @@ extern "C" {
  */
 
 /**
- * @brief Enumeration for notification operation code
- */
-typedef enum _notification_op_type {
-	NOTIFICATION_OP_NONE = 0,
-	NOTIFICATION_OP_INSERT = 1,
-	NOTIFICATION_OP_UPDATE,
-	NOTIFICATION_OP_DELETE,
-	NOTIFICATION_OP_DELETE_ALL,
-	NOTIFICATION_OP_REFRESH,
-	NOTIFICATION_OP_SERVICE_READY,
-} notification_op_type_e;
-
-/**
- * @brief Enumeration for notification operation data code
- */
-typedef enum _notification_op_data_type {
-	NOTIFICATION_OP_DATA_MIN = 0,
-	NOTIFICATION_OP_DATA_TYPE,
-	NOTIFICATION_OP_DATA_PRIV_ID,
-	NOTIFICATION_OP_DATA_NOTI,
-	NOTIFICATION_OP_DATA_EXTRA_INFO_1,
-	NOTIFICATION_OP_DATA_EXTRA_INFO_2,
-	NOTIFICATION_OP_DATA_MAX,
-} notification_op_data_type_e;
-
-/**
  * @brief Enumeration for notification layout type
  */
 typedef enum _notification_ly_type {
 	NOTIFICATION_LY_NONE = 0,
 	NOTIFICATION_LY_NOTI_EVENT_SINGLE,
+		/**< layout for notification. used to inform single event*/
 	NOTIFICATION_LY_NOTI_EVENT_MULTIPLE,
+		/**< layout for notification. used to inform multiple event*/
 	NOTIFICATION_LY_NOTI_THUMBNAIL,
+		/**< layout for notification. used to display images*/
 	NOTIFICATION_LY_ONGOING_EVENT,
+		/**< layout for ongoing notification. used to display text message*/
 	NOTIFICATION_LY_ONGOING_PROGRESS,
+		/**< layout for ongoing notification. used to display progress*/
 	NOTIFICATION_LY_MAX,
 } notification_ly_type_e;
 
@@ -81,9 +59,9 @@ typedef enum _notification_ly_type {
  */
 typedef enum _notification_sound_type {
 	NOTIFICATION_SOUND_TYPE_NONE = -1,
-					/**< Default value. Disable sound */
+					/**< Default value. no sound */
 	NOTIFICATION_SOUND_TYPE_DEFAULT = 0,
-					/**< New chat sound */
+					/**< default sound */
 	NOTIFICATION_SOUND_TYPE_USER_DATA,
 					/**< User sound data */
 	NOTIFICATION_SOUND_TYPE_MAX,
@@ -95,8 +73,8 @@ typedef enum _notification_sound_type {
  */
 typedef enum _notification_vibration_type {
 	NOTIFICATION_VIBRATION_TYPE_NONE = -1,
-					/**< Default value. Disable vibration */
-	NOTIFICATION_VIBRATION_TYPE_DEFAULT = 0,/**< New chat vibration */
+					/**< Default value. no vibration */
+	NOTIFICATION_VIBRATION_TYPE_DEFAULT = 0,/**< default vibrate pattern */
 	NOTIFICATION_VIBRATION_TYPE_USER_DATA,
 					/**< User vibration data */
 	NOTIFICATION_VIBRATION_TYPE_MAX,/**< Max flag */
@@ -107,10 +85,10 @@ typedef enum _notification_vibration_type {
  */
 typedef enum _notification_led_op {
 	NOTIFICATION_LED_OP_OFF = -1,
-					/**< Default value. Disable led */
-	NOTIFICATION_LED_OP_ON = 0,/**< turn on led with default color */
+					/**< Default value. Disable the LED notification */
+	NOTIFICATION_LED_OP_ON = 0,/**< turn on the LED with default color */
 	NOTIFICATION_LED_OP_ON_CUSTOM_COLOR,
-					/**< turn on led with custom color */
+					/**< turn on the LED with custom color */
 	NOTIFICATION_LED_OP_MAX,/**< Max flag */
 } notification_led_op_e;
 
@@ -124,39 +102,6 @@ typedef enum _notification_count_display_type {
 	NOTIFICATION_COUNT_DISPLAY_TYPE_RIGHT,
 	NOTIFICATION_COUNT_DISPLAY_TYPE_MAX,
 } notification_count_display_type_e;
-
-/**
- * @brief Enumeration for notification count position in the text.
- */
-typedef enum _notifcation_count_pos_type {
-	NOTIFICATION_COUNT_POS_NONE = -1,
-					/**< Count data is not displaying in the text */
-	NOTIFICATION_COUNT_POS_LEFT = 0,/**< Count data is displaying at the left of the text */
-	NOTIFICATION_COUNT_POS_IN,
-				/**< Count data is displaying in the text */
-	NOTIFICATION_COUNT_POS_RIGHT,
-				/**< Count data is displaying at the right of the text */
-	NOTIFICATION_COUNT_POS_MAX,
-				/**< Max flag */
-} notification_count_pos_type_e;
-
-/**
- * @brief Enumeration for notification variable parameter type
- */
-typedef enum _notification_variable_type {
-	NOTIFICATION_VARIABLE_TYPE_NONE = -1,
-					/**< Variable parameter type is NONE */
-	NOTIFICATION_VARIABLE_TYPE_INT = 0,
-					/**< Variable parameter type is int */
-	NOTIFICATION_VARIABLE_TYPE_DOUBLE,
-					/**< Variable parameter type is double */
-	NOTIFICATION_VARIABLE_TYPE_STRING,
-					/**< Variable parameter type is string */
-	NOTIFICATION_VARIABLE_TYPE_COUNT,
-					/**< Variable parameter type is count */
-	NOTIFICATION_VARIABLE_TYPE_MAX,
-				/**< Max flag */
-} notification_variable_type_e;
 
 /**
  * @brief Enumeration for notification text type.
@@ -175,15 +120,15 @@ typedef enum _notification_text_type {
 	NOTIFICATION_TEXT_TYPE_INFO_1,
 								/**< box contents 1 */
 	NOTIFICATION_TEXT_TYPE_INFO_SUB_1,
-								/**< box contents 2 */
+								/**< box contents 1-1 */
 	NOTIFICATION_TEXT_TYPE_INFO_2,
-								/**< box contents 3 */
+								/**< box contents 2 */
 	NOTIFICATION_TEXT_TYPE_INFO_SUB_2,
-								/**< box contents 4 */
+								/**< box contents 2-1 */
 	NOTIFICATION_TEXT_TYPE_INFO_3,
-								/**< box contents 5 */
+								/**< box contents 3 */
 	NOTIFICATION_TEXT_TYPE_INFO_SUB_3,
-								/**< box contents 5 */
+								/**< box contents 3-1 */
 	NOTIFICATION_TEXT_TYPE_GROUP_TITLE,
 					/**< Group title */
 	NOTIFICATION_TEXT_TYPE_GROUP_CONTENT,
@@ -215,15 +160,15 @@ typedef enum _notification_image_type {
 	NOTIFICATION_IMAGE_TYPE_BACKGROUND,
 						/**< image displayed on background */
 	NOTIFICATION_IMAGE_TYPE_LIST_1,
-						/**< image for multiple event */
+						/**< image for thumbnail list */
 	NOTIFICATION_IMAGE_TYPE_LIST_2,
-						/**< image for multiple event */
+						/**< image for thumbnail list */
 	NOTIFICATION_IMAGE_TYPE_LIST_3,
-						/**< image for multiple event */
+						/**< image for thumbnail list */
 	NOTIFICATION_IMAGE_TYPE_LIST_4,
-						/**< image for multiple event */
+						/**< image for thumbnail list */
 	NOTIFICATION_IMAGE_TYPE_LIST_5,
-						/**< image for multiple event */
+						/**< image for thumbnail list */
 	NOTIFICATION_IMAGE_TYPE_MAX,
 				/**< Max flag */
 } notification_image_type_e;
@@ -243,7 +188,7 @@ typedef enum _notification_execute_type {
 	NOTIFICATION_EXECUTE_TYPE_NONE = -1,
 					/**< No operation */
 	NOTIFICATION_EXECUTE_TYPE_RESPONDING = 0,
-						/**< Responding */
+						/**< Responding action*/
 	NOTIFICATION_EXECUTE_TYPE_SINGLE_LAUNCH,/**< Launching when notification data is single */
 	NOTIFICATION_EXECUTE_TYPE_MULTI_LAUNCH,
 					/**< Launching when notification data is grouping(multi) */
@@ -318,6 +263,69 @@ enum _notificaton_display_applist {
 };
 
 /**
+ * @}
+ */
+
+/**
+ * @brief Enumeration for notification operation code
+ */
+typedef enum _notification_op_type {
+	NOTIFICATION_OP_NONE = 0,
+	NOTIFICATION_OP_INSERT = 1,
+	NOTIFICATION_OP_UPDATE,
+	NOTIFICATION_OP_DELETE,
+	NOTIFICATION_OP_DELETE_ALL,
+	NOTIFICATION_OP_REFRESH,
+	NOTIFICATION_OP_SERVICE_READY,
+} notification_op_type_e;
+
+/**
+ * @brief Enumeration for notification operation data code
+ */
+typedef enum _notification_op_data_type {
+	NOTIFICATION_OP_DATA_MIN = 0,
+	NOTIFICATION_OP_DATA_TYPE,
+	NOTIFICATION_OP_DATA_PRIV_ID,
+	NOTIFICATION_OP_DATA_NOTI,
+	NOTIFICATION_OP_DATA_EXTRA_INFO_1,
+	NOTIFICATION_OP_DATA_EXTRA_INFO_2,
+	NOTIFICATION_OP_DATA_MAX,
+} notification_op_data_type_e;
+
+/**
+ * @brief Enumeration for notification count position in the text.
+ */
+typedef enum _notifcation_count_pos_type {
+	NOTIFICATION_COUNT_POS_NONE = -1,
+					/**< Count data is not displaying in the text */
+	NOTIFICATION_COUNT_POS_LEFT = 0,/**< Count data is displaying at the left of the text */
+	NOTIFICATION_COUNT_POS_IN,
+				/**< Count data is displaying in the text */
+	NOTIFICATION_COUNT_POS_RIGHT,
+				/**< Count data is displaying at the right of the text */
+	NOTIFICATION_COUNT_POS_MAX,
+				/**< Max flag */
+} notification_count_pos_type_e;
+
+/**
+ * @brief Enumeration for notification variable parameter type
+ */
+typedef enum _notification_variable_type {
+	NOTIFICATION_VARIABLE_TYPE_NONE = -1,
+					/**< Variable parameter type is NONE */
+	NOTIFICATION_VARIABLE_TYPE_INT = 0,
+					/**< Variable parameter type is int */
+	NOTIFICATION_VARIABLE_TYPE_DOUBLE,
+					/**< Variable parameter type is double */
+	NOTIFICATION_VARIABLE_TYPE_STRING,
+					/**< Variable parameter type is string */
+	NOTIFICATION_VARIABLE_TYPE_COUNT,
+					/**< Variable parameter type is count */
+	NOTIFICATION_VARIABLE_TYPE_MAX,
+				/**< Max flag */
+} notification_variable_type_e;
+
+/**
  * @brief Notification handle
  */
 typedef struct _notification *notification_h;
@@ -332,9 +340,6 @@ typedef struct _notification_op {
 	int extra_info_2;
 	notification_h noti;
 } notification_op;
-/** 
- * @}
- */
 
 #ifdef __cplusplus
 }

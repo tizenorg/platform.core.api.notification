@@ -26,14 +26,12 @@
 #include <errno.h>
 #include <vconf.h>
 
-#include "notification_error.h"
-#include "notification_type.h"
-#include "notification_debug.h"
-#include "notification_status.h"
-
-#ifndef EXPORT_API
-#define EXPORT_API __attribute__ ((visibility("default")))
-#endif
+#include <notification.h>
+#include <notification_db.h>
+#include <notification_noti.h>
+#include <notification_debug.h>
+#include <notification_internal.h>
+#include <notification_status.h>
 
 #define NOTIFICATION_STATUS_MESSAGE_KEY "memory/private/libstatus/message"
 

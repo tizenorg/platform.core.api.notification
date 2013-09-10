@@ -257,11 +257,17 @@ static void _master_started_cb_service(keynode_t *node,
 	int ret = NOTIFICATION_ERROR_NONE;
 
 	if (notification_ipc_is_master_ready()) {
+		NOTIFICATION_ERR("try to register a notification service");
+		ret = notification_ipc_monitor_deregister();
+		if (ret != NOTIFICATION_ERROR_NONE) {
+			NOTIFICATION_ERR("failed to unregister a monitor");
+		}
 		ret = notification_ipc_monitor_register();
 		if (ret != NOTIFICATION_ERROR_NONE) {
 			NOTIFICATION_ERR("failed to register a monitor");
 		}
 	} else {
+		NOTIFICATION_ERR("try to unregister a notification service");
 		ret = notification_ipc_monitor_deregister();
 		if (ret != NOTIFICATION_ERROR_NONE) {
 			NOTIFICATION_ERR("failed to deregister a monitor");
@@ -859,6 +865,7 @@ static notification_error_e notification_ipc_monitor_register(void)
 
 	NOTIFICATION_ERR("register a service\n");
 
+	com_core_packet_use_thread(1);
 	s_info.server_fd = com_core_packet_client_init(s_info.socket_file, 0, service_table);
 	if (s_info.server_fd < 0) {
 		NOTIFICATION_ERR("Failed to make a connection to the master\n");
@@ -868,6 +875,7 @@ static notification_error_e notification_ipc_monitor_register(void)
 	packet = packet_create("service_register", "");
 	if (!packet) {
 		NOTIFICATION_ERR("Failed to build a packet\n");
+		com_core_packet_client_fini(s_info.server_fd);
 		return NOTIFICATION_ERROR_IO;
 	}
 
@@ -1181,6 +1189,65 @@ notification_error_e notification_ipc_request_refresh(void)
 		packet_unref(result);
 	} else {
 		NOTIFICATION_ERR("failed to receive answer(refresh)");
+		return NOTIFICATION_ERROR_SERVICE_NOT_READY;
+	}
+
+	return status;
+}
+
+notification_error_e notification_ipc_noti_setting_property_set(const char *pkgname, const char *property, const char *value)
+{
+	int status = 0;
+	int ret = 0;
+	struct packet *packet;
+	struct packet *result;
+
+	packet = packet_create("set_noti_property", "sss", pkgname, property, value);
+	result = com_core_packet_oneshot_send(NOTIFICATION_ADDR,
+			packet,
+			NOTIFICATION_IPC_TIMEOUT);
+	packet_destroy(packet);
+
+	if (result != NULL) {
+		if (packet_get(result, "ii", &status, &ret) != 2) {
+			NOTIFICATION_ERR("Failed to get a result packet");
+			packet_unref(result);
+			return NOTIFICATION_ERROR_IO;
+		}
+		packet_unref(result);
+	} else {
+		NOTIFICATION_ERR("failed to receive answer(delete)");
+		return NOTIFICATION_ERROR_SERVICE_NOT_READY;
+	}
+
+	return status;
+}
+
+notification_error_e notification_ipc_noti_setting_property_get(const char *pkgname, const char *property, char **value)
+{
+	int status = 0;
+	char *ret = NULL;
+	struct packet *packet;
+	struct packet *result;
+
+	packet = packet_create("get_noti_property", "ss", pkgname, property);
+	result = com_core_packet_oneshot_send(NOTIFICATION_ADDR,
+			packet,
+			NOTIFICATION_IPC_TIMEOUT);
+	packet_destroy(packet);
+
+	if (result != NULL) {
+		if (packet_get(result, "is", &status, &ret) != 2) {
+			NOTIFICATION_ERR("Failed to get a result packet");
+			packet_unref(result);
+			return NOTIFICATION_ERROR_IO;
+		}
+		if (status == NOTIFICATION_ERROR_NONE && ret != NULL) {
+			*value = strdup(ret);
+		}
+		packet_unref(result);
+	} else {
+		NOTIFICATION_ERR("failed to receive answer(delete)");
 		return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 	}
 

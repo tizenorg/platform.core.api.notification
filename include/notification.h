@@ -29,45 +29,24 @@
 #include <notification_type.h>
 #include <notification_list.h>
 #include <notification_status.h>
+#include <notification_setting.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
- * @defgroup NOTIFICATION_LIBRARY Notification Library
- * @brief This notification library provides UI notification event. Inserted notification event is displaying Notification Tray, Indicator, etc.
+ * @file notification.h
+ * @brief This file contains the notification APIs
  */
 
 /**
- * @ingroup NOTIFICATION_LIBRARY
- * @defgroup NOTIFICATION notification core API
- * @brief Notification core API
- */
-
-/**
- * @addtogroup NOTIFICATION
+ * @addtogroup NOTIFICATION_MODULE
  * @{
  */
 
 /**
- * @brief This function will be deprecated.
- * @see notification_set_image()
- *
- */
-notification_error_e notification_set_icon(notification_h noti,
-					   const char *icon_path);
-
-/**
- * @brief This function will be deprecated.
- * @see notification_get_image()
- *
- */
-notification_error_e notification_get_icon(notification_h noti,
-					   char **icon_path);
-
-/**
- * @brief This function set image path according to type.
+ * @brief Set absolute path for image file to display on notification view
  * @details 
  * @remarks
  * @param[in] noti notification handle
@@ -106,7 +85,7 @@ notification_error_e notification_set_image(notification_h noti,
 					    const char *image_path);
 
 /**
- * @brief This function get image path according to type.
+ * @brief Get absolute path for image file
  * @details 
  * @remarks Do not free image_path. It will be freed when notification_free() or notification_free_list().
  * @param[in] noti notification handle
@@ -139,7 +118,7 @@ notification_error_e notification_get_image(notification_h noti,
 					    char **image_path);
 
 /**
- * @brief This function set time infomation.
+ * @brief Set a timestamp
  * @details If input_time is 0, time information is set by current time.
  * @remarks
  * @param[in] noti notification handle
@@ -175,7 +154,7 @@ notification_error_e notification_set_time(notification_h noti,
 					   time_t input_time);
 
 /**
- * @brief This function get time information.
+ * @brief Get a timestamp
  * @details If ret_time is 0, time information is not set before.
  * @remarks
  * @param[in] noti notification handle
@@ -205,7 +184,7 @@ notification_error_e notification_get_time(notification_h noti,
 					   time_t * ret_time);
 
 /**
- * @brief This function get insert time information.
+ * @brief Get timestamp that the notification is inserted
  * @details If ret_time is 0, this notification data is not inserted before.
  * @remarks
  * @param[in] noti notification handle
@@ -235,43 +214,7 @@ notification_error_e notification_get_insert_time(notification_h noti,
 						  time_t * ret_time);
 
 /**
- * @brief This function will be deprecated.
- * @see notification_set_text()
- *
- */
-notification_error_e notification_set_title(notification_h noti,
-					    const char *title,
-					    const char *loc_title);
-
-/**
- * @brief This function will be deprecated.
- * @see notification_get_text()
- *
- */
-notification_error_e notification_get_title(notification_h noti,
-					    char **title,
-					    char **loc_title);
-
-/**
- * @brief This function will be deprecated.
- * @see notification_set_text()
- *
- */
-notification_error_e notification_set_content(notification_h noti,
-					      const char *content,
-					      const char *loc_content);
-
-/**
- * @brief This function will be deprecated.
- * @see notification_get_text()
- *
- */
-notification_error_e notification_get_content(notification_h noti,
-					      char **content,
-					      char **loc_content);
-
-/**
- * @brief This function set text.
+ * @brief Set text to display on the notification view
  * @details Set title, content string. If text is formated data(only support %d, %f, %s), type - value pair should be set.
  * If %d, type NOTIFICATION_VARIABLE_TYPE_INT and value is integer value.
  * If %f, type NOTIFICATION_VARIABLE_TYPE_DOUBLE and value is double value.
@@ -321,7 +264,7 @@ notification_error_e notification_set_text(notification_h noti,
 					   int args_type, ...);
 
 /**
- * @brief This function get text.
+ * @brief Get the text from the notification handle
  * @details
  * @remarks
  * @param[in] noti notification handle
@@ -354,8 +297,8 @@ notification_error_e notification_get_text(notification_h noti,
 					   char **text);
 
 /**
- * @brief This function set timestamp to text. the timestamp value will be converted to string
- * @details set
+ * @brief Set a timestamp to display on the notification view
+ * @details the timestamp will be converted to formatted string and it will be displayed on the setted text area
  * @remarks
  * @param[in] noti notification handle
  * @param[in] type notification text type
@@ -371,8 +314,8 @@ notification_error_e notification_set_time_to_text(notification_h noti, notifica
 								time_t time);
 
 /**
- * @brief This function get timestamp from text
- * @details set
+ * @brief Get a timestamp from the notification handle
+ * @details
  * @remarks
  * @param[in] noti notification handle
  * @param[in] type notification text type
@@ -388,7 +331,7 @@ notification_error_e notification_get_time_from_text(notification_h noti, notifi
 								time_t *time);
 
 /**
- * @brief This function set text domain.
+ * @brief Set text domain to localize the notification
  * @details
  * @remarks
  * @param[in] noti notification handle
@@ -426,7 +369,7 @@ notification_error_e notification_set_text_domain(notification_h noti,
 						  const char *dir);
 
 /**
- * @brief This function get text domain.
+ * @brief Get text domain from the notification handle
  * @details
  * @remarks Do not free returned domain and dir. These are freed when notification_free or notification_free_list.
  * @param[in] noti notification handle
@@ -460,7 +403,7 @@ notification_error_e notification_get_text_domain(notification_h noti,
 						  char **dir);
 
 /**
- * @brief This function set notification sound.
+ * @brief Set sound option for the notification
  * @details
  * @remarks
  * @param[in] noti notification handle
@@ -492,7 +435,7 @@ notification_error_e notification_set_sound(notification_h noti,
 					    const char *path);
 
 /**
- * @brief This function get notification sound.
+ * @brief Get sound option from the notification handle
  * @details
  * @remarks
  * @param[in] noti notification handle
@@ -525,7 +468,7 @@ notification_error_e notification_get_sound(notification_h noti,
 					    const char **path);
 
 /**
- * @brief This function set notification vibration.
+ * @brief Set vibrate option for the notification
  * @details
  * @remarks
  * @param[in] noti notification handle
@@ -557,7 +500,7 @@ notification_error_e notification_set_vibration(notification_h noti,
 						const char *path);
 
 /**
-  * @brief This function get notification vibration.
+  * @brief Get vibrate option from the notification handle
   * @details
   * @remarks
   * @param[in] noti notification handle
@@ -590,7 +533,7 @@ notification_error_e notification_get_vibration(notification_h noti,
 						const char **path);
 
 /**
- * @brief This function set led notification.
+ * @brief Set option of displaying the LED
  * @details
  * @remarks
  * @param[in] noti notification handle
@@ -622,7 +565,7 @@ notification_error_e notification_set_led(notification_h noti,
 						int led_argb);
 
 /**
-  * @brief This function get notification led.
+  * @brief Get option of displaying the LED from the notification handle
   * @details
   * @remarks
   * @param[in] noti notification handle
@@ -655,7 +598,7 @@ notification_error_e notification_get_led(notification_h noti,
 						int *led_argb);
 
 /**
- * @brief This function set time period of flashing LED
+ * @brief Set time period of flashing the LED
  * @details
  * @remarks
  * @param[in] noti notification handle
@@ -686,7 +629,7 @@ notification_error_e notification_set_led_time_period(notification_h noti,
 						int on_ms, int off_ms);
 
 /**
-  * @brief This function get time period of flashing LED
+  * @brief Get time period of flashing the LED from the notification handle
   * @details
   * @remarks
   * @param[in] noti notification handle
@@ -719,35 +662,7 @@ notification_error_e notification_get_led_time_period(notification_h noti,
 						int *on_ms, int *off_ms);
 
 /**
- * @brief This function will be deprecated.
- * @see notification_set_execute_option()
- *
- */
-notification_error_e notification_set_application(notification_h noti, const char *pkgname);	/* Do not use this */
-
-/**
- * @brief This function will be deprecated.
- * @see notification_get_execute_option()
- *
- */
-notification_error_e notification_get_application(notification_h noti, char **pkgname);	/* Do not use this */
-
-/**
- * @brief This function will be deprecated.
- * @see notification_set_execute_option()
- *
- */
-notification_error_e notification_set_args(notification_h noti, bundle * args, bundle * group_args);	/* Do not use this */
-
-/**
- * @brief This function will be deprecated.
- * @see notification_get_execute_option()
- *
- */
-notification_error_e notification_get_args(notification_h noti, bundle ** args, bundle ** group_args);	/* Do not use this */
-
-/**
- * @brief This function set execute option.
+ * @brief Set execution option for a notification
  * @details When notification data selected in display application, application launched by appsvc_run_service with service_handle.
  * @remarks
  * @param[in] noti notification handle
@@ -793,7 +708,7 @@ notification_error_e notification_set_execute_option(notification_h noti,
 						     bundle *service_handle);
 
 /**
- * @brief This function get execute option.
+ * @brief Get execution option from the notification handle
  * @details
  * @remarks
  * @param[in] noti notification handle
@@ -831,7 +746,7 @@ notification_error_e notification_get_execute_option(notification_h noti,
 						     bundle **service_handle);
 
 /**
- * @brief This function set notification property.
+ * @brief Set the property of the notification
  * @details
  * @remarks
  * @param[in] noti notification handle
@@ -868,7 +783,7 @@ notification_error_e notification_set_property(notification_h noti,
 					       int flags);
 
 /**
- * @brief This function get notification property.
+ * @brief Get the property of the notification from the notification handle
  * @details
  * @remarks
  * @param[in] noti notification handle
@@ -899,7 +814,7 @@ notification_error_e notification_get_property(notification_h noti,
 					       int *flags);
 
 /**
- * @brief This function set display application list.
+ * @brief Set applications to display the notification
  * @details All display application is enable(NOTIFICATION_DISPLAY_APP_ALL) if you are not call this API.
  * @remarks
  * @param[in] noti notification handle
@@ -937,7 +852,7 @@ notification_error_e notification_set_display_applist(notification_h noti,
 						      int applist);
 
 /**
- * @brief This function get display application list.
+ * @brief Get application list to display the notification from the notification handle
  * @details
  * @remarks
  * @param[in] noti notification handle
@@ -968,7 +883,7 @@ notification_error_e notification_get_display_applist(notification_h noti,
 						      int *applist);
 
 /**
- * @brief This function set initial size for ongoing type.
+ * @brief Set initial size for ongoing type.
  * @details After notification_insert, it does not upate size. If you want to update size, please call notification_update_size().
  * @remarks
  * @param[in] noti notification handle
@@ -1004,7 +919,7 @@ notification_error_e notification_set_size(notification_h noti,
 					   double size);
 
 /**
- * @brief This function get progress size.
+ * @brief Get progress size.
  * @details
  * @remarks
  * @param[in] noti notification handle
@@ -1035,7 +950,7 @@ notification_error_e notification_get_size(notification_h noti,
 					   double *size);
 
 /**
- * @brief This function set initial progress for ongoing type.
+ * @brief Set initial progress for ongoing type.
  * @details After notification_insert, it does not upate progress. If you want to update progress, please call notification_update_progress().
  * @remarks
  * @param[in] noti notification handle
@@ -1071,9 +986,9 @@ notification_error_e notification_set_progress(notification_h noti,
 					       double percentage);
 
 /**
- * @brief This function get progress percentage.
+ * @brief Get progress from the notification handle
  * @details
- * @remarks
+ * @remarks At the end of the operation, progress should be 1.0
  * @param[in] noti notification handle
  * @param[out] percentage progress percentage
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
@@ -1102,7 +1017,7 @@ notification_error_e notification_get_progress(notification_h noti,
 					       double *percentage);
 
 /**
- * @brief This function set caller_pkgname.
+ * @brief Set the package name of caller
  * @details caller_pkgname is set automatically when notification_new. We are not recommend to use this API.
  * @remarks
  * @param[in] noti notification handle
@@ -1126,7 +1041,7 @@ notification_error_e notification_get_progress(notification_h noti,
 		return;
 	}
 
-	noti_err  = notification_set_pkgname(noti, "org.tizen.phone");
+	noti_err  = notification_set_pkgname(noti, "com.samsung.phone");
 	if(noti_err != NOTIFICATION_ERROR_NONE) {
 		notification_free(noti);
 		return;
@@ -1138,7 +1053,7 @@ notification_error_e notification_set_pkgname(notification_h noti,
 					      const char *pkgname);
 
 /**
- * @brief This function get caller pkgname.
+ * @brief Get the package name of caller from the notification handle
  * @details
  * @remarks
  * @param[in] noti notification handle
@@ -1169,11 +1084,11 @@ notification_error_e notification_get_pkgname(notification_h noti,
 					      char **pkgname);
 
 /**
- * @brief This function set layout type of notification
- * @details caller can set displaying layout of notification with this API
+ * @brief Set the layout of the notification view
+ * @details caller can set displaying layout of notification
  * @remarks
  * @param[in] noti notification handle
- * @param[in] layout type
+ * @param[in] type of layout
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
  * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
@@ -1185,11 +1100,11 @@ notification_error_e notification_set_layout(notification_h noti,
 		notification_ly_type_e layout);
 
 /**
- * @brief This function get layout type of notification
+ * @brief Get the layout of the notification view from the notification handle
  * @details
  * @remarks
  * @param[in] noti notification handle
- * @param[out] layout type of notification
+ * @param[out] type of layout
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
  * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
@@ -1201,68 +1116,9 @@ notification_error_e notification_get_layout(notification_h noti,
 		notification_ly_type_e *layout);
 
 /**
- * @brief This function set application badge count.
+ * @brief Get Group ID and Private ID
  * @details
- * @remarks
- * @param[in] pkgname If NULL, caller pkgname is set internally.
- * @param[in] group_id group id
- * @param[in] count badge count
- * @return NOTIFICATION_ERROR_NONE if success, other value if failure
- * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
- * @pre 
- * @post
- * @see
- * @par Sample code:
-#include <notification.h>
- ...
-  {
-	 notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
-	 
-	 noti_err  = notification_set_badge(NULL, NOTIFICATION_GROUP_ID_NONE, 5);
-	 if(noti_err != NOTIFICATION_ERROR_NONE) {
-		 return;
-	 }
- }
- * @endcode
- */
-notification_error_e notification_set_badge(const char *pkgname,
-					    int group_id, int count);
-
-/**
- * @brief This function get application badge count.
- * @details
- * @remarks
- * @param[in] pkgname If NULL, caller pkgname is set internally.
- * @param[in] group_id group id
- * @param[out] count badge count
- * @return NOTIFICATION_ERROR_NONE if success, other value if failure
- * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
- * @pre 
- * @post
- * @see
- * @par Sample code:
-#include <notification.h>
- ...
-  {
-	 notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
-	 int count = 0;
-	 
-	 noti_err  = notification_get_badge(NULL, NOTIFICATION_GROUP_ID_NONE, &count);
-	 if(noti_err != NOTIFICATION_ERROR_NONE) {
-		 return;
-	 }
- }
- * @endcode
- */
-notification_error_e notification_get_badge(const char *pkgname,
-					    int group_id, int *count);
-
-/**
- * @brief This function get Group ID and Private ID
- * @details
- * @remarks
+ * @remarks ID is valid only after inserting the notification
  * @param[in] noti notification handle
  * @param[out] group_id Group ID
  * @param[out] priv_id Private ID
@@ -1291,7 +1147,7 @@ notification_error_e notification_get_id(notification_h noti,
 					 int *group_id, int *priv_id);
 
 /**
- * @brief This function get notification type
+ * @brief Get the type of notification
  * @details
  * @remarks
  * @param[in] noti notification handle
@@ -1321,8 +1177,8 @@ notification_error_e notification_get_type(notification_h noti,
 					   notification_type_e * type);
 
 /**
- * @brief This function insert notification data.
- * @details Notification data is inserted to DB and then notification data is displaying display application.
+ * @brief Insert a notification
+ * @details A notification will be inserted to DB and then it will be appeared on the notification area
  * When notification_new() call, if priv_id is NOTIFICATION_PRIV_ID_NONE, priv_id is return internally set priv_id.
  * @remarks
  * @param[in] noti notification handle
@@ -1351,8 +1207,8 @@ notification_error_e notification_insert(notification_h noti,
 					 int *priv_id);
 
 /**
- * @brief This function update notification data.
- * @details Display application update UI.
+ * @brief Update notification data.
+ * @details The updated notification will be appeared on the notification area
  * @remarks
  * @param[in] noti notification handle that is created by notification_new().
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
@@ -1379,9 +1235,9 @@ notification_error_e notification_insert(notification_h noti,
 notification_error_e notification_update(notification_h noti);
 
 /**
- * @brief This function updates notification data.
- * @details Display application update UI.
- * @remarks
+ * @brief Update a notification
+ * @details The updated notification will be appeared on the notification area
+ * @remarks This function update a notification in async manner
  * @param[in] noti notification handle that is created by notification_new().
  * @param[in] result_cb callback called when update completed
  * @param[in] user_data user data which you want to use in callback
@@ -1437,7 +1293,7 @@ notification_error_e notification_update_async(notification_h noti,
 notification_error_e notifiation_clear(notification_type_e type);
 
 /**
- * @brief This function delete notification by type. 
+ * @brief Delete all the notifications of the type.
  * @details If pkgname is NULL, caller_pkgname is set internally.
  * @remarks
  * @param[in] pkgname caller application package name or NULL
@@ -1466,69 +1322,7 @@ notification_error_e notification_delete_all_by_type(const char *pkgname,
 						     notification_type_e type);
 
 /**
- * @brief This function delete group notification data by group ID.
- * @details If pkgname is NULL, caller_pkgname is set internally.
- * @remarks
- * @param[in] pkgname caller application package name or NULL
- * @param[in] type notification type
- * @param[in] group_id group ID
- * @return NOTIFICATION_ERROR_NONE if success, other value if failure
- * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
- * @pre
- * @post
- * @see
- * @par Sample code:
- * @code
-#include <notification.h>
-...
- {
-	notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
-
-	noti_err  = notification_delete_group_by_group_id(NULL, NOTIFICATION_TYPE_NOTI, APP_GROUP_ID);
-	if(noti_err != NOTIFICATION_ERROR_NONE) {
-		return;
-	}
-}
- * @endcode
- */
-notification_error_e notification_delete_group_by_group_id(const char *pkgname,
-							   notification_type_e type,
-							   int group_id);
-
-/**
- * @brief This function delete group notification data that include priv_id.
- * @details If pkgname is NULL, caller_pkgname is set internally.
- * @remarks
- * @param[in] pkgname caller application package name or NULL
- * @param[in] type notification type
- * @param[in] priv_id priv ID
- * @return NOTIFICATION_ERROR_NONE if success, other value if failure
- * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
- * @pre
- * @post
- * @see
- * @par Sample code:
- * @code
-#include <notification.h>
-...
- {
-	notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
-
-	noti_err  = notification_delete_group_by_priv_id(NULL, NOTIFICATION_TYPE_NOTI, APP_PRIV_ID);
-	if(noti_err != NOTIFICATION_ERROR_NONE) {
-		return;
-	}
-}
- * @endcode
- */
-notification_error_e notification_delete_group_by_priv_id(const char *pkgname,
-							  notification_type_e type,
-							  int priv_id);
-
-/**
- * @brief This function delete notification data that private ID is priv_id.
+ * @brief Delete a notification by priv_id.
  * @details If pkgname is NULL, caller_pkgname is set internally.
  * @remarks
  * @param[in] pkgname caller application package name or NULL
@@ -1559,7 +1353,7 @@ notification_error_e notification_delete_by_priv_id(const char *pkgname,
 						    int priv_id);
 
 /**
- * @brief This function delete notification data from DB
+ * @brief Delete a notification with the given handle
  * @details notification_delete() remove notification data from DB and notification_free release menory of notification data.
  * @remarks
  * @param[in] noti notification handle
@@ -1590,8 +1384,8 @@ notification_error_e notification_delete_by_priv_id(const char *pkgname,
 notification_error_e notification_delete(notification_h noti);
 
 /**
- * @brief This function update progressive data of inserted notification data. Only work at NOTIFICATION_TYPE_ONGOING type.
- * @details Display application update UI.
+ * @brief Update progress of inserted notification. Only for the ongoing notification(NOTIFICATION_TYPE_ONGOING)
+ * @details notification view on notification area could be updated
  * @remarks
  * @param[in] noti notification handle or NULL if priv_id is valid
  * @param[in] priv_id private ID
@@ -1620,8 +1414,8 @@ notification_error_e notification_update_progress(notification_h noti,
 						  double progress);
 
 /**
- * @brief This function update progressive data of inserted notification data. Only work at NOTIFICATION_TYPE_ONGOING type.
- * @details Display application update UI.
+ * @brief Update size of inserted notification data. Only for the ongoing notification(NOTIFICATION_TYPE_ONGOING)
+ * @details notification view on notification area could be updated
  * @remarks
  * @param[in] noti notification handle or NULL if priv_id is valid
  * @param[in] priv_id private ID
@@ -1648,12 +1442,38 @@ notification_error_e notification_update_progress(notification_h noti,
 notification_error_e notification_update_size(notification_h noti,
 					      int priv_id, double size);
 
+/**
+ * @brief Update content of inserted notification data. Only for the ongoing notification(NOTIFICATION_TYPE_ONGOING)
+ * @details notification view on notification area could be updated
+ * @remarks
+ * @param[in] noti notification handle or NULL if priv_id is valid
+ * @param[in] priv_id private ID
+ * @param[in] content text to update
+ * @return NOTIFICATION_ERROR_NONE if success, other value if failure
+ * @retval NOTIFICATION_ERROR_NONE - success
+ * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @pre
+ * @post
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+ {
+	notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
+
+	noti_err  = notification_update_content(NULL, APP_NOTI_PRIV_ID, "updated string");
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
 notification_error_e notification_update_content(notification_h noti,
 							 int priv_id,
 							 const char *content);
 
 /**
- * @brief This function create internal structure data and return notification handle.
+ * @brief Create internal structure data and return notification handle.
  * @details Available type is #NOTIFICATION_TYPE_NOTI and #NOTIFICATION_TYPE_ONGOING.
  * #NOTIFICATION_TYPE_NOTI is remaining notification data evenif device is restarted.
  * #NOTIFICATION_TYPE_ONGOING can display progressive feather, but notification data is removed after device is restarted.
@@ -1722,14 +1542,8 @@ notification_h notification_new(notification_type_e type, int group_id,
 notification_h notification_create(notification_type_e type);
 
 /**
- * @brief This function create internal structure data and return notification handle.
- * @details Available type is #NOTIFICATION_TYPE_NOTI and #NOTIFICATION_TYPE_ONGOING.
- * #NOTIFICATION_TYPE_NOTI is remaining notification data evenif device is restarted.
- * #NOTIFICATION_TYPE_ONGOING can display progressive feather, but notification data is removed after device is restarted.
- * If group_id is #NOTIFICATION_GROUP_ID_NONE, notification data is not grouping. #NOTIFICATION_GROUP_ID_DEFAULT,
- * notification data is grouping with same title. Positive number ( > 0 ) is grouping with same number.
- * If priv_id is #NOTIFICATION_PRIV_ID_NONE, priv_id is set internally and return it when notification_insert() call.
- * Positive number and zero ( >= 0 ) is application set private ID. These ID should have be unique each application package.
+ * @brief load a notification from the notification DB with private id
+ * @details
  * @remarks
  * @param[in] type notification type
  * @param[in] group_id Group ID
@@ -1748,7 +1562,7 @@ notification_h notification_create(notification_type_e type);
 {
 	notification_h noti = NULL;
 
-	noti = notification_load(NOTIFICATION_TYPE_NOTI, APP_GROUP_ID, NOTIFICATION_PRIV_ID_NONE);
+	noti = notification_load("org.tizen.app", priv_id);
 	if(noti == NULL) {
 		return;
 	}
@@ -1760,7 +1574,7 @@ notification_h notification_load(char *pkgname,
 				int priv_id);
 
 /**
- * @brief This function create notification clone.
+ * @brief Create a notification clone
  * @details Newly created notification handle is returned.
  * @remarks This clone notification handle should be call notification_free().
  * @param[in] noti notification handle
@@ -1788,7 +1602,7 @@ notification_h notification_load(char *pkgname,
 notification_error_e notification_clone(notification_h noti, notification_h *clone);
 
 /**
- * @brief This function free internal structure data of notification handle.
+ * @brief Free internal structure data of notification handle.
  * @details Internal data of notification handle is released. Notification data that inserted is not deleted.
  * @remarks
  * @param[in] noti notification handle
@@ -1822,170 +1636,21 @@ notification_error_e notification_clone(notification_h noti, notification_h *clo
 notification_error_e notification_free(notification_h noti);
 
 /**
- * @brief This function register notification chagned callback.
- * @details 
- * @remarks
- * @param[in] changed_cb callback function
- * @param[in] user_data user data
- * @return NOTIFICATION_ERROR_NONE if success, other value if failure.
- * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
- * @pre notification_new()
- * @post
- * @see notification_unresister_changed_cb()
- * @par Sample code:
- * @code
-#include <notification.h>
-...
-{
-	noti_err = notification_resister_changed_cb(app_changed_cb, user_data);
-	if(noti_err != NOTIFICATION_ERROR_NONE) {
-		return;
-	}
-}
- * @endcode
+ * @}
  */
-notification_error_e
-notification_resister_changed_cb(
-	void (*changed_cb)(void *data, notification_type_e type),
-	void *user_data);
 
 /**
- * @brief This function unregister notification chagned callback.
- * @details 
- * @remarks
- * @param[in] changed_cb callback function
- * @return NOTIFICATION_ERROR_NONE if success, other value if failure.
- * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
- * @pre notification_new()
- * @post
- * @see notification_resister_changed_cb()
- * @par Sample code:
- * @code
-#include <notification.h>
-...
-{
-	noti_err = notification_unresister_changed_cb(app_changed_cb);
-	if(noti_err != NOTIFICATION_ERROR_NONE) {
-		return;
-	}
-}
- * @endcode
+ * @addtogroup NOTIFICATION_LIST
+ * @{
  */
-notification_error_e
-notification_unresister_changed_cb(
-	void (*changed_cb)(void *data, notification_type_e type));
 
 /**
- * @brief This function register notification chagned callback.
- * @details
- * @remarks
- * @param[in] changed_cb callback function
- * @param[in] user_data user data
- * @return NOTIFICATION_ERROR_NONE if success, other value if failure.
- * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
- * @pre notification_new()
- * @post
- * @see notification_unresister_changed_cb()
- * @par Sample code:
- * @code
-#include <notification.h>
-...
-{
-	noti_err = notification_resister_changed_cb(app_changed_cb, user_data);
-	if(noti_err != NOTIFICATION_ERROR_NONE) {
-		return;
-	}
-}
- * @endcode
- */
-notification_error_e
-notification_register_detailed_changed_cb(
-		void (*detailed_changed_cb)(void *data, notification_type_e type, notification_op *op_list, int num_op),
-		void *user_data);
-
-/**
- * @brief This function unregister notification chagned callback.
- * @details
- * @remarks
- * @param[in] changed_cb callback function
- * @return NOTIFICATION_ERROR_NONE if success, other value if failure.
- * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
- * @pre notification_new()
- * @post
- * @see notification_resister_changed_cb()
- * @par Sample code:
- * @code
-#include <notification.h>
-...
-{
-	noti_err = notification_unresister_changed_cb(app_changed_cb);
-	if(noti_err != NOTIFICATION_ERROR_NONE) {
-		return;
-	}
-}
- * @endcode
- */
-notification_error_e
-notification_unregister_detailed_changed_cb(
-		void (*detailed_changed_cb)(void *data, notification_type_e type, notification_op *op_list, int num_op),
-		void *user_data);
-
-/**
- * @brief This function get notification data count.
- * @details Count is the result of the conditions that type, pkgname, group_id, priv_id.
- * @remarks
- * @param[in] type notification type
- * @param[in] pkgname caller application package name
- * @param[in] group_id group id
- * @param[in] priv_id private id
- * @param[out] count notification data number
- * @return NOTIFICATION_ERROR_NONE if success, other value if failure.
- * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
- * @pre
- * @post
- * @see #notification_type_e
- * @par Sample code:
- * @code
-#include <notification.h>
-...
-{
-	notification_list_h noti_list = NULL;
-	notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
-	int count = 0;
-	
-	noti_err = notification_get_count(NOTIFICATION_TYPE_NONE, NULL, NOTIFICATION_GROUP_ID_NONE, NOTIFICATION_PRIV_ID_NONE, &count);
-	if(noti_err != NOTIFICATION_ERROR_NONE) {
-		return;
-	}
-}
- * @endcode
- */
-notification_error_e notification_get_count(notification_type_e type,
-					    const char *pkgname,
-					    int group_id, int priv_id,
-					    int *count);
-
-/**
- * @brief This function will be deprecated.
- * @see notification_get_grouping_list()
- *
- */
-notification_error_e notification_get_list(notification_type_e type,
-					   int count,
-					   notification_list_h * list);
-
-/**
- * @brief This function return notification grouping list handle.
+ * @brief This function return notification list handle.
  * @details If count is -1, all of notification list is returned.
  * @remarks
  * @param[in] type notification type
  * @param[in] count returned notification data number
- * @param[out] list notification list handle
+ * @param[out] NOTIFICATION_ERROR_NONE if success, other value if failure.
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure.
  * @retval NOTIFICATION_ERROR_NONE - success
  * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
@@ -1999,13 +1664,22 @@ notification_error_e notification_get_list(notification_type_e type,
 {
 	notification_list_h noti_list = NULL;
 	notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
-	
-	noti_err = notification_get_grouping_list(NOTIFICATION_TYPE_NONE, -1, &noti_list);
+
+	noti_err = notification_get_list(NOTIFICATION_TYPE_NONE, -1, &noti_list);
 	if(noti_err != NOTIFICATION_ERROR_NONE) {
 		return;
 	}
 }
  * @endcode
+ */
+notification_error_e notification_get_list(notification_type_e type,
+					   int count,
+					   notification_list_h * list);
+
+/**
+ * @brief This function will be deprecated.
+ * @see notification_get_grouping_list()
+ *
  */
 notification_error_e notification_get_grouping_list(notification_type_e type,
 						    int count,
@@ -2033,7 +1707,7 @@ notification_error_e notification_get_grouping_list(notification_type_e type,
 {
 	notification_list_h noti_list = NULL;
 	notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
-	
+
 	noti_err = notification_get_detail_list(pkgname, group_id, priv_id, -1, &noti_list);
 	if(noti_err != NOTIFICATION_ERROR_NONE) {
 		return;
@@ -2048,7 +1722,7 @@ notification_error_e notification_get_detail_list(const char *pkgname,
 						  notification_list_h *list);
 
 /**
- * @brief This function release notification list.
+ * @brief Free notification list
  * @details
  * @remarks
  * @param[in] list notification list handle
@@ -2067,7 +1741,7 @@ notification_error_e notification_get_detail_list(const char *pkgname,
 	notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
 
 	...
-	
+
 	noti_err = notification_free_list(noti_list);
 	if(noti_err != NOTIFICATION_ERROR_NONE) {
 		return;
@@ -2077,12 +1751,125 @@ notification_error_e notification_get_detail_list(const char *pkgname,
  */
 notification_error_e notification_free_list(notification_list_h list);
 
-/** 
+/**
  * @}
  */
 
 /**
- * @brief You can get the information about notification operation using this function
+ * @brief Register a callback for all notification events
+ * @details The registered callback could be called for all notification events
+ * @remarks
+ * @param[in] changed_cb callback function
+ * @param[in] user_data user data
+ * @return NOTIFICATION_ERROR_NONE if success, other value if failure.
+ * @retval NOTIFICATION_ERROR_NONE - success
+ * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
+ * @pre notification_new()
+ * @post
+ * @see notification_unresister_changed_cb()
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	noti_err = notification_resister_changed_cb(app_changed_cb, user_data);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
+notification_error_e
+notification_resister_changed_cb(
+	void (*changed_cb)(void *data, notification_type_e type),
+	void *user_data);
+
+/**
+ * @brief Unregister a callback for all notification events
+ * @details
+ * @remarks
+ * @param[in] changed_cb callback function
+ * @return NOTIFICATION_ERROR_NONE if success, other value if failure.
+ * @retval NOTIFICATION_ERROR_NONE - success
+ * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
+ * @pre
+ * @post
+ * @see notification_resister_changed_cb()
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	noti_err = notification_unresister_changed_cb(app_changed_cb);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
+notification_error_e
+notification_unresister_changed_cb(
+	void (*changed_cb)(void *data, notification_type_e type));
+
+/**
+ * @brief Register a callback for all notification events
+ * @details The registered callback could be called for all notification events
+ * @remarks
+ * @param[in] changed_cb callback function
+ * @param[in] user_data user data
+ * @return NOTIFICATION_ERROR_NONE if success, other value if failure.
+ * @retval NOTIFICATION_ERROR_NONE - success
+ * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
+ * @pre
+ * @post
+ * @see notification_unregister_detailed_changed_cb()
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	noti_err = notification_resister_changed_cb(app_changed_cb, user_data);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
+notification_error_e
+notification_register_detailed_changed_cb(
+		void (*detailed_changed_cb)(void *data, notification_type_e type, notification_op *op_list, int num_op),
+		void *user_data);
+
+/**
+ * @brief Unregister a callback for all notification events
+ * @details
+ * @remarks
+ * @param[in] changed_cb callback function
+ * @return NOTIFICATION_ERROR_NONE if success, other value if failure.
+ * @retval NOTIFICATION_ERROR_NONE - success
+ * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
+ * @pre
+ * @post
+ * @see notification_register_detailed_changed_cb()
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	noti_err = notification_unresister_changed_cb(app_changed_cb);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
+notification_error_e
+notification_unregister_detailed_changed_cb(
+		void (*detailed_changed_cb)(void *data, notification_type_e type, notification_op *op_list, int num_op),
+		void *user_data);
+
+/**
+ * @brief Get the information of notification event
  * @details
  * @remarks
  * @param[in] list notification list handle
@@ -2110,6 +1897,121 @@ notification_error_e notification_add_deffered_task(
 
 notification_error_e notification_del_deffered_task(
 		void (*deffered_task_cb)(void *data));
+
+/**
+ * @addtogroup NOTIFICATION_DEPRECATED
+ * @{
+ */
+
+/**
+ * @brief This function will be deprecated.
+ * @see notification_set_image()
+ *
+ */
+notification_error_e notification_set_icon(notification_h noti,
+					   const char *icon_path);
+
+/**
+ * @brief This function will be deprecated.
+ * @see notification_get_image()
+ *
+ */
+notification_error_e notification_get_icon(notification_h noti,
+					   char **icon_path);
+
+/**
+ * @brief This function will be deprecated.
+ * @see notification_set_text()
+ *
+ */
+notification_error_e notification_set_title(notification_h noti,
+					    const char *title,
+					    const char *loc_title);
+
+/**
+ * @brief This function will be deprecated.
+ * @see notification_get_text()
+ *
+ */
+notification_error_e notification_get_title(notification_h noti,
+					    char **title,
+					    char **loc_title);
+
+/**
+ * @brief This function will be deprecated.
+ * @see notification_set_text()
+ *
+ */
+notification_error_e notification_set_content(notification_h noti,
+					      const char *content,
+					      const char *loc_content);
+
+/**
+ * @brief This function will be deprecated.
+ * @see notification_get_text()
+ *
+ */
+notification_error_e notification_get_content(notification_h noti,
+					      char **content,
+					      char **loc_content);
+
+/**
+ * @brief This function will be deprecated.
+ * @see notification_set_execute_option()
+ *
+ */
+notification_error_e notification_set_application(notification_h noti, const char *pkgname);	/* Do not use this */
+
+/**
+ * @brief This function will be deprecated.
+ * @see notification_get_execute_option()
+ *
+ */
+notification_error_e notification_get_application(notification_h noti, char **pkgname);	/* Do not use this */
+
+/**
+ * @brief This function will be deprecated.
+ * @see notification_set_execute_option()
+ *
+ */
+notification_error_e notification_set_args(notification_h noti, bundle * args, bundle * group_args);	/* Do not use this */
+
+/**
+ * @brief This function will be deprecated.
+ * @see notification_get_execute_option()
+ *
+ */
+notification_error_e notification_get_args(notification_h noti, bundle ** args, bundle ** group_args);	/* Do not use this */
+
+/**
+ * @brief This function will be deprecated.
+ * @see notification_delete_by_priv_id()
+ *
+ */
+notification_error_e notification_delete_group_by_group_id(const char *pkgname,
+							   notification_type_e type,
+							   int group_id);
+
+/**
+ * @brief This function will be deprecated.
+ * @see notification_delete_by_priv_id()
+ *
+ */
+notification_error_e notification_delete_group_by_priv_id(const char *pkgname,
+							  notification_type_e type,
+							  int priv_id);
+/**
+ * @brief This function will be deprecated.
+ *
+ */
+notification_error_e notification_get_count(notification_type_e type,
+					    const char *pkgname,
+					    int group_id, int priv_id,
+					    int *count);
+
+/**
+ * @}
+ */
 
 #ifdef __cplusplus
 }

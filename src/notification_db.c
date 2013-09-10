@@ -31,8 +31,6 @@
 #include <notification_debug.h>
 #include <notification_db.h>
 
-#define SDFTET "/opt/dbspace/.notification_noti.db"
-
 sqlite3 *notification_db_open(const char *dbfile)
 {
 	int ret = 0;

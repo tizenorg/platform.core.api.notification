@@ -33,6 +33,15 @@
 
 #define NOTI_BURST_DELETE_UNIT 10
 
+static void __free_and_set(void **target_ptr, void *new_ptr) {
+	if (target_ptr != NULL) {
+		if (*target_ptr != NULL) {
+			free(*target_ptr);
+		}
+		*target_ptr = new_ptr;
+	}
+}
+
 static int _notification_noti_bind_query_text(sqlite3_stmt * stmt, const char *name,
 					 const char *str)
 {
@@ -113,43 +122,6 @@ static int _notification_noti_check_priv_id(notification_h noti, sqlite3 * db)
 	return NOTIFICATION_ERROR_NONE;
 }
 
-static int _notification_noti_get_priv_id(notification_h noti, sqlite3 * db)
-{
-	sqlite3_stmt *stmt = NULL;
-	char query[NOTIFICATION_QUERY_MAX] = { 0, };
-	int ret = NOTIFICATION_ERROR_NONE, result = 0;
-
-	/* Make query to get max priv_id */
-	snprintf(query, sizeof(query),
-		 "select max(priv_id) from noti_list where caller_pkgname = '%s'",
-		 noti->caller_pkgname);
-
-	ret = sqlite3_prepare(db, query, strlen(query), &stmt, NULL);
-	if (ret != SQLITE_OK) {
-		NOTIFICATION_ERR("Get count DB err(%d) : %s", ret,
-				 sqlite3_errmsg(db));
-		return NOTIFICATION_ERROR_FROM_DB;
-	}
-
-	ret = sqlite3_step(stmt);
-	if (ret == SQLITE_ROW) {
-		result = sqlite3_column_int(stmt, 0);
-	} else {
-		result = 0;
-	}
-
-	sqlite3_finalize(stmt);
-
-	if (result < 0) {
-		return NOTIFICATION_ERROR_FROM_DB;
-	}
-
-	/* Increase result(max priv_id value) for next priv_id */
-	noti->priv_id = result + 1;
-
-	return NOTIFICATION_ERROR_NONE;
-}
-
 static int _notification_noti_get_internal_group_id_by_priv_id(const char *pkgname,
 							       int priv_id,
 							       sqlite3 * db)
@@ -179,129 +151,6 @@ static int _notification_noti_get_internal_group_id_by_priv_id(const char *pkgna
 	sqlite3_finalize(stmt);
 
 	return result;
-}
-
-static int _notification_noti_get_max_internal_group_id(notification_h noti,
-							sqlite3 * db)
-{
-	sqlite3_stmt *stmt = NULL;
-	char query[NOTIFICATION_QUERY_MAX] = { 0, };
-	int ret = NOTIFICATION_ERROR_NONE, result = 0;
-
-	/* Get max internal group id */
-	snprintf(query, sizeof(query),
-		 "select max(internal_group_id) from noti_list");
-
-	ret = sqlite3_prepare(db, query, strlen(query), &stmt, NULL);
-	if (ret != SQLITE_OK) {
-		NOTIFICATION_ERR("Get count DB err(%d) : %s", ret,
-				 sqlite3_errmsg(db));
-		return NOTIFICATION_ERROR_FROM_DB;
-	}
-
-	ret = sqlite3_step(stmt);
-	if (ret == SQLITE_ROW) {
-		result = sqlite3_column_int(stmt, 0);
-	} else {
-		result = 0;
-	}
-
-	sqlite3_finalize(stmt);
-
-	return result;
-}
-
-static int _notification_noti_get_internal_group_id(notification_h noti,
-						    sqlite3 * db)
-{
-	sqlite3_stmt *stmt = NULL;
-	char query[NOTIFICATION_QUERY_MAX] = { 0, };
-	int ret = NOTIFICATION_ERROR_NONE, result = 0;
-	const char *ret_title = NULL;
-	char buf_key[32] = { 0, };
-
-	if (noti->group_id == NOTIFICATION_GROUP_ID_NONE) {
-		/* If Group ID is NONE Get max internal group ID */
-		result = _notification_noti_get_max_internal_group_id(noti, db);
-		if (result < 0) {
-			return NOTIFICATION_ERROR_FROM_DB;
-		}
-
-		/* Internal Group ID is max internal group ID + 1 */
-		noti->internal_group_id = result + 1;
-
-		return NOTIFICATION_ERROR_NONE;
-	} else if (noti->group_id == NOTIFICATION_GROUP_ID_DEFAULT) {
-		/* If Group ID is DEFAULT, Get internal group id if it exist */
-		if (noti->b_key != NULL) {
-			snprintf(buf_key, sizeof(buf_key), "%d",
-				 NOTIFICATION_TEXT_TYPE_TITLE);
-
-			ret_title = bundle_get_val(noti->b_key, buf_key);
-		}
-
-		if (ret_title == NULL && noti->b_text != NULL) {
-			snprintf(buf_key, sizeof(buf_key), "%d",
-				 NOTIFICATION_TEXT_TYPE_TITLE);
-
-			ret_title = bundle_get_val(noti->b_text, buf_key);
-		}
-
-		if (ret_title == NULL) {
-			ret_title = noti->caller_pkgname;
-		}
-
-		snprintf(query, sizeof(query),
-			 "select internal_group_id from noti_list where title_key = $title_key and group_id = %d",
-			 NOTIFICATION_GROUP_ID_DEFAULT);
-	} else {
-		/* If Group ID is > DEFAULT, Get internal group id if it exit */
-		snprintf(query, sizeof(query),
-			 "select internal_group_id from noti_list where caller_pkgname = '%s' and group_id = %d",
-			 NOTIFICATION_CHECK_STR(noti->caller_pkgname),
-			 noti->group_id);
-	}
-
-	ret = sqlite3_prepare_v2(db, query, -1, &stmt, NULL);
-	if (ret != SQLITE_OK) {
-		NOTIFICATION_ERR("Select Query : %s", query);
-		NOTIFICATION_ERR("Select DB error(%d) : %s", ret,
-				 sqlite3_errmsg(db));
-		if (stmt) {
-			sqlite3_finalize(stmt);
-		}
-		return NOTIFICATION_ERROR_FROM_DB;
-	}
-
-	/* Bind query */
-	if (ret_title != NULL) {
-		ret =
-		    _notification_noti_bind_query_text(stmt, "$title_key",
-						  NOTIFICATION_CHECK_STR
-						  (ret_title));
-		if (ret != NOTIFICATION_ERROR_NONE) {
-			NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
-			if (stmt) {
-				sqlite3_finalize(stmt);
-			}
-			return ret;
-		}
-	}
-
-	ret = sqlite3_step(stmt);
-	if (ret == SQLITE_ROW) {
-		result = sqlite3_column_int(stmt, 0);
-	} else {
-		/* If there is not internal_group_id, create new one */
-		result = _notification_noti_get_max_internal_group_id(noti, db);
-		result++;
-	}
-
-	sqlite3_finalize(stmt);
-
-	noti->internal_group_id = result;
-
-	return NOTIFICATION_ERROR_NONE;
 }
 
 static int _notification_noti_make_query(notification_h noti, char *query,
@@ -618,8 +467,8 @@ static void _notification_noti_populate_from_stmt(sqlite3_stmt * stmt, notificat
 
 	noti->type = sqlite3_column_int(stmt, col++);
 	noti->layout = sqlite3_column_int(stmt, col++);
-	noti->caller_pkgname = notification_db_column_text(stmt, col++);
-	noti->launch_pkgname = notification_db_column_text(stmt, col++);
+	__free_and_set((void **)&(noti->caller_pkgname), notification_db_column_text(stmt, col++));
+	__free_and_set((void **)&(noti->launch_pkgname), notification_db_column_text(stmt, col++));
 	noti->b_image_path = notification_db_column_bundle(stmt, col++);
 	noti->group_id = sqlite3_column_int(stmt, col++);
 	noti->internal_group_id = 0;
@@ -630,8 +479,8 @@ static void _notification_noti_populate_from_stmt(sqlite3_stmt * stmt, notificat
 	noti->b_format_args = notification_db_column_bundle(stmt, col++);
 	noti->num_format_args = sqlite3_column_int(stmt, col++);
 
-	noti->domain = notification_db_column_text(stmt, col++);
-	noti->dir = notification_db_column_text(stmt, col++);
+	__free_and_set((void **)&(noti->domain), notification_db_column_text(stmt, col++));
+	__free_and_set((void **)&(noti->dir), notification_db_column_text(stmt, col++));
 	noti->time = sqlite3_column_int(stmt, col++);
 	noti->insert_time = sqlite3_column_int(stmt, col++);
 	noti->args = notification_db_column_bundle(stmt, col++);
@@ -645,9 +494,9 @@ static void _notification_noti_populate_from_stmt(sqlite3_stmt * stmt, notificat
 	    notification_db_column_bundle(stmt, col++);
 
 	noti->sound_type = sqlite3_column_int(stmt, col++);
-	noti->sound_path = notification_db_column_text(stmt, col++);
+	__free_and_set((void **)&(noti->sound_path), notification_db_column_text(stmt, col++));
 	noti->vibration_type = sqlite3_column_int(stmt, col++);
-	noti->vibration_path = notification_db_column_text(stmt, col++);
+	__free_and_set((void **)&(noti->vibration_path), notification_db_column_text(stmt, col++));
 	noti->led_operation = sqlite3_column_int(stmt, col++);
 	noti->led_argb = sqlite3_column_int(stmt, col++);
 	noti->led_on_ms = sqlite3_column_int(stmt, col++);
@@ -668,7 +517,7 @@ static notification_h _notification_noti_get_item(sqlite3_stmt * stmt)
 {
 	notification_h noti = NULL;
 
-	noti = malloc(sizeof(struct _notification));
+	noti = (notification_h) calloc(1, sizeof(struct _notification));
 	if (noti == NULL) {
 		return NULL;
 	}
@@ -1613,12 +1462,10 @@ notification_error_e notification_noti_get_detail_list(const char *pkgname,
 	if (priv_id == NOTIFICATION_PRIV_ID_NONE && group_id == NOTIFICATION_GROUP_ID_NONE) {
 		if (status == VCONFKEY_TELEPHONY_SIM_INSERTED) {
 			snprintf(query_where, sizeof(query_where),
-				 "where  caller_pkgname = '%s' ",
-				 pkgname, internal_group_id);
+				 "where  caller_pkgname = '%s' ", pkgname);
 		} else {
 			snprintf(query_where, sizeof(query_where),
-				 "where  caller_pkgname = '%s' and flag_simmode = 0 ",
-				 pkgname, internal_group_id);
+				 "where  caller_pkgname = '%s' and flag_simmode = 0 ", pkgname);
 		}
 	} else {
 		internal_group_id =
