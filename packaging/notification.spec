@@ -1,15 +1,14 @@
 Name:       notification
-Summary:    notification library
+Summary:    Notification Library
 Version:    0.2.3
 Release:    1
-Group:      Applications/Libraries
+Group:      System/API
 License:    Apache-2.0
 Source0:    %{name}-%{version}.tar.gz
 Source1001: 	notification.manifest
 BuildRequires: pkgconfig(sqlite3)
 BuildRequires: pkgconfig(db-util)
 BuildRequires: pkgconfig(heynoti)
-BuildRequires: pkgconfig(vconf)
 BuildRequires: pkgconfig(bundle)
 BuildRequires: pkgconfig(dbus-1)
 BuildRequires: pkgconfig(dlog)
@@ -18,6 +17,8 @@ BuildRequires: pkgconfig(aul)
 BuildRequires: pkgconfig(appsvc)
 BuildRequires: pkgconfig(dbus-glib-1)
 BuildRequires: pkgconfig(com-core)
+BuildRequires: pkgconfig(ecore)
+BuildRequires: pkgconfig(eina)
 
 BuildRequires: cmake
 Requires(post): /sbin/ldconfig
@@ -25,7 +26,7 @@ Requires(post): /usr/bin/sqlite3
 Requires(postun): /sbin/ldconfig
 
 %description
-Notificaiton library.
+Client library for sending notifications.
 
 %prep
 %setup -q
@@ -37,7 +38,7 @@ Group:      Development/Applications
 Requires:   %{name} = %{version}-%{release}
 
 %description devel
-Notificaiton library (devel).
+Development files needed to build software that needs to system a system notification.
 
 %build
 %cmake .

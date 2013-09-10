@@ -45,7 +45,6 @@ notification_error_e notification_ipc_request_refresh(void);
 notification_error_e notification_ipc_request_delete_single(notification_type_e type, char *pkgname, int priv_id);
 notification_error_e notification_ipc_request_delete_multiple(notification_type_e type, char *pkgname);
 
-int notification_ipc_is_master_ready(void);
 notification_error_e notification_ipc_add_deffered_task(void (*deffered_task_cb)(void *data), void *user_data);
 notification_error_e notification_ipc_del_deffered_task(void (*deffered_task_cb)(void *data));
 

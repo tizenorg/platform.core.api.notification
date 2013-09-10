@@ -1,3 +1,7 @@
+* Wed Sep 18 2013 Rusty Lynch <rusty.lynch@intel.com> accepted/tizen/20130918.224851@3d7a770
+- Remove vconf ipc based logic for syncronizing with master
+- Fix rpm-lint errors
+
 * Wed Jun 12 2013 Baptiste DURAND <baptiste.durand@eurogiciel.fr> accepted/tizen/20130602.020356@59093a0
 - Replace manifest with default floor
 

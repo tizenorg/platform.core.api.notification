@@ -19,12 +19,12 @@
  *
  */
 
+#include <Ecore.h>
+#include <Eina.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
-
-#include <vconf.h>
 
 #include <packet.h>
 #include <com-core.h>
@@ -38,10 +38,6 @@
 
 #define NOTIFICATION_IPC_TIMEOUT 1.0
 
-#if !defined(VCONFKEY_MASTER_STARTED)
-#define VCONFKEY_MASTER_STARTED "memory/data-provider-master/started"
-#endif
-
 static struct info {
 	int server_fd;
 	int client_fd;
@@ -52,14 +48,12 @@ static struct info {
 	} server_cb;
 	int initialized;
 	int is_started_cb_set_svc;
-	int is_started_cb_set_task;
 } s_info = {
 	.server_fd = -1,
 	.client_fd = -1,
 	.socket_file = NOTIFICATION_ADDR,
 	.initialized = 0,
 	.is_started_cb_set_svc = 0,
-	.is_started_cb_set_task = 0,
 };
 
 typedef struct _task_list task_list;
@@ -73,50 +67,19 @@ struct _task_list {
 
 static task_list *g_task_list;
 
-static notification_error_e notification_ipc_monitor_register(void);
-static notification_error_e notification_ipc_monitor_deregister(void);
-static void _do_deffered_task(void);
-static void _master_started_cb_task(keynode_t *node, void *data);
+static Eina_Bool _do_deffered_task(void *data);
 
-/*!
- * functions to check state of master
+/*
+ * The concept of having to deffer a task till the "master" was
+ * started is now defunct since we use systemd to auto activate
+ * the service, with clients blissfully unaware of the state
+ * of the service at the time they attempt to use the socket.
+ *
+ * To enable backwards compatability we now setup an idle handler
+ * to cleanup all the deffered task.  This keeps the call behavior
+ * as non-blocking and is true to the original spirit (i.e. run
+ * the task when the service is available)
  */
-static inline void _set_master_started_cb(vconf_callback_fn cb) {
-	int ret = -1;
-
-	ret = vconf_notify_key_changed(VCONFKEY_MASTER_STARTED,
-			cb, NULL);
-	if (ret != 0) {
-		NOTIFICATION_ERR("failed to notify key(%s) : %d",
-				VCONFKEY_MASTER_STARTED, ret);
-	}
-}
-
-static inline void _unset_master_started_cb(vconf_callback_fn cb) {
-	int ret = -1;
-
-	ret = vconf_ignore_key_changed(VCONFKEY_MASTER_STARTED,
-			cb);
-	if (ret != 0) {
-		NOTIFICATION_ERR("failed to notify key(%s) : %d",
-				VCONFKEY_MASTER_STARTED, ret);
-	}
-}
-
-int notification_ipc_is_master_ready(void)
-{
-	int ret = -1, is_master_started = 0;
-
-	ret = vconf_get_bool(VCONFKEY_MASTER_STARTED, &is_master_started);
-	if (ret == 0 && is_master_started == 1) {
-		NOTIFICATION_ERR("the master has been started");
-	} else {
-		is_master_started = 0;
-		NOTIFICATION_ERR("the master has been stopped");
-	}
-
-	return is_master_started;
-}
 
 notification_error_e
 notification_ipc_add_deffered_task(
@@ -131,11 +94,6 @@ notification_ipc_add_deffered_task(
 
 	if (list_new == NULL) {
 		return NOTIFICATION_ERROR_NO_MEMORY;
-	}
-
-	if (s_info.is_started_cb_set_task == 0) {
-		_set_master_started_cb(_master_started_cb_task);
-		s_info.is_started_cb_set_task = 1;
 	}
 
 	list_new->next = NULL;
@@ -156,6 +114,9 @@ notification_ipc_add_deffered_task(
 		list->next = list_new;
 		list_new->prev = list;
 	}
+
+	ecore_idler_add(_do_deffered_task, NULL);
+
 	return NOTIFICATION_ERROR_NONE;
 }
 
@@ -199,10 +160,7 @@ notification_ipc_del_deffered_task(
 			free(list_del);
 
 			if (g_task_list == NULL) {
-				if (s_info.is_started_cb_set_task == 1) {
-					_unset_master_started_cb(_master_started_cb_task);
-					s_info.is_started_cb_set_task = 0;
-				}
+				ecore_idler_del(_do_deffered_task);
 			}
 
 			return NOTIFICATION_ERROR_NONE;
@@ -213,59 +171,30 @@ notification_ipc_del_deffered_task(
 	return NOTIFICATION_ERROR_INVALID_DATA;
 }
 
-static void _do_deffered_task(void) {
+static Eina_Bool _do_deffered_task(void *data) {
 	task_list *list_do = NULL;
 	task_list *list_temp = NULL;
 
-	if (g_task_list == NULL) {
-		return;
-	}
+	if (g_task_list) {
+        list_do = g_task_list;
+        g_task_list = NULL;
 
-	list_do = g_task_list;
-	g_task_list = NULL;
-	if (s_info.is_started_cb_set_task == 1) {
-		_unset_master_started_cb(_master_started_cb_task);
-		s_info.is_started_cb_set_task = 0;
-	}
+        while (list_do->prev != NULL) {
+            list_do = list_do->prev;
+        }
 
-	while (list_do->prev != NULL) {
-		list_do = list_do->prev;
-	}
+        while (list_do != NULL) {
+            if (list_do->task_cb != NULL) {
+                list_do->task_cb(list_do->data);
+                NOTIFICATION_DBG("called:%p", list_do->task_cb);
+            }
+            list_temp = list_do->next;
+            free(list_do);
+            list_do = list_temp;
+        }
+    }
 
-	while (list_do != NULL) {
-		if (list_do->task_cb != NULL) {
-			list_do->task_cb(list_do->data);
-			NOTIFICATION_DBG("called:%p", list_do->task_cb);
-		}
-		list_temp = list_do->next;
-		free(list_do);
-		list_do = list_temp;
-	}
-}
-
-static void _master_started_cb_service(keynode_t *node,
-		void *data) {
-	int ret = NOTIFICATION_ERROR_NONE;
-
-	if (notification_ipc_is_master_ready()) {
-		ret = notification_ipc_monitor_register();
-		if (ret != NOTIFICATION_ERROR_NONE) {
-			NOTIFICATION_ERR("failed to register a monitor");
-		}
-	} else {
-		ret = notification_ipc_monitor_deregister();
-		if (ret != NOTIFICATION_ERROR_NONE) {
-			NOTIFICATION_ERR("failed to deregister a monitor");
-		}
-	}
-}
-
-static void _master_started_cb_task(keynode_t *node,
-		void *data) {
-
-	if (notification_ipc_is_master_ready()) {
-		_do_deffered_task();
-	}
+    return ECORE_CALLBACK_CANCEL;
 }
 
 /*!
@@ -808,10 +737,7 @@ static int _handler_service_register(pid_t pid, int handle, const struct packet 
 	return ret;
 }
 
-/*!
- * functions to initialize and register a monitor
- */
-static notification_error_e notification_ipc_monitor_register(void)
+notification_error_e notification_ipc_monitor_init(void)
 {
 	int ret;
 	struct packet *packet;
@@ -877,7 +803,7 @@ static notification_error_e notification_ipc_monitor_register(void)
 	return ret;
 }
 
-notification_error_e notification_ipc_monitor_deregister(void)
+notification_error_e notification_ipc_monitor_fini(void)
 {
 	if (s_info.initialized == 0) {
 		return NOTIFICATION_ERROR_NONE;
@@ -889,36 +815,6 @@ notification_error_e notification_ipc_monitor_deregister(void)
 	s_info.initialized = 0;
 
 	return NOTIFICATION_ERROR_NONE;
-}
-
-notification_error_e notification_ipc_monitor_init(void)
-{
-	int ret = NOTIFICATION_ERROR_NONE;
-
-	if (notification_ipc_is_master_ready()) {
-		ret = notification_ipc_monitor_register();
-	}
-
-	if (s_info.is_started_cb_set_svc == 0) {
-		_set_master_started_cb(_master_started_cb_service);
-		s_info.is_started_cb_set_svc = 1;
-	}
-
-	return ret;
-}
-
-notification_error_e notification_ipc_monitor_fini(void)
-{
-	int ret = NOTIFICATION_ERROR_NONE;
-
-	if (s_info.is_started_cb_set_svc == 1) {
-		_unset_master_started_cb(_master_started_cb_service);
-		s_info.is_started_cb_set_svc = 0;
-	}
-
-	ret = notification_ipc_monitor_deregister();
-
-	return ret;
 }
 
 /*!
@@ -955,7 +851,6 @@ notification_error_e notification_ipc_request_insert(notification_h noti, int *p
 		}
 		packet_unref(result);
 	} else {
-		notification_ipc_is_master_ready();
 		return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 	}
 
@@ -987,7 +882,6 @@ notification_error_e notification_ipc_request_delete_single(notification_type_e 
 		}
 		packet_unref(result);
 	} else {
-		notification_ipc_is_master_ready();
 		return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 	}
 
@@ -1016,7 +910,6 @@ notification_error_e notification_ipc_request_delete_multiple(notification_type_
 		NOTIFICATION_ERR("num deleted:%d", num_deleted);
 		packet_unref(result);
 	} else {
-		notification_ipc_is_master_ready();
 		return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 	}
 
@@ -1044,7 +937,6 @@ notification_error_e notification_ipc_request_update(notification_h noti)
 		}
 		packet_unref(result);
 	} else {
-		notification_ipc_is_master_ready();
 		return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 	}
 
@@ -1071,7 +963,6 @@ notification_error_e notification_ipc_request_refresh(void)
 		}
 		packet_unref(result);
 	} else {
-		notification_ipc_is_master_ready();
 		return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 	}
 

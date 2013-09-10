@@ -2943,7 +2943,11 @@ void notification_call_changed_cb(notification_op *op_list, int op_num)
 
 EXPORT_API int notification_is_service_ready(void)
 {
-	return notification_ipc_is_master_ready();
+        /*
+         * The notification service is now socket activated so as far
+         * as clients are concerned it is always ready
+         */
+	return 1;
 }
 
 EXPORT_API notification_error_e

@@ -33,7 +33,6 @@ INCLUDE(FindPkgConfig)
 pkg_check_modules(pkgs REQUIRED 
 	sqlite3 
 	db-util 
-	vconf 
 	bundle 
 	dlog 
 	ail 
@@ -42,6 +41,8 @@ pkg_check_modules(pkgs REQUIRED
 	dbus-1
 	dbus-glib-1
 	com-core
+	ecore
+	eina
 )
 
 FOREACH(flag ${pkgs_CFLAGS})
