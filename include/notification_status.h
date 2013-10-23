@@ -27,23 +27,6 @@ extern "C" {
 #endif /* __cplusplus */
 
 /**
- * @ingroup NOTIFICATION_LIBRARY
- * @defgroup NOTIFICATION_STATUS_LIBRARY notification status library
- * @brief This notification status library used to display simple plain message on small popup
- */
-
-/**
- * @ingroup NOTIFICATION_STATUS_LIBRARY
- * @defgroup NOTIFICATION_STATUS_LIBRARY_TYPE notification status library type
- * @brief type used by notification status library
- */
-
-/**
- * @addtogroup NOTIFICATION_STATUS_LIBRARY_TYPE
- * @{
- */
-
-/**
 * @brief Called when new message is posted
 * @param[in] message The message posted
 * @param[in] data user data
@@ -51,15 +34,6 @@ extern "C" {
 * @see notification_status_monitor_message_cb_set()
 */
 typedef void (*notification_status_message_cb)(const char *message, void *data);
-
-/**
- * @}
- */
-
-/**
- * @addtogroup NOTIFICATION_STATUS_LIBRARY
- * @{
- */
 
 /**
 * @brief register callback for receiving message
@@ -74,6 +48,11 @@ int notification_status_monitor_message_cb_set(notification_status_message_cb ca
 * @param[in] data user_data
 */
 int notification_status_monitor_message_cb_unset(void);
+
+/**
+ * @addtogroup NOTIFICATION_STATUS
+ * @{
+ */
 
 /**
  * @brief This function send string(message) to notification status monitor

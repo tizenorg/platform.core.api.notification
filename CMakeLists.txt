@@ -18,13 +18,15 @@ SET(SRCS ./src/notification.c
 	./src/notification_db.c
 	./src/notification_list.c
 	./src/notification_status.c
-	./src/notification_ipc.c)
+	./src/notification_ipc.c
+	./src/notification_setting.c)
 SET(HEADERS ./include/notification.h 
 	./include/notification_error.h 
 	./include/notification_type.h 
 	./include/notification_list.h
 	./include/notification_status.h
 	./include/notification_ipc.h
+	./include/notification_setting.h
 	./include/notification_noti.h)
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include)
@@ -37,7 +39,6 @@ pkg_check_modules(pkgs REQUIRED
 	dlog 
 	ail 
 	aul 
-	appsvc
 	dbus-1
 	dbus-glib-1
 	com-core

@@ -36,10 +36,12 @@
 #include <notification_internal.h>
 #include <notification_debug.h>
 
-#define NOTIFICATION_IPC_TIMEOUT 1.0
+#define NOTIFICATION_IPC_TIMEOUT 0.0
 
 static struct info {
 	int server_fd;
+	int server_cl_fd;
+	int server_cl_fd_ref_cnt;
 	int client_fd;
 	const char *socket_file;
 	struct {
@@ -50,6 +52,8 @@ static struct info {
 	int is_started_cb_set_svc;
 } s_info = {
 	.server_fd = -1,
+	.server_cl_fd = -1,
+	.server_cl_fd_ref_cnt = 0,
 	.client_fd = -1,
 	.socket_file = NOTIFICATION_ADDR,
 	.initialized = 0,
@@ -64,6 +68,11 @@ struct _task_list {
 	void (*task_cb) (void *data);
 	void *data;
 };
+
+typedef struct _result_cb_item {
+	void (*result_cb)(int priv_id, int result, void *data);
+	void *data;
+} result_cb_item;
 
 static task_list *g_task_list;
 
@@ -174,6 +183,7 @@ notification_ipc_del_deffered_task(
 static Eina_Bool _do_deffered_task(void *data) {
 	task_list *list_do = NULL;
 	task_list *list_temp = NULL;
+
 
 	if (g_task_list) {
         list_do = g_task_list;
@@ -776,6 +786,7 @@ notification_error_e notification_ipc_monitor_init(void)
 
 	NOTIFICATION_ERR("register a service\n");
 
+	com_core_packet_use_thread(1);
 	s_info.server_fd = com_core_packet_client_init(s_info.socket_file, 0, service_table);
 	if (s_info.server_fd < 0) {
 		NOTIFICATION_ERR("Failed to make a connection to the master\n");
@@ -785,6 +796,7 @@ notification_error_e notification_ipc_monitor_init(void)
 	packet = packet_create("service_register", "");
 	if (!packet) {
 		NOTIFICATION_ERR("Failed to build a packet\n");
+		com_core_packet_client_fini(s_info.server_fd);
 		return NOTIFICATION_ERROR_IO;
 	}
 
@@ -943,6 +955,106 @@ notification_error_e notification_ipc_request_update(notification_h noti)
 	return status;
 }
 
+static int _notification_ipc_update_cb(pid_t pid, int handle, const struct packet *packet, void *data)
+{
+	int status = 0;
+	int id = NOTIFICATION_PRIV_ID_NONE;
+	result_cb_item *cb_item = (result_cb_item *)data;
+
+	if (cb_item == NULL) {
+		NOTIFICATION_ERR("Failed to get a callback item");
+		return NOTIFICATION_ERROR_INVALID_DATA;
+	}
+	s_info.server_cl_fd_ref_cnt = (s_info.server_cl_fd_ref_cnt <= 1) ? 0 : s_info.server_cl_fd_ref_cnt - 1;
+	if (s_info.server_cl_fd_ref_cnt <= 0) {
+		NOTIFICATION_DBG("REFCNT: %d (fd: %d)", s_info.server_cl_fd_ref_cnt, s_info.server_cl_fd);
+		int fd_temp = s_info.server_cl_fd;
+		s_info.server_cl_fd = -1;
+		com_core_packet_client_fini(fd_temp);
+		NOTIFICATION_DBG("FD(%d) finalized", fd_temp);
+	}
+
+	if (packet != NULL) {
+		if (packet_get(packet, "ii", &status, &id) != 2) {
+			NOTIFICATION_ERR("Failed to get a result packet");
+			status = NOTIFICATION_ERROR_IO;
+		}
+	}
+
+	if (cb_item->result_cb != NULL) {
+		cb_item->result_cb(id, status, cb_item->data);
+	}
+	free(cb_item);
+
+	return status;
+}
+
+notification_error_e notification_ipc_request_update_async(notification_h noti,
+		void (*result_cb)(int priv_id, int result, void *data), void *user_data)
+{
+	int ret = NOTIFICATION_ERROR_NONE;
+	int ret_con = 0;
+	struct packet *packet = NULL;
+	result_cb_item *cb_item = NULL;
+
+	packet = notification_ipc_make_packet_from_noti(noti, "update_noti", 1);
+	if (packet == NULL) {
+		ret = NOTIFICATION_ERROR_INVALID_DATA;
+		goto fail;
+	}
+
+	cb_item = calloc(1, sizeof(result_cb_item));
+	if (cb_item == NULL) {
+		ret = NOTIFICATION_ERROR_NO_MEMORY;
+		goto fail;
+	}
+
+	if (s_info.server_cl_fd < 0) {
+		com_core_packet_use_thread(1);
+		s_info.server_cl_fd = com_core_packet_client_init(s_info.socket_file, 0, NULL);
+		if (s_info.server_cl_fd < 0) {
+			NOTIFICATION_DBG("Failed to init client: %d", s_info.server_cl_fd);
+			ret = NOTIFICATION_ERROR_SERVICE_NOT_READY;
+			goto fail;
+		}
+		s_info.server_cl_fd_ref_cnt = 1;
+	} else {
+		s_info.server_cl_fd_ref_cnt++;
+	}
+
+	cb_item->result_cb = result_cb;
+	cb_item->data = user_data;
+
+	NOTIFICATION_INFO("Connection count:%d, fd:%d", s_info.server_cl_fd_ref_cnt, s_info.server_cl_fd);
+
+	ret_con = com_core_packet_async_send(s_info.server_cl_fd, packet, 0.0f,
+			_notification_ipc_update_cb, cb_item);
+	if (ret_con < 0) {
+		NOTIFICATION_ERR("Failed to request update, %d\n", ret_con);
+		s_info.server_cl_fd_ref_cnt = (s_info.server_cl_fd_ref_cnt <= 1) ? 0 : s_info.server_cl_fd_ref_cnt - 1;
+		if (s_info.server_cl_fd_ref_cnt <= 0) {
+			int fd_temp = s_info.server_cl_fd;
+			s_info.server_cl_fd = -1;
+			com_core_packet_client_fini(fd_temp);
+			NOTIFICATION_INFO("FD(%d) finalized", fd_temp);
+		}
+		ret = NOTIFICATION_ERROR_IO;
+		goto fail;
+	} else {
+		ret = NOTIFICATION_ERROR_NONE;
+		goto success;
+	}
+
+fail:
+	if (cb_item) free(cb_item);
+	NOTIFICATION_ERR("Err: %d\n", ret);
+
+success:
+	if (packet) packet_destroy(packet);
+
+	return ret;
+}
+
 notification_error_e notification_ipc_request_refresh(void)
 {
 	int status = 0;
@@ -960,6 +1072,63 @@ notification_error_e notification_ipc_request_refresh(void)
 			NOTIFICATION_ERR("Failed to get a result packet");
 			packet_unref(result);
 			return NOTIFICATION_ERROR_IO;
+		}
+		packet_unref(result);
+	} else {
+		return NOTIFICATION_ERROR_SERVICE_NOT_READY;
+	}
+
+	return status;
+}
+
+notification_error_e notification_ipc_noti_setting_property_set(const char *pkgname, const char *property, const char *value)
+{
+	int status = 0;
+	int ret = 0;
+	struct packet *packet;
+	struct packet *result;
+
+	packet = packet_create("set_noti_property", "sss", pkgname, property, value);
+	result = com_core_packet_oneshot_send(NOTIFICATION_ADDR,
+			packet,
+			NOTIFICATION_IPC_TIMEOUT);
+	packet_destroy(packet);
+
+	if (result != NULL) {
+		if (packet_get(result, "ii", &status, &ret) != 2) {
+			NOTIFICATION_ERR("Failed to get a result packet");
+			packet_unref(result);
+			return NOTIFICATION_ERROR_IO;
+		}
+		packet_unref(result);
+	} else {
+		return NOTIFICATION_ERROR_SERVICE_NOT_READY;
+	}
+
+	return status;
+}
+
+notification_error_e notification_ipc_noti_setting_property_get(const char *pkgname, const char *property, char **value)
+{
+	int status = 0;
+	char *ret = NULL;
+	struct packet *packet;
+	struct packet *result;
+
+	packet = packet_create("get_noti_property", "ss", pkgname, property);
+	result = com_core_packet_oneshot_send(NOTIFICATION_ADDR,
+			packet,
+			NOTIFICATION_IPC_TIMEOUT);
+	packet_destroy(packet);
+
+	if (result != NULL) {
+		if (packet_get(result, "is", &status, &ret) != 2) {
+			NOTIFICATION_ERR("Failed to get a result packet");
+			packet_unref(result);
+			return NOTIFICATION_ERROR_IO;
+		}
+		if (status == NOTIFICATION_ERROR_NONE && ret != NULL) {
+			*value = strdup(ret);
 		}
 		packet_unref(result);
 	} else {

@@ -22,7 +22,7 @@
 #ifndef __NOTIFICATION_DEBUG_H__
 #define __NOTIFICATION_DEBUG_H__
 
-#define LOG_TAG "notification"
+#define LOG_TAG "NOTIFICATION"
 #include <dlog.h>
 
 #ifndef EXPORT_API
@@ -66,12 +66,12 @@
 
 #define NOTIFICATION_WARN(fmt , args...) \
 	do{ \
-		LOGI("[%s : %d] "fmt"\n",__func__,__LINE__,##args ); \
+		LOGW("[%s : %d] "fmt"\n",__func__,__LINE__,##args ); \
 	} while(0)
 
 #define NOTIFICATION_ERR(fmt , args...) \
 	do{ \
-		LOGI("[%s : %d] "fmt"\n",__func__,__LINE__,##args ); \
+		LOGE("[%s : %d] "fmt"\n",__func__,__LINE__,##args ); \
 	} while(0)
 
 #endif /* _DLOG_H_ */

@@ -14,7 +14,6 @@ BuildRequires: pkgconfig(dbus-1)
 BuildRequires: pkgconfig(dlog)
 BuildRequires: pkgconfig(ail)
 BuildRequires: pkgconfig(aul)
-BuildRequires: pkgconfig(appsvc)
 BuildRequires: pkgconfig(dbus-glib-1)
 BuildRequires: pkgconfig(com-core)
 BuildRequires: pkgconfig(ecore)
@@ -47,8 +46,16 @@ make %{?jobs:-j%jobs}
 %install
 %make_install
 
+mkdir -p %{buildroot}/usr/share/license
+cp -f LICENSE.APLv2.0 %{buildroot}/usr/share/license/%{name}
+
 %post
 /sbin/ldconfig
+
+if [ ! -d /opt/dbspace ]
+then
+	mkdir /opt/dbspace
+fi
 
 if [ ! -f /opt/dbspace/.notification.db ]
 then
@@ -136,20 +143,18 @@ chown :5000 /opt/dbspace/.notification.db
 chown :5000 /opt/dbspace/.notification.db-journal
 chmod 660 /opt/dbspace/.notification.db
 chmod 660 /opt/dbspace/.notification.db-journal
+chsmack -a 'notification::db' /opt/dbspace/.notification.db*
 vconftool set -t string memory/private/libstatus/message "" -i -g 5000
 
 %postun -p /sbin/ldconfig
 
 %files
-%manifest %{name}.manifest
-%license LICENSE.APLv2.0
 %manifest notification.manifest
 %defattr(-,root,root,-)
-%{_libdir}/libnotification.so.*
+%{_libdir}/libnotification.so*
+/usr/share/license/%{name}
 
 %files devel
-%manifest %{name}.manifest
 %defattr(-,root,root,-)
 %{_includedir}/notification/*.h
-%{_libdir}/libnotification.so
 %{_libdir}/pkgconfig/notification.pc
