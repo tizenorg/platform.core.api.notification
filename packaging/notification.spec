@@ -40,7 +40,8 @@ Requires:   %{name} = %{version}-%{release}
 Development files needed to build software that needs to system a system notification.
 
 %build
-%cmake .
+export LDFLAGS+="-Wl,--rpath=%{_prefix}/lib -Wl,--as-needed"
+LDFLAGS="$LDFLAGS" cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix}
 make %{?jobs:-j%jobs}
 
 %install
