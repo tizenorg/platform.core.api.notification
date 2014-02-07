@@ -24,16 +24,13 @@
 
 #include <bundle.h>
 #include <sqlite3.h>
-
-#ifndef DBDIR
-#error "DBDIR not defined"
-#endif
+#include <tzplatform_config.h>
 
 #ifndef DBFILE
 #error "DBFILE not defined"
 #endif
 
-#define DBPATH DBDIR"/"DBFILE
+#define DBPATH tzplatform_mkpath(TZ_SYS_DB,DBFILE)
 
 #define NOTIFICATION_QUERY_MAX 4096
 

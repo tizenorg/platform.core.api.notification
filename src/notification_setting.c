@@ -31,9 +31,10 @@
 #include <notification_ipc.h>
 #include <notification_setting.h>
 #include <notification_internal.h>
+#include <tzplatform_config.h>
 
 #define NOTIFICATION_SETTING_DB "notification_setting"
-#define NOTIFICATION_SETTING_DB_PATH "/opt/usr/dbspace/.notification_parser.db"
+#define NOTIFICATION_SETTING_DB_PATH tzplatform_mkpath(TZ_USER_DB,".notification_parser.db")
 
 struct _notification_setting_h {
 	char *appid;
