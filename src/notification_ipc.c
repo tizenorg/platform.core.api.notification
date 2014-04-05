@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2000 - 2011 Samsung Electronics Co., Ltd. All rights reserved.
  *
- * Contact: Seungtaek Chung <seungtaek.chung@samsung.com>, Mi-Ju Lee <miju52.lee@samsung.com>, Xi Zhichan <zhichan.xi@samsung.com>
+ * Contact: Seungtaek Chung <seungtaek.chung@samsung.com>, Mi-Ju Lee <miju52.lee@samsung.com>, Xi Zhichan <zhichan.xi@samsung.com>, Youngsub Ko <ys4610.ko@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -863,6 +863,7 @@ notification_error_e notification_ipc_request_insert(notification_h noti, int *p
 		}
 		packet_unref(result);
 	} else {
+		NOTIFICATION_ERR("failed to receive answer(insert)");
 		return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 	}
 
@@ -894,6 +895,7 @@ notification_error_e notification_ipc_request_delete_single(notification_type_e 
 		}
 		packet_unref(result);
 	} else {
+		NOTIFICATION_ERR("failed to receive answer(delete)");
 		return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 	}
 
@@ -922,6 +924,7 @@ notification_error_e notification_ipc_request_delete_multiple(notification_type_
 		NOTIFICATION_ERR("num deleted:%d", num_deleted);
 		packet_unref(result);
 	} else {
+		NOTIFICATION_ERR("failed to receive answer(delete multiple)");
 		return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 	}
 
@@ -949,6 +952,7 @@ notification_error_e notification_ipc_request_update(notification_h noti)
 		}
 		packet_unref(result);
 	} else {
+		NOTIFICATION_ERR("failed to receive answer(update)");
 		return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 	}
 
@@ -1075,6 +1079,7 @@ notification_error_e notification_ipc_request_refresh(void)
 		}
 		packet_unref(result);
 	} else {
+		NOTIFICATION_ERR("failed to receive answer(refresh)");
 		return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 	}
 
@@ -1102,6 +1107,7 @@ notification_error_e notification_ipc_noti_setting_property_set(const char *pkgn
 		}
 		packet_unref(result);
 	} else {
+		NOTIFICATION_ERR("failed to receive answer(delete)");
 		return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 	}
 
@@ -1132,6 +1138,7 @@ notification_error_e notification_ipc_noti_setting_property_get(const char *pkgn
 		}
 		packet_unref(result);
 	} else {
+		NOTIFICATION_ERR("failed to receive answer(delete)");
 		return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 	}
 

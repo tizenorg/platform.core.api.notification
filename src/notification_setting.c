@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2000 - 2011 Samsung Electronics Co., Ltd. All rights reserved.
  *
- * Contact: Seungtaek Chung <seungtaek.chung@samsung.com>, Mi-Ju Lee <miju52.lee@samsung.com>, Xi Zhichan <zhichan.xi@samsung.com>
+ * Contact: Seungtaek Chung <seungtaek.chung@samsung.com>, Mi-Ju Lee <miju52.lee@samsung.com>, Xi Zhichan <zhichan.xi@samsung.com>, Youngsub Ko <ys4610.ko@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -167,7 +167,6 @@ EXPORT_API notification_error_e notification_setting_db_set(const char *pkgname,
 	sqlite3 *db = NULL;
 	char *sqlbuf = NULL;
 	int sqlret;
-	char *err_msg = NULL;
 	const char *column = NULL;
 
 	if (!pkgname)
@@ -204,24 +203,16 @@ EXPORT_API notification_error_e notification_setting_db_set(const char *pkgname,
 		goto return_close_db;
 	}
 
-	sqlret = sqlite3_exec(db, sqlbuf, NULL, NULL, &err_msg);
-	if (sqlret != SQLITE_OK) {
-		NOTIFICATION_ERR("fail to set pkgname[%s] option[%s], value[%s], err[%d - %s]",
-				pkgname, value, property, sqlret, err_msg);
-		result = NOTIFICATION_ERROR_FROM_DB;
-		goto return_close_db;
-	}
+	result = notification_db_exec(db, sqlbuf, NULL);
 
 return_close_db:
-	if (err_msg)
-		sqlite3_free(err_msg);
-
 	if (sqlbuf)
 		sqlite3_free(sqlbuf);
 
 	sqlret = db_util_close(db);
-	if (sqlret != SQLITE_OK)
+	if (sqlret != SQLITE_OK) {
 		NOTIFICATION_WARN("fail to db_util_close - [%d]", sqlret);
+	}
 
 	return result;
 }

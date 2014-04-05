@@ -67,20 +67,37 @@ int notification_db_close(sqlite3 ** db)
 int notification_db_exec(sqlite3 * db, const char *query, int *num_changes)
 {
 	int ret = 0;
-	char *err_msg = NULL;
+	sqlite3_stmt *stmt = NULL;
 
 	if (db == NULL) {
 		return NOTIFICATION_ERROR_INVALID_DATA;
 	}
+	if (query == NULL) {
+		return NOTIFICATION_ERROR_INVALID_DATA;
+	}
 
-	ret = sqlite3_exec(db, query, NULL, NULL, &err_msg);
+	ret = sqlite3_prepare_v2(db, query, strlen(query), &stmt, NULL);
 	if (ret != SQLITE_OK) {
-		NOTIFICATION_ERR("SQL error(%d) : %s", ret, err_msg);
-		sqlite3_free(err_msg);
+		NOTIFICATION_ERR("DB err(%d) : %s", ret,
+				 sqlite3_errmsg(db));
 		return NOTIFICATION_ERROR_FROM_DB;
 	}
-	if (num_changes != NULL) {
-		*num_changes = sqlite3_changes(db);
+
+	if (stmt != NULL) {
+		ret = sqlite3_step(stmt);
+		if (ret == SQLITE_OK || ret == SQLITE_DONE) {
+			if (num_changes != NULL) {
+				*num_changes = sqlite3_changes(db);
+			}
+			sqlite3_finalize(stmt);
+		} else {
+			NOTIFICATION_ERR("DB err(%d) : %s", ret,
+					 sqlite3_errmsg(db));
+			sqlite3_finalize(stmt);
+			return NOTIFICATION_ERROR_FROM_DB;
+		}
+	} else {
+			return NOTIFICATION_ERROR_FROM_DB;
 	}
 
 	return NOTIFICATION_ERROR_NONE;

@@ -19,21 +19,19 @@
  *
  */
 
-#ifndef __NOTIFICATION_SETTING_H__
-#define __NOTIFICATION_SETTING_H__
+#ifndef __NOTIFICATION_SETTING_SERVICE_H__
+#define __NOTIFICATION_SETTING_SERVICE_H__
 
 #include <notification.h>
-
-typedef struct _notification_setting_h notification_setting_h;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-notification_error_e notification_setting_property_set(const char *pkgname, const char *property, const char *value);
-notification_error_e notification_setting_property_get(const char *pkgname, const char *property, char **value);
+notification_error_e notification_setting_db_set(const char *pkgname, const char *property, const char *value);
+notification_error_e notification_setting_db_get(const char *pkgname, const char *property, char **value);
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* __NOTIFICATION_SETTING_H__ */
+#endif				/* __NOTIFICATION_SETTING_SERVICE_H__ */

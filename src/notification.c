@@ -30,6 +30,7 @@
 
 #include <aul.h>
 #include <ail.h>
+#include <appsvc.h>
 #include <vconf-keys.h>
 #include <vconf.h>
 
@@ -119,39 +120,6 @@ static void _notification_get_text_domain(notification_h noti)
 	if (noti->dir != NULL) {
 
 	}
-}
-
-/* notification_set_icon will be removed */
-EXPORT_API notification_error_e notification_set_icon(notification_h noti,
-						      const char *icon_path)
-{
-	int ret_err = NOTIFICATION_ERROR_NONE;
-
-	ret_err =
-	    notification_set_image(noti, NOTIFICATION_IMAGE_TYPE_ICON,
-				   icon_path);
-
-	return ret_err;
-}
-
-/* notification_get_icon will be removed */
-EXPORT_API notification_error_e notification_get_icon(notification_h noti,
-						      char **icon_path)
-{
-	int ret_err = NOTIFICATION_ERROR_NONE;
-	char *ret_image_path = NULL;
-
-	ret_err =
-	    notification_get_image(noti, NOTIFICATION_IMAGE_TYPE_ICON,
-				   &ret_image_path);
-
-	if (ret_err == NOTIFICATION_ERROR_NONE && icon_path != NULL) {
-		*icon_path = ret_image_path;
-
-		//NOTIFICATION_DBG("Get icon : %s", *icon_path);
-	}
-
-	return ret_err;
 }
 
 EXPORT_API notification_error_e notification_set_image(notification_h noti,
@@ -303,92 +271,6 @@ EXPORT_API notification_error_e notification_get_insert_time(notification_h noti
 	*ret_time = noti->insert_time;
 
 	return NOTIFICATION_ERROR_NONE;
-}
-
-EXPORT_API notification_error_e notification_set_title(notification_h noti,
-						       const char *title,
-						       const char *loc_title)
-{
-	int noti_err = NOTIFICATION_ERROR_NONE;
-
-	noti_err = notification_set_text(noti, NOTIFICATION_TEXT_TYPE_TITLE,
-					 title, loc_title,
-					 NOTIFICATION_VARIABLE_TYPE_NONE);
-
-	return noti_err;
-}
-
-EXPORT_API notification_error_e notification_get_title(notification_h noti,
-						       char **title,
-						       char **loc_title)
-{
-	int noti_err = NOTIFICATION_ERROR_NONE;
-	char *ret_text = NULL;
-
-	noti_err =
-	    notification_get_text(noti, NOTIFICATION_TEXT_TYPE_TITLE,
-				  &ret_text);
-
-	if (title != NULL) {
-		*title = ret_text;
-	}
-
-	if (loc_title != NULL) {
-		*loc_title = NULL;
-	}
-
-	return noti_err;
-}
-
-EXPORT_API notification_error_e notification_set_content(notification_h noti,
-							 const char *content,
-							 const char *loc_content)
-{
-	int noti_err = NOTIFICATION_ERROR_NONE;
-
-	noti_err = notification_set_text(noti, NOTIFICATION_TEXT_TYPE_CONTENT,
-					 content, loc_content,
-					 NOTIFICATION_VARIABLE_TYPE_NONE);
-
-	return noti_err;
-}
-
-EXPORT_API notification_error_e notification_get_content(notification_h noti,
-							 char **content,
-							 char **loc_content)
-{
-	int noti_err = NOTIFICATION_ERROR_NONE;
-	char *ret_text = NULL;
-
-	noti_err =
-	    notification_get_text(noti, NOTIFICATION_TEXT_TYPE_CONTENT,
-				  &ret_text);
-
-	if (content != NULL) {
-		*content = ret_text;
-	}
-
-	if (loc_content != NULL) {
-		*loc_content = NULL;
-	}
-
-	return noti_err;
-
-#if 0
-	ret =
-	    vconf_get_bool
-	    (VCONFKEY_SETAPPL_STATE_TICKER_NOTI_DISPLAY_CONTENT_BOOL, &boolval);
-
-	if (ret == -1 || boolval == 0) {
-		if (content != NULL && noti->default_content != NULL) {
-			*content = noti->default_content;
-		}
-
-		if (loc_content != NULL && noti->loc_default_content != NULL) {
-			*loc_content = noti->loc_default_content;
-		}
-	}
-#endif
 }
 
 EXPORT_API notification_error_e notification_set_text(notification_h noti,
@@ -1342,53 +1224,6 @@ EXPORT_API notification_error_e notification_get_application(notification_h noti
 	return NOTIFICATION_ERROR_NONE;
 }
 
-EXPORT_API notification_error_e notification_set_args(notification_h noti,
-						      bundle * args,
-						      bundle * group_args)
-{
-	if (noti == NULL || args == NULL) {
-		return NOTIFICATION_ERROR_INVALID_DATA;
-	}
-
-	if (noti->args) {
-		bundle_free(noti->args);
-	}
-
-	noti->args = bundle_dup(args);
-
-	if (noti->group_args) {
-		bundle_free(noti->group_args);
-		noti->group_args = NULL;
-	}
-
-	if (group_args != NULL) {
-		noti->group_args = bundle_dup(group_args);
-	}
-
-	return NOTIFICATION_ERROR_NONE;
-}
-
-EXPORT_API notification_error_e notification_get_args(notification_h noti,
-						      bundle ** args,
-						      bundle ** group_args)
-{
-	if (noti == NULL || args == NULL) {
-		return NOTIFICATION_ERROR_INVALID_DATA;
-	}
-
-	if (noti->args) {
-		*args = noti->args;
-	} else {
-		*args = NULL;
-	}
-
-	if (group_args != NULL && noti->group_args) {
-		*group_args = noti->group_args;
-	}
-
-	return NOTIFICATION_ERROR_NONE;
-}
-
 EXPORT_API notification_error_e notification_set_execute_option(notification_h noti,
 								notification_execute_type_e type,
 								const char *text,
@@ -1447,7 +1282,7 @@ EXPORT_API notification_error_e notification_set_execute_option(notification_h n
 		bundle_add(b, buf_key, key);
 	}
 
-	switch (type) {
+	switch ((int)type) {
 		case NOTIFICATION_EXECUTE_TYPE_RESPONDING:
 			/* Remove previous data if exist */
 			if (noti->b_service_responding != NULL) {
@@ -1485,10 +1320,6 @@ EXPORT_API notification_error_e notification_set_execute_option(notification_h n
 				noti->b_service_multi_launch =
 					bundle_dup(service_handle);
 			}
-			break;
-		case NOTIFICATION_EXECUTE_TYPE_NONE:
-		case NOTIFICATION_EXECUTE_TYPE_MAX:
-			NOTIFICATION_ERR("invalid execution type");
 			break;
 	}
 
@@ -1902,60 +1733,6 @@ EXPORT_API notification_error_e notification_delete_all_by_type(const char *pkgn
 	}
 
 	ret = notification_ipc_request_delete_multiple(type, caller_pkgname);
-	if (ret != NOTIFICATION_ERROR_NONE) {
-		if (caller_pkgname) {
-			free(caller_pkgname);
-		}
-		return ret;
-	}
-
-	if (caller_pkgname) {
-		free(caller_pkgname);
-	}
-	return NOTIFICATION_ERROR_NONE;
-}
-
-EXPORT_API notification_error_e notification_delete_group_by_group_id(const char *pkgname,
-								      notification_type_e type,
-								      int group_id)
-{
-	int ret = 0;
-	char *caller_pkgname = NULL;
-
-	if (pkgname == NULL) {
-		caller_pkgname = _notification_get_pkgname_by_pid();
-	} else {
-		caller_pkgname = strdup(pkgname);
-	}
-
-	ret = notification_ipc_request_delete_multiple(type, caller_pkgname);
-	if (ret != NOTIFICATION_ERROR_NONE) {
-		if (caller_pkgname) {
-			free(caller_pkgname);
-		}
-		return ret;
-	}
-
-	if (caller_pkgname) {
-		free(caller_pkgname);
-	}
-	return NOTIFICATION_ERROR_NONE;
-}
-
-EXPORT_API notification_error_e notification_delete_group_by_priv_id(const char *pkgname,
-								     notification_type_e type,
-								     int priv_id)
-{
-	int ret = 0;
-	char *caller_pkgname = NULL;
-
-	if (pkgname == NULL) {
-		caller_pkgname = _notification_get_pkgname_by_pid();
-	} else {
-		caller_pkgname = strdup(pkgname);
-	}
-
-	ret = notification_ipc_request_delete_single(type, caller_pkgname, priv_id);
 	if (ret != NOTIFICATION_ERROR_NONE) {
 		if (caller_pkgname) {
 			free(caller_pkgname);
@@ -2421,6 +2198,9 @@ notification_resister_changed_cb(void (*changed_cb)
 	notification_cb_list_s *noti_cb_list_new = NULL;
 	notification_cb_list_s *noti_cb_list = NULL;
 
+	if (changed_cb == NULL) {
+		return NOTIFICATION_ERROR_INVALID_DATA;
+	}
 	if (notification_ipc_monitor_init() != NOTIFICATION_ERROR_NONE) {
 		return NOTIFICATION_ERROR_IO;
 	}
@@ -2461,6 +2241,9 @@ notification_unresister_changed_cb(void (*changed_cb)
 
 	noti_cb_list = g_notification_cb_list;
 
+	if (changed_cb == NULL) {
+		return NOTIFICATION_ERROR_INVALID_DATA;
+	}
 	if (noti_cb_list == NULL) {
 		return NOTIFICATION_ERROR_INVALID_DATA;
 	}
@@ -2509,6 +2292,9 @@ notification_register_detailed_changed_cb(
 	notification_cb_list_s *noti_cb_list_new = NULL;
 	notification_cb_list_s *noti_cb_list = NULL;
 
+	if (detailed_changed_cb == NULL) {
+		return NOTIFICATION_ERROR_INVALID_DATA;
+	}
 	if (notification_ipc_monitor_init() != NOTIFICATION_ERROR_NONE) {
 		return NOTIFICATION_ERROR_IO;
 	}
@@ -2550,6 +2336,9 @@ notification_unregister_detailed_changed_cb(
 
 	noti_cb_list = g_notification_cb_list;
 
+	if (detailed_changed_cb == NULL) {
+		return NOTIFICATION_ERROR_INVALID_DATA;
+	}
 	if (noti_cb_list == NULL) {
 		return NOTIFICATION_ERROR_INVALID_DATA;
 	}
@@ -2598,6 +2387,10 @@ EXPORT_API notification_error_e notification_get_count(notification_type_e type,
 	int ret = 0;
 	int noti_count = 0;
 
+	if (count == NULL) {
+		return NOTIFICATION_ERROR_INVALID_DATA;
+	}
+
 	ret =
 	    notification_noti_get_count(type, pkgname, group_id, priv_id,
 					&noti_count);
@@ -2605,9 +2398,7 @@ EXPORT_API notification_error_e notification_get_count(notification_type_e type,
 		return ret;
 	}
 
-	if (count != NULL) {
-		*count = noti_count;
-	}
+	*count = noti_count;
 
 	return NOTIFICATION_ERROR_NONE;
 }
@@ -2618,6 +2409,10 @@ EXPORT_API notification_error_e notification_get_list(notification_type_e type,
 {
 	notification_list_h get_list = NULL;
 	int ret = 0;
+
+	if (list == NULL) {
+		return NOTIFICATION_ERROR_INVALID_DATA;
+	}
 
 	ret = notification_noti_get_grouping_list(type, count, &get_list);
 	if (ret != NOTIFICATION_ERROR_NONE) {
@@ -2635,6 +2430,10 @@ notification_get_grouping_list(notification_type_e type, int count,
 {
 	notification_list_h get_list = NULL;
 	int ret = 0;
+
+	if (list == NULL) {
+		return NOTIFICATION_ERROR_INVALID_DATA;
+	}
 
 	ret = notification_noti_get_grouping_list(type, count, &get_list);
 	if (ret != NOTIFICATION_ERROR_NONE) {
@@ -2655,6 +2454,10 @@ EXPORT_API notification_error_e notification_get_detail_list(const char *pkgname
 	notification_list_h get_list = NULL;
 	int ret = 0;
 
+	if (list == NULL) {
+		return NOTIFICATION_ERROR_INVALID_DATA;
+	}
+
 	ret =
 	    notification_noti_get_detail_list(pkgname, group_id, priv_id, count,
 					      &get_list);
@@ -2673,7 +2476,6 @@ EXPORT_API notification_error_e notification_free_list(notification_list_h list)
 	notification_h noti = NULL;
 
 	if (list == NULL) {
-		NOTIFICATION_ERR("INVALID DATA : list == NULL");
 		return NOTIFICATION_ERROR_INVALID_DATA;
 	}
 
@@ -2766,6 +2568,10 @@ EXPORT_API notification_error_e
 notification_add_deffered_task(
 		void (*deffered_task_cb)(void *data), void *user_data)
 {
+	if (deffered_task_cb == NULL) {
+		return NOTIFICATION_ERROR_INVALID_DATA;
+	}
+
 	return notification_ipc_add_deffered_task(deffered_task_cb, user_data);
 }
 
@@ -2773,5 +2579,229 @@ EXPORT_API notification_error_e
 notification_del_deffered_task(
 		void (*deffered_task_cb)(void *data))
 {
+	if (deffered_task_cb == NULL) {
+		return NOTIFICATION_ERROR_INVALID_DATA;
+	}
+
 	return notification_ipc_del_deffered_task(deffered_task_cb);
+}
+
+/* notification_set_icon will be removed */
+EXPORT_API notification_error_e notification_set_icon(notification_h noti,
+						      const char *icon_path)
+{
+	int ret_err = NOTIFICATION_ERROR_NONE;
+
+	ret_err =
+	    notification_set_image(noti, NOTIFICATION_IMAGE_TYPE_ICON,
+				   icon_path);
+
+	return ret_err;
+}
+
+/* notification_get_icon will be removed */
+EXPORT_API notification_error_e notification_get_icon(notification_h noti,
+						      char **icon_path)
+{
+	int ret_err = NOTIFICATION_ERROR_NONE;
+	char *ret_image_path = NULL;
+
+	ret_err =
+	    notification_get_image(noti, NOTIFICATION_IMAGE_TYPE_ICON,
+				   &ret_image_path);
+
+	if (ret_err == NOTIFICATION_ERROR_NONE && icon_path != NULL) {
+		*icon_path = ret_image_path;
+
+		//NOTIFICATION_DBG("Get icon : %s", *icon_path);
+	}
+
+	return ret_err;
+}
+
+EXPORT_API notification_error_e notification_set_title(notification_h noti,
+						       const char *title,
+						       const char *loc_title)
+{
+	int noti_err = NOTIFICATION_ERROR_NONE;
+
+	noti_err = notification_set_text(noti, NOTIFICATION_TEXT_TYPE_TITLE,
+					 title, loc_title,
+					 NOTIFICATION_VARIABLE_TYPE_NONE);
+
+	return noti_err;
+}
+
+EXPORT_API notification_error_e notification_get_title(notification_h noti,
+						       char **title,
+						       char **loc_title)
+{
+	int noti_err = NOTIFICATION_ERROR_NONE;
+	char *ret_text = NULL;
+
+	noti_err =
+	    notification_get_text(noti, NOTIFICATION_TEXT_TYPE_TITLE,
+				  &ret_text);
+
+	if (title != NULL) {
+		*title = ret_text;
+	}
+
+	if (loc_title != NULL) {
+		*loc_title = NULL;
+	}
+
+	return noti_err;
+}
+
+EXPORT_API notification_error_e notification_set_content(notification_h noti,
+							 const char *content,
+							 const char *loc_content)
+{
+	int noti_err = NOTIFICATION_ERROR_NONE;
+
+	noti_err = notification_set_text(noti, NOTIFICATION_TEXT_TYPE_CONTENT,
+					 content, loc_content,
+					 NOTIFICATION_VARIABLE_TYPE_NONE);
+
+	return noti_err;
+}
+
+EXPORT_API notification_error_e notification_get_content(notification_h noti,
+							 char **content,
+							 char **loc_content)
+{
+	int noti_err = NOTIFICATION_ERROR_NONE;
+	char *ret_text = NULL;
+
+	noti_err =
+	    notification_get_text(noti, NOTIFICATION_TEXT_TYPE_CONTENT,
+				  &ret_text);
+
+	if (content != NULL) {
+		*content = ret_text;
+	}
+
+	if (loc_content != NULL) {
+		*loc_content = NULL;
+	}
+
+	return noti_err;
+
+#if 0
+	ret =
+	    vconf_get_bool
+	    (VCONFKEY_SETAPPL_STATE_TICKER_NOTI_DISPLAY_CONTENT_BOOL, &boolval);
+
+	if (ret == -1 || boolval == 0) {
+		if (content != NULL && noti->default_content != NULL) {
+			*content = noti->default_content;
+		}
+
+		if (loc_content != NULL && noti->loc_default_content != NULL) {
+			*loc_content = noti->loc_default_content;
+		}
+	}
+#endif
+}
+
+EXPORT_API notification_error_e notification_set_args(notification_h noti,
+						      bundle * args,
+						      bundle * group_args)
+{
+	if (noti == NULL || args == NULL) {
+		return NOTIFICATION_ERROR_INVALID_DATA;
+	}
+
+	if (noti->args) {
+		bundle_free(noti->args);
+	}
+
+	noti->args = bundle_dup(args);
+
+	if (noti->group_args) {
+		bundle_free(noti->group_args);
+		noti->group_args = NULL;
+	}
+
+	if (group_args != NULL) {
+		noti->group_args = bundle_dup(group_args);
+	}
+
+	return NOTIFICATION_ERROR_NONE;
+}
+
+EXPORT_API notification_error_e notification_get_args(notification_h noti,
+						      bundle ** args,
+						      bundle ** group_args)
+{
+	if (noti == NULL || args == NULL) {
+		return NOTIFICATION_ERROR_INVALID_DATA;
+	}
+
+	if (noti->args) {
+		*args = noti->args;
+	} else {
+		*args = NULL;
+	}
+
+	if (group_args != NULL && noti->group_args) {
+		*group_args = noti->group_args;
+	}
+
+	return NOTIFICATION_ERROR_NONE;
+}
+
+EXPORT_API notification_error_e notification_delete_group_by_group_id(const char *pkgname,
+								      notification_type_e type,
+								      int group_id)
+{
+	int ret = 0;
+	char *caller_pkgname = NULL;
+
+	if (pkgname == NULL) {
+		caller_pkgname = _notification_get_pkgname_by_pid();
+	} else {
+		caller_pkgname = strdup(pkgname);
+	}
+
+	ret = notification_ipc_request_delete_multiple(type, caller_pkgname);
+	if (ret != NOTIFICATION_ERROR_NONE) {
+		if (caller_pkgname) {
+			free(caller_pkgname);
+		}
+		return ret;
+	}
+
+	if (caller_pkgname) {
+		free(caller_pkgname);
+	}
+	return NOTIFICATION_ERROR_NONE;
+}
+
+EXPORT_API notification_error_e notification_delete_group_by_priv_id(const char *pkgname,
+								     notification_type_e type,
+								     int priv_id)
+{
+	int ret = 0;
+	char *caller_pkgname = NULL;
+
+	if (pkgname == NULL) {
+		caller_pkgname = _notification_get_pkgname_by_pid();
+	} else {
+		caller_pkgname = strdup(pkgname);
+	}
+
+	ret = notification_ipc_request_delete_single(type, caller_pkgname, priv_id);
+	if (ret != NOTIFICATION_ERROR_NONE) {
+		if (caller_pkgname) {
+			free(caller_pkgname);
+		}
+		return ret;
+	}
+
+	if (caller_pkgname) {
+		free(caller_pkgname);
+	}
+	return NOTIFICATION_ERROR_NONE;
 }
