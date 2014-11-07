@@ -2013,6 +2013,15 @@ notification_error_e notification_get_count(notification_type_e type,
  * @}
  */
 
+notification_error_e notification_wait_response(notification_h noti,
+						int timeout,
+						int *respi,
+						char **respc);
+
+notification_error_e notification_send_response(notification_h noti,
+						int respi,
+						char *respc);
+
 #ifdef __cplusplus
 }
 #endif

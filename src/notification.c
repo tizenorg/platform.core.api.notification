@@ -24,6 +24,12 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/select.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <sys/time.h>
+#define _GNU_SOURCE
+#include <sys/syscall.h>
 #include <libintl.h>
 #include <dbus/dbus.h>
 #include <dbus/dbus-glib-lowlevel.h>
@@ -2805,3 +2811,132 @@ EXPORT_API notification_error_e notification_delete_group_by_priv_id(const char 
 	}
 	return NOTIFICATION_ERROR_NONE;
 }
+
+EXPORT_API notification_error_e notification_wait_response(notification_h noti,
+							   int timeout,
+							   int *respi,
+							   char **respc)
+{
+	int sock_fd, msg_fd;
+	char *sock_path;
+	struct sockaddr_un sock_addr;
+	pid_t tid;
+	char tid_c[6];
+	char msg_buffer[1024];
+	ssize_t msg_size;
+	struct timeval timeout_tv;
+	int timeout_state;
+	char *resp;
+
+	sock_fd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
+	if (sock_fd == -1)
+		return NOTIFICATION_ERROR_NO_MEMORY;
+
+	tid = syscall(SYS_gettid);
+	sprintf(tid_c, "%d", tid);
+
+	notification_set_text(noti, NOTIFICATION_TEXT_TYPE_INFO_2,
+			      tid_c, NULL, NOTIFICATION_VARIABLE_TYPE_NONE);
+	notification_update(noti);
+
+	if (asprintf(&sock_path, "/tmp/.notification-%lu", tid) == -1) {
+		close(sock_fd);
+		return NOTIFICATION_ERROR_NO_MEMORY;
+	}
+
+	sock_addr.sun_family = AF_UNIX;
+	strncpy(sock_addr.sun_path, sock_path, sizeof(sock_addr.sun_path) - 1);
+	if (bind(sock_fd, (struct sockaddr *)&sock_addr, sizeof(sock_addr)) == -1) {
+		close(sock_fd);
+		free(sock_path);
+		return NOTIFICATION_ERROR_NO_MEMORY;
+	}
+
+	listen(sock_fd, 1);
+	msg_fd = accept(sock_fd, NULL, 0);
+	if (timeout > 0) {
+		fd_set set;
+		timeout_tv.tv_sec = timeout;
+		timeout_tv.tv_usec = 0;
+		timeout_state = select(msg_fd + 1, &set, NULL, NULL, &timeout_tv);
+		if (timeout_state == 0) {
+			close(msg_fd);
+			close(sock_fd);
+			free(sock_path);
+			return NOTIFICATION_ERROR_INVALID_DATA;
+		}
+	}
+	do {
+		msg_size = read(msg_fd, msg_buffer, 1024);
+	} while (msg_size > 0);
+
+	printf("BUFFER : %s", msg_buffer);
+	// INTERPRETER LE BUFFER ET LE METTRE DANS LES VARIABLES
+	resp = strtok(msg_buffer, "\n");
+	if (resp) {
+		*respi = atoi(resp);
+		resp = strtok(NULL, "\n");
+		if (resp)
+			**respc = resp;
+	}
+
+	close(sock_fd);
+	unlink(sock_path);
+	free(sock_path);
+
+	return NOTIFICATION_ERROR_NONE;
+}
+
+EXPORT_API notification_error_e notification_send_response(notification_h noti,
+							   int respi,
+							   char *respc)
+{
+printf("NOTIFICATION_SEND_RESPONSE\n");
+	int sock_fd;
+	char *sock_path;
+	struct sockaddr_un sock_addr;
+	int tid;
+	char *tid_c;
+	char *msg_buffer;
+
+	sock_fd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
+	if (sock_fd == -1)
+		return NOTIFICATION_ERROR_NO_MEMORY;
+
+        notification_get_text(noti, NOTIFICATION_TEXT_TYPE_INFO_2,
+                              &tid_c);
+	if (tid_c == NULL) {printf("TID_C NULL, ERREUR !\n");
+		close(sock_fd);
+		return NOTIFICATION_ERROR_INVALID_DATA;
+	}
+	tid = atoi(tid_c);
+printf("TID : %d\"", tid);
+	if (asprintf(&sock_path, "/tmp/.notification-%d", tid) == -1) {
+		close(sock_fd);
+		return NOTIFICATION_ERROR_NO_MEMORY;
+	}
+
+	sock_addr.sun_family = AF_UNIX;
+	strncpy(sock_addr.sun_path, sock_path, sizeof(sock_addr.sun_path) - 1);
+	if (connect(sock_fd, (struct sockaddr *)&sock_addr, sizeof(sock_addr)) == -1) {
+		close(sock_fd);
+		free(sock_path);
+		return NOTIFICATION_ERROR_NO_MEMORY;
+	}
+
+	if (respc) {
+		printf("WRITING BUFFER : %d-%s\n", respi, respc);
+		asprintf(&msg_buffer, "%d\n%s\n\0", respi, respc);
+	} else {
+		printf("WRITING BUFFER : %d\n", respi);
+		asprintf(&msg_buffer, "%d\n\0", respi);
+	}
+	write(sock_fd, msg_buffer, strlen(msg_buffer));
+
+	close(sock_fd);
+	free(sock_path);
+	free(msg_buffer);
+
+	return NOTIFICATION_ERROR_NONE;
+}
+
