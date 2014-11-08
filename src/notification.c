@@ -2826,7 +2826,6 @@ EXPORT_API notification_error_e notification_wait_response(notification_h noti,
 	char msg_buffer[1024];
 	ssize_t msg_size;
 	struct timeval timeout_tv;
-	int timeout_state;
 	char *resp;
 
 	 /* a response packet *must* have an execute option TYPE_RESPONDING
@@ -2865,20 +2864,15 @@ EXPORT_API notification_error_e notification_wait_response(notification_h noti,
 		return NOTIFICATION_ERROR_NO_MEMORY;
 	}
 
-	listen(sock_fd, 1);
-	msg_fd = accept(sock_fd, NULL, 0);
 	if (timeout > 0) {
-		fd_set set;
 		timeout_tv.tv_sec = timeout;
 		timeout_tv.tv_usec = 0;
-		timeout_state = select(msg_fd + 1, &set, NULL, NULL, &timeout_tv);
-		if (timeout_state == 0) {
-			close(msg_fd);
-			close(sock_fd);
-			free(sock_path);
-			return NOTIFICATION_ERROR_INVALID_DATA;
-		}
+		setsockopt(sock_fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout_tv, sizeof(timeout_tv));
+		setsockopt(sock_fd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout_tv, sizeof(timeout_tv));
 	}
+
+	listen(sock_fd, 1);
+	msg_fd = accept(sock_fd, NULL, 0);
 	do {
 		msg_size = read(msg_fd, msg_buffer, 1024);
 	} while (msg_size > 0);
