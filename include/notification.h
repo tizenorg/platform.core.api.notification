@@ -2010,17 +2010,48 @@ notification_error_e notification_get_count(notification_type_e type,
 					    int *count);
 
 /**
- * @}
+ * @brief Wait for a response coming for this notification
+ * @details The notification should have the EXECUTE_TYPE_RESPONDING flag 
+ * @remarks
+ * @param[in] noti notification handle
+ * @param[in] timeout in seconds - 0 for infinite
+ * @param[out] integer response
+ * @param[out] text response
+ * @return NOTIFICATION_ERROR_NONE if success, other value if failure
+ * @retval NOTIFICATION_ERROR_NONE - success
+ * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
+ * @retval NOTIFICATION_ERROR_NO_MEMORY - not enough memory
+ * @pre notification handle should be created by notification_new().
+ * @post
+ * @see
  */
-
 notification_error_e notification_wait_response(notification_h noti,
 						int timeout,
 						int *respi,
 						char **respc);
 
+/**
+ * @brief Send a response for a waiting notification
+ * @details
+ * @remarks
+ * @param[in] noti notification handle
+ * @param[in] integer response
+ * @param[in] text response
+ * @return NOTIFICATION_ERROR_NONE if success, other value if failure
+ * @retval NOTIFICATION_ERROR_NONE - success
+ * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
+ * @retval NOTIFICATION_ERROR_NO_MEMORY - not enough memory
+ * @pre notification handle should be created by notification_new().
+ * @post
+ * @see
+ */
 notification_error_e notification_send_response(notification_h noti,
 						int respi,
 						char *respc);
+
+/**
+ * @}
+ */
 
 #ifdef __cplusplus
 }
