@@ -2880,14 +2880,17 @@ EXPORT_API notification_error_e notification_wait_response(notification_h noti,
 	resp = strtok(msg_buffer, "\n");
 	if (resp) {
 		*respi = atoi(resp);
-		resp = strtok(NULL, "\n");
-		if (resp)
-			*respc = resp;
-		else
-			*respc = NULL;
+		if (respc != NULL) {
+			resp = strtok(NULL, "\n");
+			if (resp)
+				*respc = resp;
+			else
+				*respc = NULL;
+		}
 	} else {
 		*respi = 0;
-		*respc = NULL;
+		if (respc != NULL)
+			*respc = NULL;
 	}
 
 	close(sock_fd);
