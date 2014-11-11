@@ -21,10 +21,12 @@
 
 #include <stdlib.h>
 
+#include <tizen.h>
+
 #include <notification.h>
 #include <notification_list.h>
 #include <notification_debug.h>
-#include <notification_internal.h>
+#include <notification_private.h>
 
 struct _notification_list {
 	notification_list_h prev;
@@ -57,6 +59,7 @@ EXPORT_API notification_list_h notification_list_get_head(notification_list_h li
 
 	if (list == NULL) {
 		NOTIFICATION_ERR("INVALID DATA : list == NULL");
+		set_last_result(NOTIFICATION_ERROR_INVALID_PARAMETER);
 		return NULL;
 	}
 
@@ -66,6 +69,7 @@ EXPORT_API notification_list_h notification_list_get_head(notification_list_h li
 		cur_list = cur_list->prev;
 	}
 
+	set_last_result(NOTIFICATION_ERROR_NONE);
 	return cur_list;
 }
 
@@ -75,6 +79,7 @@ EXPORT_API notification_list_h notification_list_get_tail(notification_list_h li
 
 	if (list == NULL) {
 		NOTIFICATION_ERR("INVALID DATA : list == NULL");
+		set_last_result(NOTIFICATION_ERROR_INVALID_PARAMETER);
 		return NULL;
 	}
 
@@ -84,6 +89,7 @@ EXPORT_API notification_list_h notification_list_get_tail(notification_list_h li
 		cur_list = cur_list->next;
 	}
 
+	set_last_result(NOTIFICATION_ERROR_NONE);
 	return cur_list;
 }
 
@@ -93,11 +99,13 @@ EXPORT_API notification_list_h notification_list_get_prev(notification_list_h li
 
 	if (list == NULL) {
 		NOTIFICATION_ERR("INVALID DATA : list == NULL");
+		set_last_result(NOTIFICATION_ERROR_INVALID_PARAMETER);
 		return NULL;
 	}
 
 	cur_list = list;
 
+	set_last_result(NOTIFICATION_ERROR_NONE);
 	return cur_list->prev;
 }
 
@@ -107,11 +115,13 @@ EXPORT_API notification_list_h notification_list_get_next(notification_list_h li
 
 	if (list == NULL) {
 		NOTIFICATION_ERR("INVALID DATA : list == NULL");
+		set_last_result(NOTIFICATION_ERROR_INVALID_PARAMETER);
 		return NULL;
 	}
 
 	cur_list = list;
 
+	set_last_result(NOTIFICATION_ERROR_NONE);
 	return cur_list->next;
 }
 
@@ -121,11 +131,13 @@ EXPORT_API notification_h notification_list_get_data(notification_list_h list)
 
 	if (list == NULL) {
 		NOTIFICATION_ERR("INVALID DATA : list == NULL");
+		set_last_result(NOTIFICATION_ERROR_INVALID_PARAMETER);
 		return NULL;
 	}
 
 	cur_list = list;
 
+	set_last_result(NOTIFICATION_ERROR_NONE);
 	return cur_list->noti;
 }
 
@@ -137,6 +149,7 @@ EXPORT_API notification_list_h notification_list_append(notification_list_h list
 
 	if (noti == NULL) {
 		NOTIFICATION_ERR("INVALID DATA : data == NULL");
+		set_last_result(NOTIFICATION_ERROR_INVALID_PARAMETER);
 		return NULL;
 	}
 
@@ -146,6 +159,7 @@ EXPORT_API notification_list_h notification_list_append(notification_list_h list
 		new_list = _notification_list_create();
 		if (new_list == NULL) {
 			NOTIFICATION_ERR("NO MEMORY");
+			set_last_result(NOTIFICATION_ERROR_OUT_OF_MEMORY);
 			return NULL;
 		}
 
@@ -157,6 +171,7 @@ EXPORT_API notification_list_h notification_list_append(notification_list_h list
 		cur_list = _notification_list_create();
 		if (cur_list == NULL) {
 			NOTIFICATION_ERR("NO MEMORY");
+			set_last_result(NOTIFICATION_ERROR_OUT_OF_MEMORY);
 			return NULL;
 		}
 
@@ -164,6 +179,7 @@ EXPORT_API notification_list_h notification_list_append(notification_list_h list
 		new_list->noti = noti;
 	}
 
+	set_last_result(NOTIFICATION_ERROR_NONE);
 	return new_list;
 }
 

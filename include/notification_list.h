@@ -29,30 +29,33 @@ extern "C" {
 #endif
 
 /**
- * @file notification.h
- * @brief This file contains the notification list APIs
+ * @file notification_list.h
+ * @brief This file contains the notification list APIs.
  */
 
 /**
+ * @internal
  * @addtogroup NOTIFICATION_LIST
  * @{
  */
 
 /**
- * @breief Notification list handle
+ * @brief Notification list handle.
+ * @since_tizen 2.3
  */
 typedef struct _notification_list *notification_list_h;
 
 /**
- * @brief This function get head pointer of the notification list.
- * @details 
- * @remarks
- * @param[in] list notification list handle
- * @return notification list handle if success, NULL if failure.
- * @retval notification list handle(#notification_list_h) - success
- * @retval NULL - failure
- * @pre 
- * @post
+ * @internal
+ * @brief Gets the head pointer of the notification list.
+ * @since_tizen 2.3
+ * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
+ * @param[in] list Notification list handle
+ * @return Notification list handle on success, NULL on failure
+ * @retval #notification_list_h Success
+ * @retval NULL Failure
+ * @exception #NOTIFICATION_ERROR_NONE Success
+ * @exception #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid input value
  * @see #notification_list_h
  * @par Sample code:
  * @code
@@ -60,7 +63,7 @@ typedef struct _notification_list *notification_list_h;
 ...
 {
 	notification_list_h noti_list = NULL;
-	notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
+	int noti_err = NOTIFICATION_ERROR_NONE;
 
 	noti_err  = notification_get_grouping_list(NOTIFICATION_TYPE_NONE, -1, &noti_list);
 	if(noti_err != NOTIFICATION_ERROR_NONE) {
@@ -74,15 +77,16 @@ typedef struct _notification_list *notification_list_h;
 notification_list_h notification_list_get_head(notification_list_h list);
 
 /**
- * @brief This function get tail pointer of the notification list.
- * @details 
- * @remarks
- * @param[in] list notification list handle
- * @return notification list handle if success, NULL if failure.
- * @retval notification list handle(#notification_list_h) - success
- * @retval NULL - failure
- * @pre 
- * @post
+ * @internal
+ * @brief Gets the tail pointer to the notification list.
+ * @since_tizen 2.3
+ * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
+ * @param[in] list Notification list handle
+ * @return Notification list handle on success, NULL on failure
+ * @retval #notification_list_h Success
+ * @retval NULL Failure
+ * @exception #NOTIFICATION_ERROR_NONE Success
+ * @exception #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid input value
  * @see #notification_list_h
  * @par Sample code:
  * @code
@@ -90,7 +94,7 @@ notification_list_h notification_list_get_head(notification_list_h list);
 ...
 {
 	notification_list_h noti_list = NULL;
-	notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
+	int noti_err = NOTIFICATION_ERROR_NONE;
 
 	noti_err  = notification_get_grouping_list(NOTIFICATION_TYPE_NONE, -1, &noti_list);
 	if(noti_err != NOTIFICATION_ERROR_NONE) {
@@ -104,15 +108,16 @@ notification_list_h notification_list_get_head(notification_list_h list);
 notification_list_h notification_list_get_tail(notification_list_h list);
 
 /**
- * @brief This function get previous pointer of the current notification list.
- * @details 
- * @remarks
- * @param[in] list notification list handle
- * @return notification list handle if success, NULL if failure.
- * @retval notification list handle(#notification_list_h) - success
- * @retval NULL - failure
- * @pre 
- * @post
+ * @internal
+ * @brief Gets the previous pointer of the current notification list.
+ * @since_tizen 2.3
+ * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
+ * @param[in] list Notification list handle
+ * @return Notification list handle on success, NULL on failure
+ * @retval #notification_list_h Success
+ * @retval NULL Failure
+ * @exception #NOTIFICATION_ERROR_NONE Success
+ * @exception #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid input value
  * @see #notification_list_h
  * @par Sample code:
  * @code
@@ -120,7 +125,7 @@ notification_list_h notification_list_get_tail(notification_list_h list);
 ...
 {
 	notification_list_h noti_list = NULL;
-	notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
+	int noti_err = NOTIFICATION_ERROR_NONE;
 
 	noti_err  = notification_get_grouping_list(NOTIFICATION_TYPE_NONE, -1, &noti_list);
 	if(noti_err != NOTIFICATION_ERROR_NONE) {
@@ -134,15 +139,16 @@ notification_list_h notification_list_get_tail(notification_list_h list);
 notification_list_h notification_list_get_prev(notification_list_h list);
 
 /**
- * @brief This function get next pointer of the current notification list.
- * @details 
- * @remarks
- * @param[in] list notification list handle
- * @return notification list handle if success, NULL if failure.
- * @retval notification list handle(#notification_list_h) - success
- * @retval NULL - failure
- * @pre 
- * @post
+ * @internal
+ * @brief Gets the next pointer of the current notification list.
+ * @since_tizen 2.3
+ * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
+ * @param[in] list Notification list handle
+ * @return Notification list handle on success, NULL on failure
+ * @retval #notification_list_h Success
+ * @retval NULL Failure
+ * @exception #NOTIFICATION_ERROR_NONE Success
+ * @exception #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid input value
  * @see #notification_list_h
  * @par Sample code:
  * @code
@@ -150,7 +156,7 @@ notification_list_h notification_list_get_prev(notification_list_h list);
 ...
 {
 	notification_list_h noti_list = NULL;
-	notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
+	int noti_err = NOTIFICATION_ERROR_NONE;
 
 	noti_err  = notification_get_grouping_list(NOTIFICATION_TYPE_NONE, -1, &noti_list);
 	if(noti_err != NOTIFICATION_ERROR_NONE) {
@@ -164,15 +170,16 @@ notification_list_h notification_list_get_prev(notification_list_h list);
 notification_list_h notification_list_get_next(notification_list_h list);
 
 /**
- * @brief This function get notification handle that list has.
- * @details 
- * @remarks
- * @param[in] list notification list handle
- * @return notification handle if success, NULL if failure.
- * @retval notification handle(#notification_h) - success
- * @retval NULL - failure
- * @pre 
- * @post
+ * @internal
+ * @brief Gets the notification handle that the list has.
+ * @since_tizen 2.3
+ * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
+ * @param[in] list Notification list handle
+ * @return Notification handle on success, NULL on failure
+ * @retval #notification_h Success
+ * @retval NULL Failure
+ * @exception #NOTIFICATION_ERROR_NONE Success
+ * @exception #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid input value
  * @see #notification_list_h
  * @see #notification_h
  * @par Sample code:
@@ -182,7 +189,7 @@ notification_list_h notification_list_get_next(notification_list_h list);
 {
 	notification_h noti = NULL;
 	notification_list_h noti_list = NULL;
-	notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
+	int noti_err = NOTIFICATION_ERROR_NONE;
 
 	noti_err  = notification_get_grouping_list(NOTIFICATION_TYPE_NONE, -1, &noti_list);
 	if(noti_err != NOTIFICATION_ERROR_NONE) {
@@ -196,16 +203,18 @@ notification_list_h notification_list_get_next(notification_list_h list);
 notification_h notification_list_get_data(notification_list_h list);
 
 /**
- * @brief This function append notification data in notification list.
- * @details 
- * @remarks
- * @param[in] list notification list handle
- * @param[in] noti notification handle
- * @return notification handle if success, NULL if failure.
- * @retval notification handle(#notification_h) - success
- * @retval NULL - failure
- * @pre 
- * @post
+ * @internal
+ * @brief Appends notification data to the notification list.
+ * @since_tizen 2.3
+ * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
+ * @param[in] list Notification list handle
+ * @param[in] noti Notification handle
+ * @return Notification handle on success, NULL on failure
+ * @retval #notification_h Success
+ * @retval NULL Failure
+ * @exception #NOTIFICATION_ERROR_NONE Success
+ * @exception #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid input value
+ * @exception #NOTIFICATION_ERROR_OUT_OF_MEMORY Out of memory
  * @see #notification_list_h
  * @see #notification_h
  * @par Sample code:
@@ -215,7 +224,7 @@ notification_h notification_list_get_data(notification_list_h list);
 {
 	notification_h noti = NULL;
 	notification_list_h noti_list = NULL;
-	notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
+	int noti_err = NOTIFICATION_ERROR_NONE;
 
 	noti = notification_new(NOTIFICATION_TYPE_NOTI, NOTIFICATION_GROUP_ID_NONE, NOTIFICATION_PRIV_ID_NONE);
 	if(noti == NULL) {
@@ -230,16 +239,18 @@ notification_list_h notification_list_append(notification_list_h list,
 					     notification_h noti);
 
 /**
- * @brief This function remove notification data from notification list.
- * @details 
- * @remarks
- * @param[in] list notification list handle
- * @param[in] noti notification handle
- * @return notification handle if success, NULL if failure.
- * @retval notification handle(#notification_h) - success
- * @retval NULL - failure
- * @pre 
- * @post
+ * @internal
+ * @brief Removes notification data from the notification list.
+ * @since_tizen 2.3
+ * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
+ * @param[in] list The notification list handle
+ * @param[in] noti The notification handle
+ * @return Notification handle on success,
+ *         otherwise @c NULL on failure
+ * @retval #notification_h Success
+ * @retval NULL Failure
+ * @exception #NOTIFICATION_ERROR_NONE Success
+ * @exception #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid input value
  * @see #notification_list_h
  * @see #notification_h
  * @par Sample code:
@@ -249,7 +260,7 @@ notification_list_h notification_list_append(notification_list_h list,
 {
 	notification_h noti = NULL;
 	notification_list_h noti_list = NULL;
-	notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
+	int noti_err = NOTIFICATION_ERROR_NONE;
 	
 	...
 	

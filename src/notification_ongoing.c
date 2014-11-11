@@ -28,9 +28,9 @@
 #include <notification_db.h>
 #include <notification_debug.h>
 #include <notification_ongoing.h>
-#include <notification_internal.h>
+#include <notification_private.h>
 
-notification_error_e notification_ongoing_update_progress(const char *caller_pkgname,
+int notification_ongoing_update_progress(const char *caller_pkgname,
 							  int priv_id,
 							  double progress)
 {
@@ -76,7 +76,7 @@ notification_error_e notification_ongoing_update_progress(const char *caller_pkg
 	return NOTIFICATION_ERROR_FROM_DBUS;
 }
 
-notification_error_e notification_ongoing_update_size(const char *caller_pkgname,
+int notification_ongoing_update_size(const char *caller_pkgname,
 						      int priv_id, double size)
 {
 	DBusConnection *connection = NULL;
@@ -121,7 +121,7 @@ notification_error_e notification_ongoing_update_size(const char *caller_pkgname
 	return NOTIFICATION_ERROR_FROM_DBUS;
 }
 
-notification_error_e notification_ongoing_update_content(const char *caller_pkgname,
+int notification_ongoing_update_content(const char *caller_pkgname,
 						      int priv_id, const char *content)
 {
 	DBusConnection *connection = NULL;

@@ -79,6 +79,10 @@ static void utc_notification_set_application_n(void);
 static void utc_notification_set_application_p(void);
 static void utc_notification_get_application_n(void);
 static void utc_notification_get_application_p(void);
+static void utc_notification_set_launch_option_n(void);
+static void utc_notification_set_launch_option_p(void);
+static void utc_notification_get_launch_option_n(void);
+static void utc_notification_get_launch_option_p(void);
 static void utc_notification_set_execute_option_n(void);
 static void utc_notification_set_execute_option_p(void);
 static void utc_notification_get_execute_option_n(void);
@@ -113,8 +117,8 @@ static void utc_notification_get_type_n(void);
 static void utc_notification_get_type_p(void);
 static void utc_notification_insert_n(void);
 static void utc_notification_insert_p(void);
-static void utc_notifiation_clear_n(void);
-static void utc_notifiation_clear_p(void);
+static void utc_notification_clear_n(void);
+static void utc_notification_clear_p(void);
 static void utc_notification_update_n(void);
 static void utc_notification_update_p(void);
 static void utc_notification_delete_all_by_type_n(void);
@@ -160,10 +164,10 @@ static void utc_notification_free_list_p(void);
 static void utc_notification_op_get_data_n(void);
 static void utc_notification_op_get_data_p(void);
 static void utc_notification_is_service_ready_p(void);
-static void utc_notification_add_deffered_task_n(void);
-static void utc_notification_add_deffered_task_p(void);
-static void utc_notification_del_deffered_task_n(void);
-static void utc_notification_del_deffered_task_p(void);
+static void utc_notification_add_deferred_task_n(void);
+static void utc_notification_add_deferred_task_p(void);
+static void utc_notification_del_deferred_task_n(void);
+static void utc_notification_del_deferred_task_p(void);
 
 void (*tet_startup)(void) = startup;
 void (*tet_cleanup)(void) = cleanup;
@@ -215,6 +219,10 @@ struct tet_testlist tet_testlist[] = {
 	{utc_notification_set_application_p, POSITIVE_TC_IDX},
 	{utc_notification_get_application_n, NEGATIVE_TC_IDX},
 	{utc_notification_get_application_p, POSITIVE_TC_IDX},
+	{utc_notification_set_launch_option_n, NEGATIVE_TC_IDX},
+	{utc_notification_set_launch_option_p, POSITIVE_TC_IDX},
+	{utc_notification_get_launch_option_n, NEGATIVE_TC_IDX},
+	{utc_notification_get_launch_option_p, POSITIVE_TC_IDX},
 	{utc_notification_set_execute_option_n, NEGATIVE_TC_IDX},
 	{utc_notification_set_execute_option_p, POSITIVE_TC_IDX},
 	{utc_notification_get_execute_option_n, NEGATIVE_TC_IDX},
@@ -249,8 +257,8 @@ struct tet_testlist tet_testlist[] = {
 	{utc_notification_get_type_p, POSITIVE_TC_IDX},
 	{utc_notification_insert_n, NEGATIVE_TC_IDX},
 	{utc_notification_insert_p, POSITIVE_TC_IDX},
-	{utc_notifiation_clear_n, NEGATIVE_TC_IDX},
-	{utc_notifiation_clear_p, POSITIVE_TC_IDX},
+	{utc_notification_clear_n, NEGATIVE_TC_IDX},
+	{utc_notification_clear_p, POSITIVE_TC_IDX},
 	{utc_notification_update_n, NEGATIVE_TC_IDX},
 	{utc_notification_update_p, POSITIVE_TC_IDX},
 	{utc_notification_delete_all_by_type_n, NEGATIVE_TC_IDX},
@@ -296,17 +304,17 @@ struct tet_testlist tet_testlist[] = {
 	{utc_notification_op_get_data_n, NEGATIVE_TC_IDX},
 	{utc_notification_op_get_data_p, POSITIVE_TC_IDX},
 	{utc_notification_is_service_ready_p, POSITIVE_TC_IDX},
-	{utc_notification_add_deffered_task_n, NEGATIVE_TC_IDX},
-	{utc_notification_add_deffered_task_p, POSITIVE_TC_IDX},
-	{utc_notification_del_deffered_task_n, NEGATIVE_TC_IDX},
-	{utc_notification_del_deffered_task_p, POSITIVE_TC_IDX},
+	{utc_notification_add_deferred_task_n, NEGATIVE_TC_IDX},
+	{utc_notification_add_deferred_task_p, POSITIVE_TC_IDX},
+	{utc_notification_del_deferred_task_n, NEGATIVE_TC_IDX},
+	{utc_notification_del_deferred_task_p, POSITIVE_TC_IDX},
 	{ NULL, 0 },
 };
 
 static void startup(void)
 {
 	/* start of TC */
-	notifiation_clear(NOTIFICATION_TYPE_NONE);
+	notification_clear(NOTIFICATION_TYPE_NONE);
 	tet_printf("\n TC start");
 }
 
@@ -1006,6 +1014,77 @@ static void utc_notification_get_application_p(void)
 }
 
 /**
+ * @brief Negative test case of notification_set_launch()
+ */
+static void utc_notification_set_launch_option_n(void)
+{
+	int ret = 0;
+
+	ret = notification_set_launch_option(NULL, NOTIFICATION_LAUNCH_OPTION_APP_CONTROL, NULL);
+
+	dts_check_eq("notification_set_launch_option", ret, NOTIFICATION_ERROR_INVALID_DATA,
+		"Must return NOTIFICATION_ERROR_INVALID_DATA in case of invalid parameter");
+}
+
+/**
+ * @brief Positive test case of notification_set_launch_option()
+ */
+static void utc_notification_set_launch_option_p(void)
+{
+	int ret = 0;
+	notification_h notification = NULL;
+	app_control_h app_control = NULL;
+	bundle *b = NULL;
+
+	app_control_create(&app_control);
+	app_control_set_app_id(app_control, "org.tizen.app");
+	/*Invalid parameter test*/
+	notification = notification_create(NOTIFICATION_TYPE_NOTI);
+	ret = notification_set_launch_option(notification, NOTIFICATION_LAUNCH_OPTION_APP_CONTROL, app_control);
+	app_control_destroy(app_control);
+
+	dts_check_eq("notification_set_launch_option", ret, NOTIFICATION_ERROR_NONE,
+		"Must return NOTIFICATION_ERROR_NONE in case of valid parameter");
+}
+
+/**
+ * @brief Negative test case of notification_get_launch_option()
+ */
+static void utc_notification_get_launch_option_n(void)
+{
+	int ret = 0;
+	app_control_h app_control = NULL;
+
+	ret = notification_get_launch_option(NULL, NOTIFICATION_LAUNCH_OPTION_APP_CONTROL, NULL);
+
+	dts_check_eq("notification_get_launch_option", ret, NOTIFICATION_ERROR_INVALID_DATA,
+		"Must return NOTIFICATION_ERROR_INVALID_DATA in case of invalid parameter");
+}
+
+/**
+ * @brief Positive test case of notification_get_launch_option()
+ */
+static void utc_notification_get_launch_option_p(void)
+{
+	int ret = 0;
+	notification_h notification = NULL;
+	app_control_h app_control = NULL;
+
+	app_control_create(&app_control);
+	app_control_set_app_id(app_control, "org.tizen.app");
+	notification = notification_create(NOTIFICATION_TYPE_NOTI);
+	ret = notification_set_launch_option(notification, NOTIFICATION_LAUNCH_OPTION_APP_CONTROL, app_control);
+	app_control_destroy(app_control);
+	app_control = NULL;
+
+	ret = notification_get_launch_option(notification, NOTIFICATION_LAUNCH_OPTION_APP_CONTROL, &app_control);
+	notification_free(notification);
+
+	dts_check_eq("notification_get_launch_option", ret, NOTIFICATION_ERROR_NONE,
+		"Must return NOTIFICATION_ERROR_NONE in case of valid parameter");
+}
+
+/**
  * @brief Negative test case of notification_set_execute_option()
  */
 static void utc_notification_set_execute_option_n(void)
@@ -1515,26 +1594,26 @@ static void utc_notification_insert_p(void)
 }
 
 /**
- * @brief Negative test case of notifiation_clear()
+ * @brief Negative test case of notification_clear()
  */
-static void utc_notifiation_clear_n(void)
+static void utc_notification_clear_n(void)
 {
 	int ret = 0;
 
-	ret = notifiation_clear(NOTIFICATION_TYPE_MAX);
-	dts_check_eq("notifiation_clear", ret, NOTIFICATION_ERROR_NONE,
+	ret = notification_clear(NOTIFICATION_TYPE_MAX);
+	dts_check_eq("notification_clear", ret, NOTIFICATION_ERROR_NONE,
 		"Must return NOTIFICATION_ERROR_NONE in case of invalid parameter");
 }
 
 /**
- * @brief Positive test case of notifiation_clear()
+ * @brief Positive test case of notification_clear()
  */
-static void utc_notifiation_clear_p(void)
+static void utc_notification_clear_p(void)
 {
 	int ret = 0;
 
-	ret = notifiation_clear(NOTIFICATION_TYPE_NOTI);
-	dts_check_eq("notifiation_clear", ret, NOTIFICATION_ERROR_NONE,
+	ret = notification_clear(NOTIFICATION_TYPE_NOTI);
+	dts_check_eq("notification_clear", ret, NOTIFICATION_ERROR_NONE,
 		"Must return NOTIFICATION_ERROR_NONE in case of invalid parameter");
 }
 
@@ -2240,51 +2319,51 @@ static void utc_notification_is_service_ready_p(void)
 }
 
 /**
- * @brief Negative test case of notification_add_deffered_task()
+ * @brief Negative test case of notification_add_deferred_task()
  */
-static void utc_notification_add_deffered_task_n(void)
+static void utc_notification_add_deferred_task_n(void)
 {
 	int ret = 0;
 
-	ret = notification_add_deffered_task(NULL, NULL);
-	dts_check_eq("notification_add_deffered_task", ret, NOTIFICATION_ERROR_INVALID_DATA,
+	ret = notification_add_deferred_task(NULL, NULL);
+	dts_check_eq("notification_add_deferred_task", ret, NOTIFICATION_ERROR_INVALID_DATA,
 		"Must return NOTIFICATION_ERROR_INVALID_DATA in case of invalid parameter");
 }
 
 /**
- * @brief Positive test case of notification_add_deffered_task()
+ * @brief Positive test case of notification_add_deferred_task()
  */
-static void utc_notification_add_deffered_task_p(void)
+static void utc_notification_add_deferred_task_p(void)
 {
 	int ret = 0;
 
-	ret = notification_add_deffered_task(_deffered_job_cb, NULL);
-	notification_del_deffered_task(_deffered_job_cb);
-	dts_check_eq("notification_add_deffered_task", ret, NOTIFICATION_ERROR_NONE,
+	ret = notification_add_deferred_task(_deffered_job_cb, NULL);
+	notification_del_deferred_task(_deffered_job_cb);
+	dts_check_eq("notification_add_deferred_task", ret, NOTIFICATION_ERROR_NONE,
 		"Must return NOTIFICATION_ERROR_NONE in case of invalid parameter");
 }
 
 /**
- * @brief Negative test case of notification_del_deffered_task()
+ * @brief Negative test case of notification_del_deferred_task()
  */
-static void utc_notification_del_deffered_task_n(void)
+static void utc_notification_del_deferred_task_n(void)
 {
 	int ret = 0;
 
-	ret = notification_del_deffered_task(NULL);
-	dts_check_eq("notification_del_deffered_task", ret, NOTIFICATION_ERROR_INVALID_DATA,
+	ret = notification_del_deferred_task(NULL);
+	dts_check_eq("notification_del_deferred_task", ret, NOTIFICATION_ERROR_INVALID_DATA,
 		"Must return NOTIFICATION_ERROR_INVALID_DATA in case of invalid parameter");
 }
 
 /**
- * @brief Positive test case of notification_del_deffered_task()
+ * @brief Positive test case of notification_del_deferred_task()
  */
-static void utc_notification_del_deffered_task_p(void)
+static void utc_notification_del_deferred_task_p(void)
 {
 	int ret = 0;
 
-	ret = notification_add_deffered_task(_deffered_job_cb, NULL);
-	ret = notification_del_deffered_task(_deffered_job_cb);
-	dts_check_eq("notification_del_deffered_task", ret, NOTIFICATION_ERROR_NONE,
+	ret = notification_add_deferred_task(_deffered_job_cb, NULL);
+	ret = notification_del_deferred_task(_deffered_job_cb);
+	dts_check_eq("notification_del_deferred_task", ret, NOTIFICATION_ERROR_NONE,
 		"Must return NOTIFICATION_ERROR_NONE in case of invalid parameter");
 }

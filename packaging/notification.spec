@@ -2,13 +2,11 @@ Name:       notification
 Summary:    notification library
 Version:    0.2.23
 Release:    1
-VCS:        magnolia/apps/home/notification#submit/trunk/20130307.012707-68-g5bef86b93a87ef36d33d10c74659843704924231
 Group:      TBD
 License:    TBD
 Source0:    %{name}-%{version}.tar.gz
 BuildRequires: pkgconfig(sqlite3)
 BuildRequires: pkgconfig(db-util)
-BuildRequires: pkgconfig(heynoti)
 BuildRequires: pkgconfig(vconf)
 BuildRequires: pkgconfig(bundle)
 BuildRequires: pkgconfig(dbus-1)
@@ -18,12 +16,22 @@ BuildRequires: pkgconfig(aul)
 BuildRequires: pkgconfig(appsvc)
 BuildRequires: pkgconfig(dbus-glib-1)
 BuildRequires: pkgconfig(com-core)
+BuildRequires: pkgconfig(capi-appfw-application)
+BuildRequires: pkgconfig(capi-appfw-package-manager)
+BuildRequires: pkgconfig(edbus)
+BuildRequires: pkgconfig(elementary)
+BuildRequires: pkgconfig(ecore)
+BuildRequires: pkgconfig(edje)
+BuildRequires: pkgconfig(eina)
 
 BuildRequires: cmake
+BuildRequires: edje-tools
 Requires(post): /sbin/ldconfig
 Requires(post): /usr/bin/sqlite3
 requires(postun): /sbin/ldconfig
+%if ! 0%{?sec_product_feature_profile_lite}
 Requires: notification-parser
+%endif
 
 %description
 Client/Server library for sending notifications.
@@ -95,6 +103,7 @@ then
 			title_key TEXT,
 			b_text TEXT,
 			b_key TEXT,
+			tag TEXT,
 			b_format_args TEXT,
 			num_format_args INTEGER default 0,
 			text_domain TEXT,
@@ -184,11 +193,11 @@ vconftool set -t string memory/private/libstatus/message "" -i -g 5000 -f  $SMAC
 %files devel
 %defattr(-,root,root,-)
 %{_includedir}/notification/notification.h
+%{_includedir}/notification/notification_internal.h
 %{_includedir}/notification/notification_error.h
 %{_includedir}/notification/notification_type.h
 %{_includedir}/notification/notification_list.h
 %{_includedir}/notification/notification_status.h
-%{_includedir}/notification/notification_setting.h
 %{_libdir}/pkgconfig/notification.pc
 
 %files service-devel

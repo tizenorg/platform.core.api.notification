@@ -23,14 +23,14 @@
 #define __NOTIFICATION_ONGOING_H__
 
 #include <notification.h>
-notification_error_e notification_ongoing_update_progress(const char *caller_pkgname,
+int notification_ongoing_update_progress(const char *caller_pkgname,
 							  int priv_id,
 							  double progress);
 
-notification_error_e notification_ongoing_update_size(const char *caller_pkgname,
+int notification_ongoing_update_size(const char *caller_pkgname,
 						      int priv_id, double size);
 
-notification_error_e notification_ongoing_update_content(const char *caller_pkgname,
+int notification_ongoing_update_content(const char *caller_pkgname,
 						      int priv_id, const char *content);
 
 #endif				/* __NOTIFICATION_ONGOING_H__ */

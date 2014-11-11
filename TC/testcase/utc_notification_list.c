@@ -72,7 +72,7 @@ struct tet_testlist tet_testlist[] = {
 static void startup(void)
 {
 	/* start of TC */
-	notifiation_clear(NOTIFICATION_TYPE_NONE);
+	notification_clear(NOTIFICATION_TYPE_NONE);
 	tet_printf("\n TC start");
 }
 

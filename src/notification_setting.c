@@ -29,11 +29,12 @@
 #include <notification_noti.h>
 #include <notification_debug.h>
 #include <notification_ipc.h>
-#include <notification_setting.h>
-#include <notification_internal.h>
+#include <notification_private.h>
 
 #define NOTIFICATION_SETTING_DB "notification_setting"
 #define NOTIFICATION_SETTING_DB_PATH "/opt/usr/dbspace/.notification_parser.db"
+
+typedef struct _notification_setting_h notification_setting_h;
 
 struct _notification_setting_h {
 	char *appid;
@@ -108,7 +109,7 @@ static const char *_get_prop_default_value(const char *property)
 }
 #endif
 
-static notification_error_e _is_record_exist(const char *pkgname, sqlite3 *db)
+static int _is_record_exist(const char *pkgname, sqlite3 *db)
 {
 	sqlite3_stmt *stmt = NULL;
 	int count = 0;
@@ -117,10 +118,10 @@ static notification_error_e _is_record_exist(const char *pkgname, sqlite3 *db)
 	int sqlret;
 
 	if (!pkgname)
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	if (!db)
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	sqlbuf = sqlite3_mprintf("SELECT count(*) FROM %s WHERE " \
 			 "appid = %Q",
@@ -128,7 +129,7 @@ static notification_error_e _is_record_exist(const char *pkgname, sqlite3 *db)
 
 	if (!sqlbuf) {
 		NOTIFICATION_ERR("fail to alloc sql query");
-		return NOTIFICATION_ERROR_NO_MEMORY;
+		return NOTIFICATION_ERROR_OUT_OF_MEMORY;
 	}
 
 	sqlret = sqlite3_prepare_v2(db, sqlbuf, -1, &stmt, NULL);
@@ -160,27 +161,27 @@ free_and_return:
 	return result;
 }
 
-EXPORT_API notification_error_e notification_setting_db_set(const char *pkgname, const char *property, const char *value)
+EXPORT_API int notification_setting_db_set(const char *pkgname, const char *property, const char *value)
 {
-	notification_error_e ret = NOTIFICATION_ERROR_NONE;
-	notification_error_e result = NOTIFICATION_ERROR_NONE;
+	int ret = NOTIFICATION_ERROR_NONE;
+	int result = NOTIFICATION_ERROR_NONE;
 	sqlite3 *db = NULL;
 	char *sqlbuf = NULL;
 	int sqlret;
 	const char *column = NULL;
 
 	if (!pkgname)
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	if (!property)
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	if (!value)
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	column = _get_prop_column(property);
 	if (!column)
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	sqlret = db_util_open(NOTIFICATION_SETTING_DB_PATH, &db, 0);
 	if (sqlret != SQLITE_OK || !db) {
@@ -199,7 +200,7 @@ EXPORT_API notification_error_e notification_setting_db_set(const char *pkgname,
 			NOTIFICATION_SETTING_DB, column, value, pkgname);
 	if (!sqlbuf) {
 		NOTIFICATION_ERR("fail to alloc query");
-		result = NOTIFICATION_ERROR_NO_MEMORY;
+		result = NOTIFICATION_ERROR_OUT_OF_MEMORY;
 		goto return_close_db;
 	}
 
@@ -217,10 +218,10 @@ return_close_db:
 	return result;
 }
 
-EXPORT_API notification_error_e notification_setting_db_get(const char *pkgname, const char *property, char **value)
+EXPORT_API int notification_setting_db_get(const char *pkgname, const char *property, char **value)
 {
-	notification_error_e ret = NOTIFICATION_ERROR_NONE;
-	notification_error_e result = NOTIFICATION_ERROR_NONE;
+	int ret = NOTIFICATION_ERROR_NONE;
+	int result = NOTIFICATION_ERROR_NONE;
 	sqlite3 *db = NULL;
 	char *sqlbuf = NULL;
 	sqlite3_stmt *stmt = NULL;
@@ -228,17 +229,17 @@ EXPORT_API notification_error_e notification_setting_db_get(const char *pkgname,
 	const char *column = NULL;
 
 	if (!pkgname)
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	if (!property)
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	if (!value)
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	column = _get_prop_column(property);
 	if (!column)
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	sqlret = db_util_open(NOTIFICATION_SETTING_DB_PATH, &db, 0);
 	if (sqlret != SQLITE_OK || !db) {
@@ -257,7 +258,7 @@ EXPORT_API notification_error_e notification_setting_db_get(const char *pkgname,
 			column, NOTIFICATION_SETTING_DB, pkgname);
 	if (!sqlbuf) {
 		NOTIFICATION_ERR("fail to alloc query");
-		result = NOTIFICATION_ERROR_NO_MEMORY;
+		result = NOTIFICATION_ERROR_OUT_OF_MEMORY;
 		goto return_close_db;
 	}
 
@@ -280,7 +281,7 @@ EXPORT_API notification_error_e notification_setting_db_get(const char *pkgname,
 			*value = get_data;
 		} else {
 			NOTIFICATION_ERR("fail to alloc query");
-			result = NOTIFICATION_ERROR_NO_MEMORY;
+			result = NOTIFICATION_ERROR_OUT_OF_MEMORY;
 			goto return_close_db;
 		}
 	}
@@ -299,18 +300,18 @@ return_close_db:
 	return result;
 }
 
-EXPORT_API notification_error_e notification_setting_property_set(const char *pkgname, const char *property, const char *value)
+EXPORT_API int notification_setting_property_set(const char *pkgname, const char *property, const char *value)
 {
 	int ret = 0;
 
 	if (!pkgname)
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	if (!property)
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	if (!value)
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	ret = notification_ipc_noti_setting_property_set(pkgname, property, value);
 	if (ret != NOTIFICATION_ERROR_NONE) {
@@ -320,18 +321,18 @@ EXPORT_API notification_error_e notification_setting_property_set(const char *pk
 	return NOTIFICATION_ERROR_NONE;
 }
 
-EXPORT_API notification_error_e notification_setting_property_get(const char *pkgname, const char *property, char **value)
+EXPORT_API int notification_setting_property_get(const char *pkgname, const char *property, char **value)
 {
 	int ret = 0;
 
 	if (!pkgname)
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	if (!property)
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	if (!value)
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	ret = notification_ipc_noti_setting_property_get(pkgname, property, value);
 	if (ret != NOTIFICATION_ERROR_NONE) {

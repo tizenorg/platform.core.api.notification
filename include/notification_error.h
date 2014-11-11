@@ -22,25 +22,32 @@
 #ifndef __NOTIFICATION_ERROR_H__
 #define __NOTIFICATION_ERROR_H__
 
+#include <tizen.h>
+
 /**
- * @addtogroup NOTIFICATION_TYPE
+ * @file notification_error.h
+ */
+
+/**
+ * @addtogroup NOTIFICATION_MODULE
  * @{
  */
 
 /**
- * @breief Enumeration for notification error
+ * @brief Enumeration for notification errors.
+ * @since_tizen 2.3
  */
 typedef enum _notification_error {
-	NOTIFICATION_ERROR_NONE = 0,	/**< Success */
-	NOTIFICATION_ERROR_INVALID_DATA = -1,	/**< Invalid parameter */
-	NOTIFICATION_ERROR_NO_MEMORY = -2,	/**< No memory */
-	NOTIFICATION_ERROR_FROM_DB = -3,	/**< Error from DB query */
-	NOTIFICATION_ERROR_ALREADY_EXIST_ID = -4,	/**< Already exist private ID */
-	NOTIFICATION_ERROR_FROM_DBUS = -5,	/**< Error from DBus */
-	NOTIFICATION_ERROR_NOT_EXIST_ID = -6,	/**< Not exist private ID */
-	NOTIFICATION_ERROR_IO = -7,	/**< disk i/o error */
-	NOTIFICATION_ERROR_SERVICE_NOT_READY = -8,	/**< no reponse from master */
-	NOTIFICATION_ERROR_PERMISSION_DENIED = -9, /**< Permission denied */
+	NOTIFICATION_ERROR_NONE = TIZEN_ERROR_NONE,	/**< Success */
+	NOTIFICATION_ERROR_INVALID_PARAMETER = TIZEN_ERROR_INVALID_PARAMETER,	/**< Invalid parameter */
+	NOTIFICATION_ERROR_OUT_OF_MEMORY = TIZEN_ERROR_OUT_OF_MEMORY,	/**< out of memory */
+	NOTIFICATION_ERROR_IO_ERROR= TIZEN_ERROR_IO_ERROR,	/**< I/O error */
+	NOTIFICATION_ERROR_PERMISSION_DENIED = TIZEN_ERROR_PERMISSION_DENIED, /**< Permission denied */
+	NOTIFICATION_ERROR_FROM_DB = TIZEN_ERROR_NOTIFICATION | 0x01,	/**< Error from DB query */
+	NOTIFICATION_ERROR_ALREADY_EXIST_ID = TIZEN_ERROR_NOTIFICATION | 0x02,	/**< Already exist private ID */
+	NOTIFICATION_ERROR_FROM_DBUS = TIZEN_ERROR_NOTIFICATION | 0x03,	/**< Error from DBus */
+	NOTIFICATION_ERROR_NOT_EXIST_ID = TIZEN_ERROR_NOTIFICATION | 0x04,	/**< Not exist private ID */
+	NOTIFICATION_ERROR_SERVICE_NOT_READY = TIZEN_ERROR_NOTIFICATION | 0x05,	/**< No reponse from notification service */
 } notification_error_e;
 
 /** 

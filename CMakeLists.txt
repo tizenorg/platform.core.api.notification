@@ -6,7 +6,9 @@ SET(EXEC_PREFIX "\${prefix}")
 SET(LIBDIR "\${prefix}/lib")
 SET(INCLUDEDIR "\${prefix}/include/${PROJECT_NAME}")
 SET(ICONDIR "${PREFIX}/share/${PROJECT_NAME}")
+SET(RESDIR "${PREFIX}/share/${PROJECT_NAME}")
 SET(DBDIR "/opt/dbspace")
+SET(IMGDIR "${RESDIR}/images")
 SET(DBFILE ".notification.db")
 SET(MAJOR_VER 0)
 SET(VERSION ${MAJOR_VER}.1.0)
@@ -23,11 +25,11 @@ SET(SRCS
 	./src/notification_setting.c)
 SET(HEADERS-DEVEL
 	./include/notification.h
+	./include/notification_internal.h
 	./include/notification_error.h
 	./include/notification_type.h
 	./include/notification_list.h
-	./include/notification_status.h
-	./include/notification_setting.h)
+	./include/notification_status.h)
 
 SET(HEADERS-SERVICE-DEVEL
 	./include/notification_ipc.h
@@ -49,6 +51,13 @@ pkg_check_modules(pkgs REQUIRED
 	dbus-1
 	dbus-glib-1
 	com-core
+	capi-appfw-application
+	capi-appfw-package-manager
+	edbus
+	elementary
+	ecore
+	edje
+	eina
 )
 
 FOREACH(flag ${pkgs_CFLAGS})
@@ -64,6 +73,7 @@ ADD_DEFINITIONS("-DPREFIX=\"${PREFIX}\"")
 ADD_DEFINITIONS("-DICONDIR=\"${ICONDIR}\"")
 ADD_DEFINITIONS("-DDBDIR=\"${DBDIR}\"")
 ADD_DEFINITIONS("-DDBFILE=\"${DBFILE}\"")
+ADD_DEFINITIONS("-DIMGDIR=\"${IMGDIR}\"")
 
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${SRCS})
 SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES SOVERSION ${MAJOR_VER})
@@ -73,6 +83,8 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${pkgs_LDFLAGS})
 CONFIGURE_FILE(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
 INSTALL(TARGETS ${PROJECT_NAME} DESTINATION lib COMPONENT RuntimeLibraries)
 INSTALL(FILES ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc DESTINATION lib/pkgconfig)
+
+INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data/images/ DESTINATION ${IMGDIR} FILES_MATCHING PATTERN "*.png")
 
 FOREACH(hfile ${HEADERS-DEVEL})
 	INSTALL(FILES ${CMAKE_SOURCE_DIR}/${hfile} DESTINATION include/${PROJECT_NAME})

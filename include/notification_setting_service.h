@@ -28,8 +28,8 @@
 extern "C" {
 #endif
 
-notification_error_e notification_setting_db_set(const char *pkgname, const char *property, const char *value);
-notification_error_e notification_setting_db_get(const char *pkgname, const char *property, char **value);
+int notification_setting_db_set(const char *pkgname, const char *property, const char *value);
+int notification_setting_db_get(const char *pkgname, const char *property, char **value);
 
 #ifdef __cplusplus
 }

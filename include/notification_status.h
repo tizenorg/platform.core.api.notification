@@ -27,27 +27,8 @@ extern "C" {
 #endif /* __cplusplus */
 
 /**
-* @brief Called when new message is posted
-* @param[in] message The message posted
-* @param[in] data user data
-* @pre notification_status_monitor_message_cb_set() used to register this callback
-* @see notification_status_monitor_message_cb_set()
-*/
-typedef void (*notification_status_message_cb)(const char *message, void *data);
-
-/**
-* @brief register callback for receiving message
-* @param[in] callback The callback function
-* @param[in] data user_data
-*/
-int notification_status_monitor_message_cb_set(notification_status_message_cb callback, void *user_data);
-
-/**
-* @brief unregister callback for receiving message
-* @param[in] callback The callback function
-* @param[in] data user_data
-*/
-int notification_status_monitor_message_cb_unset(void);
+ * @file notification_status.h
+ */
 
 /**
  * @addtogroup NOTIFICATION_STATUS
@@ -55,10 +36,52 @@ int notification_status_monitor_message_cb_unset(void);
  */
 
 /**
- * @brief This function send string(message) to notification status monitor
- * @details Send the message to notification status monitor.
- * @param[in] message messages you want to post
+ * @internal
+ * @brief Called when a new message is posted.
+ * @since_tizen 2.3
+ * @param[in] message The message posted
+ * @param[in] data    The user data
+ * @pre notification_status_monitor_message_cb_set() used to register this callback.
+ * @see notification_status_monitor_message_cb_set()
+*/
+typedef void (*notification_status_message_cb)(const char *message, void *data);
+
+/**
+ * @internal
+ * @brief Registers a callback to receive a message.
+ * @since_tizen 2.3
+ * @param[in] callback The callback function
+ * @param[in] data     The user_data
  * @return #NOTIFICATION_ERROR_NONE if success, other value if failure
+ * @retval #NOTIFICATION_ERROR_NONE Success
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval #NOTIFICATION_ERROR_FROM_DBUS Error from DBus
+ */
+int notification_status_monitor_message_cb_set(notification_status_message_cb callback, void *user_data);
+
+/**
+ * @internal
+ * @brief Unregisters a callback to receive a message.
+ * @since_tizen 2.3
+ * @param[in] callback The callback function
+ * @param[in] data     The user_data
+ * @return #NOTIFICATION_ERROR_NONE if success, other value if failure
+ * @retval #NOTIFICATION_ERROR_NONE Success
+ */
+int notification_status_monitor_message_cb_unset(void);
+
+/**
+ * @brief Sends a string (message) to the notification status monitor.
+ * @since_tizen 2.3
+ * @privlevel public
+ * @privilege %http://tizen.org/privilege/notification
+ * @param[in] message The messages to be posted
+
+ * @return  #NOTIFICATION_ERROR_NONE on success,
+ *          otherwise any other value on failure
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval #NOTIFICATION_ERROR_FROM_DBUS Error from DBus
+ * @retval #NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
  * @see #notification_error_e
  */
 int notification_status_message_post(const char *message);

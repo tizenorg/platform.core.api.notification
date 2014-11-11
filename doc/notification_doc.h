@@ -21,44 +21,41 @@
 
 /**
  *
- * @ingroup NOTIFICATION_LIBRARY
- * @defgroup NOTIFICATION_MODULE notification APIs
+ * @defgroup NOTIFICATION_MODULE Notification
+ * @ingroup CAPI_APPLICATION_FRAMEWORK
  * @brief Notification APIs
  *
  * @section NOTIFICATION_MODULE_HEADER Required Header
  *   \#include <notification.h>
  * @section NOTIFICATION_MODULE_OVERVIEW Overview
- * It provides functions for creating and inserting and updating notification.
+ * A notification is a message that is displayed on the notification area or the on-going area.
+ * It is created to notify information to the user through the application.
+ * This API provides functions for creating and inserting and updating notification.
  *
- * @ingroup NOTIFICATION_LIBRARY
- * @defgroup NOTIFICATION_LIST notification list APIs
+ */
+ 
+/** 
+ * @internal
+ * @defgroup NOTIFICATION_LIST Notification List
+ * @ingroup NOTIFICATION_MODULE
  * @brief linked list of notification data
  *
  * @section NOTIFICATION_LIST_MODULE_HEADER Required Header
- *   \#include <notification_list.h>
+ *   \#include <notification.h>
  * @section NOTIFICATION_LIST_MODULE_OVERVIEW Overview
- * It provides functions for handling
+ * It provides functions for handling notification list.
  *
- * @ingroup NOTIFICATION_LIBRARY
- * @defgroup NOTIFICATION_STATUS notification status APIs
+ */
+  
+/** 
+ * @defgroup NOTIFICATION_STATUS Notification Status
+ * @ingroup NOTIFICATION_MODULE
  * @brief APIs displaying plain text message on the indicator area
  *
  * @section NOTIFICATION_STATUS_MODULE_HEADER Required Header
- *   \#include <notification_status.h>
+ *   \#include <notification.h>
  * @section NOTIFICATION_STATUS_MODULE_OVERVIEW Overview
  * Notification status APIs
  *
- * @ingroup NOTIFICATION_LIBRARY
- * @defgroup NOTIFICATION_TYPE notification type
- * @brief Type for notification APIs
- *
- * @section NOTIFICATION_TYPE_MODULE_HEADER Required Header
- *   \#include <notification_type.h>
- * @section NOTIFICATION_TYPE_MODULE_OVERVIEW Overview
- * Type defines and enumerations for Notification APIs
- *
- * @ingroup NOTIFICATION_LIBRARY
- * @defgroup NOTIFICATION_DEPRECATED deprecated APIs
- * @brief deprecated APIs
- *
  */
+ 

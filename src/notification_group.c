@@ -64,7 +64,7 @@ static int _notification_group_check_data_inserted(const char *pkgname,
 	return NOTIFICATION_ERROR_NONE;
 }
 
-notification_error_e notification_group_set_badge(const char *pkgname,
+int notification_group_set_badge(const char *pkgname,
 						  int group_id, int count)
 {
 	sqlite3 *db;
@@ -75,6 +75,9 @@ notification_error_e notification_group_set_badge(const char *pkgname,
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
+	if (!db) {
+		return get_last_result();
+	}
 
 	/* Check pkgname & group_id */
 	ret = _notification_group_check_data_inserted(pkgname, group_id, db);
@@ -128,7 +131,7 @@ notification_error_e notification_group_set_badge(const char *pkgname,
 	return result;
 }
 
-notification_error_e notification_group_get_badge(const char *pkgname,
+int notification_group_get_badge(const char *pkgname,
 						  int group_id, int *count)
 {
 	sqlite3 *db;
@@ -139,6 +142,9 @@ notification_error_e notification_group_get_badge(const char *pkgname,
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
+	if (!db) {
+		return get_last_result();
+	}
 
 	/* Make query */
 	if (group_id == NOTIFICATION_GROUP_ID_NONE) {
