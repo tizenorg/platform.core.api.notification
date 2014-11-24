@@ -95,6 +95,6 @@ chown :$TZ_SYS_USER_GROUP $TZ_SYS_DB/.notification.db
 chown :$TZ_SYS_USER_GROUP $TZ_SYS_DB/.notification.db-journal
 chmod 640 $TZ_SYS_DB/.notification.db
 chmod 640 $TZ_SYS_DB/.notification.db-journal
-chsmack -a 'notification::db' $TZ_SYS_DB/.notification.db*
+chsmack -a 'User' $TZ_SYS_DB/.notification.db*
 SMACK_OPTION="-s system::vconf_misc"
 vconftool set -t string memory/private/libstatus/message "" -i -g $users_gid -f  $SMACK_OPTION
