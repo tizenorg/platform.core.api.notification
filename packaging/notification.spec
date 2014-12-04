@@ -29,9 +29,6 @@ BuildRequires: edje-tools
 Requires(post): /sbin/ldconfig
 Requires(post): /usr/bin/sqlite3
 requires(postun): /sbin/ldconfig
-%if ! 0%{?sec_product_feature_profile_lite}
-Requires: notification-parser
-%endif
 
 %description
 Client/Server library for sending notifications.
