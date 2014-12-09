@@ -2827,7 +2827,9 @@ EXPORT_API notification_error_e notification_wait_response(notification_h noti,
 	struct timeval timeout_tv;
 	char *resp;
 
-	 /* a response packet *must* have an execute option TYPE_RESPONDING
+	memset(msg_buffer, 0, sizeof(msg_buffer));
+
+    /* a response packet *must* have an execute option TYPE_RESPONDING
 	    with an associated bundle.
 	    If its bundle does not already contain a "tid" hint (which
 	    complex applications such as xwalk may overwrite), we will
