@@ -1856,6 +1856,7 @@ EXPORT_API int notification_noti_post_toast_message(const char *message)
 	}
 	else if (count >= 2) {
 		if (strcmp(msg, (char *)eina_list_nth(toast_list, count - 1)) == 0) {
+			free(msg);
 			return 0;
 		}
 		else {

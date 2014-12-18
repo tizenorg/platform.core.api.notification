@@ -1839,11 +1839,13 @@ EXPORT_API int notification_clear(notification_type_e type)
 EXPORT_API int notification_delete_all(notification_type_e type)
 {
 	int ret = 0;
-	char *caller_pkgname = _notification_get_pkgname_by_pid();
+	char *caller_pkgname = NULL;
 
 	if (type <= NOTIFICATION_TYPE_NONE || type >= NOTIFICATION_TYPE_MAX) {
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
+
+	caller_pkgname = _notification_get_pkgname_by_pid();
 
 	ret = notification_ipc_request_delete_multiple(type, caller_pkgname);
 
