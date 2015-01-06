@@ -819,6 +819,98 @@ EXPORT_API int notification_get_text(notification_h noti,
 						temp_str++;
 
 						num_args++;
+					} else if (*(temp_str + 1) >= '1' && *(temp_str + 1) <= '9') {
+						if (*(temp_str + 3) == 'd') {
+							/* Get var Type */
+							ret_variable_int = 0;
+
+							snprintf(buf_key,
+								 sizeof(buf_key),
+								 "%dtype%d", check_type,
+								 num_args + *(temp_str + 1) - 49);
+							ret_val =
+							    bundle_get_val(b, buf_key);
+							ret_var_type = atoi(ret_val);
+							if (ret_var_type ==
+							    NOTIFICATION_VARIABLE_TYPE_COUNT)
+							{
+								/* Get notification count */
+								notification_noti_get_count
+								    (noti->type,
+								     noti->caller_pkgname,
+								     noti->group_id,
+								     noti->priv_id,
+								     &ret_variable_int);
+							} else {
+								/* Get var Value */
+								snprintf(buf_key,
+									 sizeof
+									 (buf_key),
+									 "%dvalue%d",
+									 check_type,
+									 num_args + *(temp_str + 1) - 49);
+								ret_val =
+								    bundle_get_val(b,
+										   buf_key);
+								ret_variable_int =
+								    atoi(ret_val);
+							}
+
+							snprintf(buf_str,
+								 sizeof(buf_str), "%d",
+								 ret_variable_int);
+
+							int src_len = strlen(result_str);
+							int max_len = NOTI_TEXT_RESULT_LEN - src_len - 1;
+
+							strncat(result_str, buf_str,
+									max_len);
+
+							temp_str += 3;
+						} else if (*(temp_str + 3) == 's') {
+							/* Get var Value */
+							snprintf(buf_key,
+								 sizeof(buf_key),
+								 "%dvalue%d",
+								 check_type, num_args + *(temp_str + 1) - 49);
+							ret_val =
+							    bundle_get_val(b, buf_key);
+
+							snprintf(buf_str,
+								 sizeof(buf_str), "%s",
+								 ret_val);
+
+							int src_len = strlen(result_str);
+							int max_len = NOTI_TEXT_RESULT_LEN - src_len - 1;
+
+							strncat(result_str, buf_str,
+									max_len);
+
+							temp_str += 3;
+						} else if (*(temp_str + 3) == 'f') {
+							/* Get var Value */
+							snprintf(buf_key,
+								 sizeof(buf_key),
+								 "%dvalue%d",
+								 check_type, num_args + *(temp_str + 1) - 49);
+							ret_val =
+							    bundle_get_val(b, buf_key);
+							ret_variable_double =
+							    atof(ret_val);
+
+							snprintf(buf_str,
+								 sizeof(buf_str),
+								 "%.2f",
+								 ret_variable_double);
+
+							int src_len = strlen(result_str);
+							int max_len = NOTI_TEXT_RESULT_LEN - src_len - 1;
+
+							strncat(result_str, buf_str,
+									max_len);
+
+							temp_str += 3;
+						}
 					}
 				}
 
@@ -2705,7 +2797,7 @@ EXPORT_API int notification_op_get_data(notification_op *noti_op, notification_o
 void notification_call_changed_cb(notification_op *op_list, int op_num)
 {
 	notification_cb_list_s *noti_cb_list = NULL;
-
+	notification_type_e type = 0;
 
 	if (g_notification_cb_list == NULL) {
 		return;
@@ -2721,14 +2813,16 @@ void notification_call_changed_cb(notification_op *op_list, int op_num)
 		return ;
 	}
 
+	notification_get_type(op_list->noti, &type);
+
 	while (noti_cb_list != NULL) {
 		if (noti_cb_list->cb_type == NOTIFICATION_CB_NORMAL && noti_cb_list->changed_cb) {
 			noti_cb_list->changed_cb(noti_cb_list->data,
-						 NOTIFICATION_TYPE_NOTI);
+						 type);
 		}
 		if (noti_cb_list->cb_type == NOTIFICATION_CB_DETAILED && noti_cb_list->detailed_changed_cb) {
 			noti_cb_list->detailed_changed_cb(noti_cb_list->data,
-						 NOTIFICATION_TYPE_NOTI, op_list, op_num);
+						type, op_list, op_num);
 		}
 
 		noti_cb_list = noti_cb_list->next;
