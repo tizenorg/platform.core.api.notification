@@ -274,7 +274,7 @@ static int _insertion_query_create(notification_h noti, char **query)
 		 "'%s', "
 		 "%d, %d, %d, "
 		 "$title_key, "
-		 "'%s', '%s', '%s', '%s', %d, "
+		 "'%s', '%s', $tag, '%s', %d, "
 		 "'%s', '%s', "
 		 "%d, %d, "
 		 "'%s', '%s', "
@@ -290,7 +290,6 @@ static int _insertion_query_create(notification_h noti, char **query)
 		 NOTIFICATION_CHECK_STR(b_image_path), noti->group_id,
 		 noti->internal_group_id, noti->priv_id,
 		 NOTIFICATION_CHECK_STR(b_text), NOTIFICATION_CHECK_STR(b_key),
-		 NOTIFICATION_CHECK_STR(noti->tag),
 		 NOTIFICATION_CHECK_STR(b_format_args), noti->num_format_args,
 		 NOTIFICATION_CHECK_STR(noti->domain),
 		 NOTIFICATION_CHECK_STR(noti->dir), (int)noti->time,
@@ -424,7 +423,7 @@ static int _update_query_create(notification_h noti, char **query)
 		 "layout = %d, "
 		 "launch_pkgname = '%s', "
 		 "image_path = '%s', "
-		 "b_text = '%s', b_key = '%s', tag = '%s', "
+		 "b_text = '%s', b_key = '%s', tag = $tag, "
 		 "b_format_args = '%s', num_format_args = %d, "
 		 "text_domain = '%s', text_dir = '%s', "
 		 "time = %d, insert_time = %d, "
@@ -446,7 +445,6 @@ static int _update_query_create(notification_h noti, char **query)
 		 NOTIFICATION_CHECK_STR(noti->launch_pkgname),
 		 NOTIFICATION_CHECK_STR(b_image_path),
 		 NOTIFICATION_CHECK_STR(b_text), NOTIFICATION_CHECK_STR(b_key),
-		 NOTIFICATION_CHECK_STR(noti->tag),
 		 NOTIFICATION_CHECK_STR(b_format_args), noti->num_format_args,
 		 NOTIFICATION_CHECK_STR(noti->domain),
 		 NOTIFICATION_CHECK_STR(noti->dir),
@@ -718,6 +716,11 @@ EXPORT_API int notification_noti_insert(notification_h noti)
 	}
 
 	/* Bind query */
+	ret = _notification_noti_bind_query_text(stmt, "$tag", noti->tag);
+	if (ret != NOTIFICATION_ERROR_NONE) {
+		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
+		goto err;
+	}
 	ret = _notification_noti_bind_query_text(stmt, "$title_key", title_key);
 	if (ret != NOTIFICATION_ERROR_NONE) {
 		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
@@ -857,6 +860,52 @@ EXPORT_API int notification_noti_get_by_tag(notification_h noti, char *pkgname, 
 		return get_last_result();
 	}
 
+	if (pkgname != NULL) {
+		ret = sqlite3_prepare_v2(db, "select "
+			 "type, layout, caller_pkgname, launch_pkgname, image_path, group_id, priv_id, "
+			 "tag, b_text, b_key, b_format_args, num_format_args, "
+			 "text_domain, text_dir, time, insert_time, args, group_args, "
+			 "b_execute_option, b_service_responding, b_service_single_launch, b_service_multi_launch, "
+			 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb, led_on_ms, led_off_ms, "
+			 "flags_for_property, display_applist, progress_size, progress_percentage "
+			 "from noti_list where caller_pkgname = ? and tag = ?", -1, &stmt, NULL);
+		if (ret != SQLITE_OK) {
+			NOTIFICATION_ERR("Error: %s\n", sqlite3_errmsg(db));
+			return NOTIFICATION_ERROR_OUT_OF_MEMORY;
+		}
+
+		ret = sqlite3_bind_text(stmt, 1, pkgname, -1, SQLITE_TRANSIENT);
+		if (ret != SQLITE_OK) {
+			NOTIFICATION_ERR("Error: %s\n", sqlite3_errmsg(db));
+			goto err;
+		}
+
+		ret = sqlite3_bind_text(stmt, 2,  tag, -1, SQLITE_TRANSIENT);
+		if (ret != SQLITE_OK) {
+			NOTIFICATION_ERR("Error: %s\n", sqlite3_errmsg(db));
+			goto err;
+		} 
+	} else {
+		ret = sqlite3_prepare_v2(db, "select "
+			 "type, layout, caller_pkgname, launch_pkgname, image_path, group_id, priv_id, "
+			 "tag, b_text, b_key, b_format_args, num_format_args, "
+			 "text_domain, text_dir, time, insert_time, args, group_args, "
+			 "b_execute_option, b_service_responding, b_service_single_launch, b_service_multi_launch, "
+			 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb, led_on_ms, led_off_ms, "
+			 "flags_for_property, display_applist, progress_size, progress_percentage "
+			 "from noti_list where  tag = ?", -1, &stmt, NULL);
+		if (ret != SQLITE_OK) {
+			NOTIFICATION_ERR("Error: %s\n", sqlite3_errmsg(db));
+			return NOTIFICATION_ERROR_OUT_OF_MEMORY;
+		}
+
+		ret = sqlite3_bind_text(stmt, 1, tag, -1, SQLITE_TRANSIENT);
+		if (ret != SQLITE_OK) {
+			NOTIFICATION_ERR("Error: %s\n", sqlite3_errmsg(db));
+			goto err;
+		}
+	}
+/*
 	char *base_query = "select "
 			 "type, layout, caller_pkgname, launch_pkgname, image_path, group_id, priv_id, "
 			 "tag, b_text, b_key, b_format_args, num_format_args, "
@@ -885,7 +934,7 @@ EXPORT_API int notification_noti_get_by_tag(notification_h noti, char *pkgname, 
 		ret = NOTIFICATION_ERROR_FROM_DB;
 		goto err;
 	}
-
+*/
 	ret = sqlite3_step(stmt);
 	if (ret == SQLITE_ROW) {
 		_notification_noti_populate_from_stmt(stmt, noti);
@@ -945,6 +994,11 @@ EXPORT_API int notification_noti_update(notification_h noti)
 		goto err;
 	}
 
+	ret = _notification_noti_bind_query_text(stmt, "$tag", noti->tag);
+	if (ret != NOTIFICATION_ERROR_NONE) {
+		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
+		goto err;
+	}
 	ret = _notification_noti_bind_query_double(stmt, "$progress_size",noti->progress_size);
 	if (ret != NOTIFICATION_ERROR_NONE) {
 		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
@@ -1702,6 +1756,25 @@ EXPORT_API int notification_noti_check_tag(notification_h noti)
 		return get_last_result();
 	}
 
+	ret = sqlite3_prepare_v2(db, "SELECT priv_id FROM noti_list WHERE caller_pkgname = ? and tag = ?", -1, &stmt, NULL);
+	if (ret != SQLITE_OK) {
+		NOTIFICATION_ERR("Error: %s\n", sqlite3_errmsg(db));
+		return NOTIFICATION_ERROR_OUT_OF_MEMORY;
+	}
+
+	ret = sqlite3_bind_text(stmt, 1, noti->caller_pkgname, -1, SQLITE_TRANSIENT);
+	if (ret != SQLITE_OK) {
+		NOTIFICATION_ERR("Error: %s\n", sqlite3_errmsg(db));
+		goto err;
+	}
+
+	ret = sqlite3_bind_text(stmt, 2, noti->tag, -1, SQLITE_TRANSIENT);
+	if (ret != SQLITE_OK) {
+		NOTIFICATION_ERR("Error: %s\n", sqlite3_errmsg(db));
+		goto err;
+	}
+
+/*
 	query = sqlite3_mprintf("select priv_id from noti_list where caller_pkgname = '%s' and tag = '%s'",
 		 noti->caller_pkgname, noti->tag);
 	if (query == NULL) {
@@ -1716,7 +1789,7 @@ EXPORT_API int notification_noti_check_tag(notification_h noti)
 		ret = NOTIFICATION_ERROR_FROM_DB;
 		goto err;
 	}
-
+*/
 	ret = sqlite3_step(stmt);
 	if (ret == SQLITE_ROW) {
 		result = sqlite3_column_int(stmt, 0);
