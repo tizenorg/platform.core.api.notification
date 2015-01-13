@@ -2848,6 +2848,7 @@ EXPORT_API notification_error_e notification_wait_response(notification_h noti,
 		bundle_add(bc, "tid", tid_c);
 		notification_set_execute_option (noti, NOTIFICATION_EXECUTE_TYPE_RESPONDING,
 						 NULL, NULL, bc);
+		bundle_free(bc);
 		notification_update(noti);
 	}
 
