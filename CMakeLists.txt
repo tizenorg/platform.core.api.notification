@@ -56,7 +56,6 @@ pkg_check_modules(pkgs REQUIRED
 	edbus
 	elementary
 	ecore
-	edje
 	eina
 )
 

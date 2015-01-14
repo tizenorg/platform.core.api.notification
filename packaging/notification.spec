@@ -21,11 +21,9 @@ BuildRequires: pkgconfig(capi-appfw-package-manager)
 BuildRequires: pkgconfig(edbus)
 BuildRequires: pkgconfig(elementary)
 BuildRequires: pkgconfig(ecore)
-BuildRequires: pkgconfig(edje)
 BuildRequires: pkgconfig(eina)
 
 BuildRequires: cmake
-BuildRequires: edje-tools
 Requires(post): /sbin/ldconfig
 Requires(post): /usr/bin/sqlite3
 requires(postun): /sbin/ldconfig
