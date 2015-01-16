@@ -3,7 +3,7 @@ Summary:    notification library
 Version:    0.2.23
 Release:    1
 Group:      TBD
-License:    TBD
+License:    Apache
 Source0:    %{name}-%{version}.tar.gz
 BuildRequires: pkgconfig(sqlite3)
 BuildRequires: pkgconfig(db-util)
