@@ -26,7 +26,6 @@
 #include <vconf.h>
 #include <Ecore.h>
 #include <Elementary.h>
-#include <Edje.h>
 #include <Eina.h>
 
 #include <notification.h>
@@ -36,7 +35,6 @@
 #include <notification_private.h>
 
 #define NOTI_BURST_DELETE_UNIT 10
-static int toast_height;
 static Eina_List *toast_list;
 static Eina_List *toast_popup;
 

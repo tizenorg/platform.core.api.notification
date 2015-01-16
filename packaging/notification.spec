@@ -3,7 +3,7 @@ Summary:    notification library
 Version:    0.2.23
 Release:    1
 Group:      TBD
-License:    TBD
+License:    Apache
 Source0:    %{name}-%{version}.tar.gz
 BuildRequires: pkgconfig(sqlite3)
 BuildRequires: pkgconfig(db-util)
@@ -21,11 +21,9 @@ BuildRequires: pkgconfig(capi-appfw-package-manager)
 BuildRequires: pkgconfig(edbus)
 BuildRequires: pkgconfig(elementary)
 BuildRequires: pkgconfig(ecore)
-BuildRequires: pkgconfig(edje)
 BuildRequires: pkgconfig(eina)
 
 BuildRequires: cmake
-BuildRequires: edje-tools
 Requires(post): /sbin/ldconfig
 Requires(post): /usr/bin/sqlite3
 requires(postun): /sbin/ldconfig
