@@ -342,7 +342,7 @@ NOTIFICATION_DEPRECATED_API int notification_op_get_data(notification_op *noti_o
 		return;
 	}
 
-	noti_err  = notification_set_pkgname(noti, "com.samsung.phone");
+	noti_err  = notification_set_pkgname(noti, "org.tizen.phone");
 	if(noti_err != NOTIFICATION_ERROR_NONE) {
 		notification_free(noti);
 		return;
