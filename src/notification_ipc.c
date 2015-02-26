@@ -26,6 +26,8 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#include <vconf.h>
+
 #include <packet.h>
 #include <com-core.h>
 #include <com-core_packet.h>
@@ -37,6 +39,10 @@
 #include <notification_debug.h>
 
 #define NOTIFICATION_IPC_TIMEOUT 0.0
+
+#if !defined(VCONFKEY_MASTER_STARTED)
+#define VCONFKEY_MASTER_STARTED "memory/data-provider-master/started"
+#endif
 
 static struct info {
 	int server_fd;
@@ -90,6 +96,21 @@ static Eina_Bool _do_deffered_task(void *data);
  * the task when the service is available)
  */
 
+int notification_ipc_is_master_ready(void)
+{
+	int ret = -1, is_master_started = 0;
+
+	ret = vconf_get_bool(VCONFKEY_MASTER_STARTED, &is_master_started);
+	if (ret == 0 && is_master_started == 1) {
+		NOTIFICATION_ERR("the master has been started");
+	} else {
+		is_master_started = 0;
+		NOTIFICATION_ERR("the master has been stopped");
+	}
+
+	return is_master_started;
+}
+
 notification_error_e
 notification_ipc_add_deffered_task(
 		void (*deffered_task_cb)(void *data),
@@ -102,7 +123,7 @@ notification_ipc_add_deffered_task(
 	    (task_list *) malloc(sizeof(task_list));
 
 	if (list_new == NULL) {
-		return NOTIFICATION_ERROR_NO_MEMORY;
+		return NOTIFICATION_ERROR_OUT_OF_MEMORY;
 	}
 
 	list_new->next = NULL;
@@ -140,7 +161,7 @@ notification_ipc_del_deffered_task(
 	list_del = g_task_list;
 
 	if (list_del == NULL) {
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 
 	while (list_del->prev != NULL) {
@@ -177,7 +198,7 @@ notification_ipc_del_deffered_task(
 		list_del = list_del->next;
 	} while (list_del != NULL);
 
-	return NOTIFICATION_ERROR_INVALID_DATA;
+	return NOTIFICATION_ERROR_INVALID_PARAMETER;
 }
 
 static Eina_Bool _do_deffered_task(void *data) {
@@ -315,7 +336,7 @@ EXPORT_API notification_error_e notification_ipc_make_noti_from_packet(notificat
 
 	if (noti == NULL) {
 		NOTIFICATION_ERR("invalid data");
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 
 	ret = packet_get(packet,
@@ -361,7 +382,7 @@ EXPORT_API notification_error_e notification_ipc_make_noti_from_packet(notificat
 
 	if (ret != 38) {
 		NOTIFICATION_ERR("failed to create a noti from packet");
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 
 	/*!
@@ -731,10 +752,10 @@ static int _handler_service_register(pid_t pid, int handle, const struct packet 
 
 	if (!packet) {
 		NOTIFICATION_ERR("Packet is not valid\n");
-		ret = NOTIFICATION_ERROR_INVALID_DATA;
+		ret = NOTIFICATION_ERROR_INVALID_PARAMETER;
 	} else if (packet_get(packet, "i", &ret) != 1) {
 		NOTIFICATION_ERR("Packet is not valid\n");
-		ret = NOTIFICATION_ERROR_INVALID_DATA;
+		ret = NOTIFICATION_ERROR_INVALID_PARAMETER;
 	} else {
 		if (ret == 0) {
 			notification_op *noti_op = notification_ipc_create_op(NOTIFICATION_OP_SERVICE_READY, 1, NULL, 1, NULL);
@@ -790,14 +811,14 @@ notification_error_e notification_ipc_monitor_init(void)
 	s_info.server_fd = com_core_packet_client_init(s_info.socket_file, 0, service_table);
 	if (s_info.server_fd < 0) {
 		NOTIFICATION_ERR("Failed to make a connection to the master\n");
-		return NOTIFICATION_ERROR_IO;
+		return NOTIFICATION_ERROR_IO_ERROR;
 	}
 
 	packet = packet_create("service_register", "");
 	if (!packet) {
 		NOTIFICATION_ERR("Failed to build a packet\n");
 		com_core_packet_client_fini(s_info.server_fd);
-		return NOTIFICATION_ERROR_IO;
+		return NOTIFICATION_ERROR_IO_ERROR;
 	}
 
 	ret = com_core_packet_async_send(s_info.server_fd, packet, 1.0, _handler_service_register, NULL);
@@ -805,8 +826,8 @@ notification_error_e notification_ipc_monitor_init(void)
 	packet_destroy(packet);
 	if (ret != 0) {
 		com_core_packet_client_fini(s_info.server_fd);
-		s_info.server_fd = NOTIFICATION_ERROR_INVALID_DATA;
-		ret = NOTIFICATION_ERROR_IO;
+		s_info.server_fd = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		ret = NOTIFICATION_ERROR_IO_ERROR;
 	} else {
 		ret = NOTIFICATION_ERROR_NONE;
 	}
@@ -822,7 +843,7 @@ notification_error_e notification_ipc_monitor_fini(void)
 	}
 
 	com_core_packet_client_fini(s_info.server_fd);
-	s_info.server_fd = NOTIFICATION_ERROR_INVALID_DATA;
+	s_info.server_fd = NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	s_info.initialized = 0;
 
@@ -854,7 +875,7 @@ notification_error_e notification_ipc_request_insert(notification_h noti, int *p
 		if (packet_get(result, "ii", &status, &id) != 2) {
 			NOTIFICATION_ERR("Failed to get a result packet");
 			packet_unref(result);
-			return NOTIFICATION_ERROR_IO;
+			return NOTIFICATION_ERROR_IO_ERROR;
 		}
 
 		if (status != NOTIFICATION_ERROR_NONE) {
@@ -891,7 +912,7 @@ notification_error_e notification_ipc_request_delete_single(notification_type_e 
 		if (packet_get(result, "ii", &status, &id) != 2) {
 			NOTIFICATION_ERR("Failed to get a result packet");
 			packet_unref(result);
-			return NOTIFICATION_ERROR_IO;
+			return NOTIFICATION_ERROR_IO_ERROR;
 		}
 		packet_unref(result);
 	} else {
@@ -919,7 +940,7 @@ notification_error_e notification_ipc_request_delete_multiple(notification_type_
 		if (packet_get(result, "ii", &status, &num_deleted) != 2) {
 			NOTIFICATION_ERR("Failed to get a result packet");
 			packet_unref(result);
-			return NOTIFICATION_ERROR_IO;
+			return NOTIFICATION_ERROR_IO_ERROR;
 		}
 		NOTIFICATION_ERR("num deleted:%d", num_deleted);
 		packet_unref(result);
@@ -948,7 +969,7 @@ notification_error_e notification_ipc_request_update(notification_h noti)
 		if (packet_get(result, "ii", &status, &id) != 2) {
 			NOTIFICATION_ERR("Failed to get a result packet");
 			packet_unref(result);
-			return NOTIFICATION_ERROR_IO;
+			return NOTIFICATION_ERROR_IO_ERROR;
 		}
 		packet_unref(result);
 	} else {
@@ -967,7 +988,7 @@ static int _notification_ipc_update_cb(pid_t pid, int handle, const struct packe
 
 	if (cb_item == NULL) {
 		NOTIFICATION_ERR("Failed to get a callback item");
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 	s_info.server_cl_fd_ref_cnt = (s_info.server_cl_fd_ref_cnt <= 1) ? 0 : s_info.server_cl_fd_ref_cnt - 1;
 	if (s_info.server_cl_fd_ref_cnt <= 0) {
@@ -981,7 +1002,7 @@ static int _notification_ipc_update_cb(pid_t pid, int handle, const struct packe
 	if (packet != NULL) {
 		if (packet_get(packet, "ii", &status, &id) != 2) {
 			NOTIFICATION_ERR("Failed to get a result packet");
-			status = NOTIFICATION_ERROR_IO;
+			status = NOTIFICATION_ERROR_IO_ERROR;
 		}
 	}
 
@@ -1003,13 +1024,13 @@ notification_error_e notification_ipc_request_update_async(notification_h noti,
 
 	packet = notification_ipc_make_packet_from_noti(noti, "update_noti", 1);
 	if (packet == NULL) {
-		ret = NOTIFICATION_ERROR_INVALID_DATA;
+		ret = NOTIFICATION_ERROR_INVALID_PARAMETER;
 		goto fail;
 	}
 
 	cb_item = calloc(1, sizeof(result_cb_item));
 	if (cb_item == NULL) {
-		ret = NOTIFICATION_ERROR_NO_MEMORY;
+		ret = NOTIFICATION_ERROR_OUT_OF_MEMORY;
 		goto fail;
 	}
 
@@ -1042,7 +1063,7 @@ notification_error_e notification_ipc_request_update_async(notification_h noti,
 			com_core_packet_client_fini(fd_temp);
 			NOTIFICATION_INFO("FD(%d) finalized", fd_temp);
 		}
-		ret = NOTIFICATION_ERROR_IO;
+		ret = NOTIFICATION_ERROR_IO_ERROR;
 		goto fail;
 	} else {
 		ret = NOTIFICATION_ERROR_NONE;
@@ -1075,7 +1096,7 @@ notification_error_e notification_ipc_request_refresh(void)
 		if (packet_get(result, "i", &status) != 1) {
 			NOTIFICATION_ERR("Failed to get a result packet");
 			packet_unref(result);
-			return NOTIFICATION_ERROR_IO;
+			return NOTIFICATION_ERROR_IO_ERROR;
 		}
 		packet_unref(result);
 	} else {
@@ -1103,7 +1124,7 @@ notification_error_e notification_ipc_noti_setting_property_set(const char *pkgn
 		if (packet_get(result, "ii", &status, &ret) != 2) {
 			NOTIFICATION_ERR("Failed to get a result packet");
 			packet_unref(result);
-			return NOTIFICATION_ERROR_IO;
+			return NOTIFICATION_ERROR_IO_ERROR;
 		}
 		packet_unref(result);
 	} else {
@@ -1131,7 +1152,7 @@ notification_error_e notification_ipc_noti_setting_property_get(const char *pkgn
 		if (packet_get(result, "is", &status, &ret) != 2) {
 			NOTIFICATION_ERR("Failed to get a result packet");
 			packet_unref(result);
-			return NOTIFICATION_ERROR_IO;
+			return NOTIFICATION_ERROR_IO_ERROR;
 		}
 		if (status == NOTIFICATION_ERROR_NONE && ret != NULL) {
 			*value = strdup(ret);
@@ -1143,4 +1164,34 @@ notification_error_e notification_ipc_noti_setting_property_get(const char *pkgn
 	}
 
 	return status;
+}
+
+int notification_ipc_request_load_noti_by_tag(notification_h noti, const char *pkgname, const char *tag)
+{
+	struct packet *packet;
+	struct packet *result;
+
+	packet = packet_create("load_noti_by_tag", "ss", pkgname, tag);
+	result = com_core_packet_oneshot_send(NOTIFICATION_ADDR,
+			packet,
+			NOTIFICATION_IPC_TIMEOUT);
+	packet_destroy(packet);
+
+	if (result != NULL) {
+		if (notification_ipc_make_noti_from_packet(noti, result) != NOTIFICATION_ERROR_NONE) {
+			NOTIFICATION_ERR("Failed to get a result packet");
+			packet_unref(result);
+			return NOTIFICATION_ERROR_IO_ERROR;
+		}
+
+		packet_unref(result);
+	} else {
+		NOTIFICATION_ERR("failed to receive answer(load noti by tag)");
+		if (notification_ipc_is_master_ready() == 1)
+			return NOTIFICATION_ERROR_PERMISSION_DENIED;
+		else
+			return NOTIFICATION_ERROR_SERVICE_NOT_READY;
+	}
+
+	return NOTIFICATION_ERROR_NONE;
 }

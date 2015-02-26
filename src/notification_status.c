@@ -82,19 +82,19 @@ int notification_status_message_post(const char *message)
 
 	if (!message) {
 		NOTIFICATION_ERR("message is NULL");
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 
 	if (strlen(message) <= 0) {
 		NOTIFICATION_ERR("message has only NULL");
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 
 
 	ret = vconf_set_str(NOTIFICATION_STATUS_MESSAGE_KEY, message);
 	if (ret) {
 		NOTIFICATION_ERR("fail to set message [%s]", message);
-		return NOTIFICATION_ERROR_IO;
+		return NOTIFICATION_ERROR_IO_ERROR;
 	}
 
 	return NOTIFICATION_ERROR_NONE;
@@ -105,13 +105,13 @@ int notification_status_monitor_message_cb_set(notification_status_message_cb ca
 {
 	int ret = 0;
 	if (!callback)
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	ret = vconf_notify_key_changed(NOTIFICATION_STATUS_MESSAGE_KEY,
 			__notification_status_message_change_cb, NULL);
 	if (ret && errno != EALREADY) {
 		NOTIFICATION_ERR("fail to set message cb");
-		return NOTIFICATION_ERROR_IO;
+		return NOTIFICATION_ERROR_IO_ERROR;
 	}
 
 	md.callback = callback;

@@ -76,6 +76,7 @@ struct _notification {
 	char *app_name;		/* Temporary stored app name from AIL */
 	char *temp_title;
 	char *temp_content;
+	char *tag;
 };
 
 #endif				/* __NOTIFICATION_INTERNAL_H__ */

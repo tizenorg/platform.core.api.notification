@@ -534,7 +534,7 @@ int notification_noti_set_tag(const char *tag, char *value, char *buf, int buf_l
 	len_total += (strlen(tag) * 2) + 5 + strlen(value) + 1;
 
 	if (buf_len <= len_total)
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	snprintf(buf, buf_len, "<%s>%s</%s>", tag, value, tag);
 
@@ -589,7 +589,7 @@ static int _notification_noti_update_priv_id(sqlite3 * db, int rowid)
 	char query[128] = { 0, };
 
 	if (db == NULL) {
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 
 	snprintf(query, sizeof(query), "update noti_list set "
@@ -708,7 +708,7 @@ int notification_noti_get_by_priv_id(notification_h noti, char *pkgname, int pri
 	int ret = 0;
 
 	if (priv_id < 0 || noti == NULL) {
-		ret = NOTIFICATION_ERROR_INVALID_DATA;
+		ret = NOTIFICATION_ERROR_INVALID_PARAMETER;
 		goto err;
 	}
 
@@ -895,7 +895,7 @@ EXPORT_API int notification_noti_delete_all(notification_type_e type, const char
 					 */
 					free(*list_deleted_rowid);
 					*list_deleted_rowid = NULL;
-					ret = NOTIFICATION_ERROR_NO_MEMORY;
+					ret = NOTIFICATION_ERROR_OUT_OF_MEMORY;
 					goto err;
 				}
 			}
@@ -977,7 +977,7 @@ int notification_noti_delete_group_by_group_id(const char *pkgname,
 
 	/* Check pkgname is valid */
 	if (pkgname == NULL) {
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 
 	snprintf(query_where, sizeof(query_where),
@@ -1016,7 +1016,7 @@ int notification_noti_delete_group_by_group_id(const char *pkgname,
 				} else {
 					free(*list_deleted_rowid);
 					*list_deleted_rowid = NULL;
-					ret = NOTIFICATION_ERROR_NO_MEMORY;
+					ret = NOTIFICATION_ERROR_OUT_OF_MEMORY;
 					goto err;
 				}
 			}
@@ -1088,7 +1088,7 @@ int notification_noti_delete_group_by_priv_id(const char *pkgname, int priv_id)
 
 	/* Check pkgname is valid */
 	if (pkgname == NULL) {
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 
 	/* Open DB */
@@ -1124,7 +1124,7 @@ EXPORT_API int notification_noti_delete_by_priv_id(const char *pkgname, int priv
 
 	/* Check pkgname is valid */
 	if (pkgname == NULL) {
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 
 	/* Open DB */
@@ -1157,7 +1157,7 @@ EXPORT_API int notification_noti_delete_by_priv_id_get_changes(const char *pkgna
 
 	/* Check pkgname is valid */
 	if (pkgname == NULL) {
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 
 	/* Open DB */

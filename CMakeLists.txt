@@ -48,6 +48,7 @@ pkg_check_modules(pkgs REQUIRED
 	dbus-1
 	dbus-glib-1
 	com-core
+	capi-appfw-application
 	ecore
 	eina
 	libtzplatform-config

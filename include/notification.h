@@ -47,14 +47,14 @@ extern "C" {
 
 /**
  * @brief Set absolute path for image file to display on notification view
- * @details 
+ * @details
  * @remarks
  * @param[in] noti notification handle
  * @param[in] type notification image type
  * @param[in] image_path image file full path
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid parameter
  * @pre Notification handle should be created by notification_new()
  * @post
  * @see #notification_image_type_e
@@ -86,14 +86,14 @@ notification_error_e notification_set_image(notification_h noti,
 
 /**
  * @brief Get absolute path for image file
- * @details 
+ * @details
  * @remarks Do not free image_path. It will be freed when notification_free() or notification_free_list().
  * @param[in] noti notification handle
  * @param[in] type notification image type
  * @param[out] image_path image file full path
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid parameter
  * @pre Notification handle should be created by notification_new()
  * @post
  * @see #notification_image_type_e
@@ -105,7 +105,7 @@ notification_error_e notification_set_image(notification_h noti,
  {
  	char *image_path = NULL;
  	notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
- 	
+
  	noti_err  = notification_get_image(noti, NOTIFICATION_IMAGE_TYPE_ICON, &image_path);
  	if(noti_err != NOTIFICATION_ERROR_NONE) {
 		return;
@@ -125,7 +125,7 @@ notification_error_e notification_get_image(notification_h noti,
  * @param[in] input_time input time
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid parameter
  * @pre Notification handle should be created by notification_new()
  * @post
  * @see notification_new()
@@ -136,12 +136,12 @@ notification_error_e notification_get_image(notification_h noti,
   {
 	 notification_h noti = NULL;
 	 notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
-	 
+
 	 noti = notification_new(NOTIFICATION_TYPE_NOTI, APP_GROUP_ID, NOTIFICATION_PRIV_ID_NONE);
 	 if(noti == NULL) {
 		 return;
 	 }
- 
+
 	 noti_err  = notification_set_time(noti, time(NULL));
 	 if(noti_err != NOTIFICATION_ERROR_NONE) {
 	 	notification_free(noti);
@@ -161,7 +161,7 @@ notification_error_e notification_set_time(notification_h noti,
  * @param[out] ret_time return time value
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid parameter
  * @pre Notification handle should be created by notification_new()
  * @post
  * @see notification_new()
@@ -172,7 +172,7 @@ notification_error_e notification_set_time(notification_h noti,
  {
 	time_t ret_time;
  	notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
- 	
+
  	noti_err  = notification_get_time(noti, &ret_time);
  	if(noti_err != NOTIFICATION_ERROR_NONE) {
 		return;
@@ -191,10 +191,10 @@ notification_error_e notification_get_time(notification_h noti,
  * @param[out] ret_time return time value
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
- * @pre 
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid parameter
+ * @pre
  * @post
- * @see 
+ * @see
  * @par Sample code:
  * @code
  #include <notification.h>
@@ -202,7 +202,7 @@ notification_error_e notification_get_time(notification_h noti,
   {
 	 time_t ret_time;
 	 notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
-	 
+
 	 noti_err  = notification_get_insert_time(noti, &ret_time);
 	 if(noti_err != NOTIFICATION_ERROR_NONE) {
 		 return;
@@ -232,7 +232,7 @@ notification_error_e notification_get_insert_time(notification_h noti,
  * @param[in] args_type variable parameter that type - value pair.
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid parameter
  * @pre notification handle should be created by notification_new().
  * @post
  * @see
@@ -272,7 +272,7 @@ notification_error_e notification_set_text(notification_h noti,
  * @param[out] text text
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid parameter
  * @pre
  * @post
  * @see
@@ -305,7 +305,7 @@ notification_error_e notification_get_text(notification_h noti,
  * @param[in] time time stamp
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid parameter
  * @pre notification handle should be created by notification_new().
  * @post
  * @see
@@ -322,7 +322,7 @@ notification_error_e notification_set_time_to_text(notification_h noti, notifica
  * @param[in] time pointer of time stamp
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid parameter
  * @pre notification handle should be created by notification_new().
  * @post
  * @see
@@ -339,7 +339,7 @@ notification_error_e notification_get_time_from_text(notification_h noti, notifi
  * @param[in] dir text dir
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid parameter
  * @pre
  * @post
  * @see
@@ -377,7 +377,7 @@ notification_error_e notification_set_text_domain(notification_h noti,
  * @param[out] dir locale dir
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid parameter
  * @pre
  * @post
  * @see
@@ -411,7 +411,7 @@ notification_error_e notification_get_text_domain(notification_h noti,
  * @param[in] path user sound file path
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid parameter
  * @pre
  * @post
  * @see
@@ -443,7 +443,7 @@ notification_error_e notification_set_sound(notification_h noti,
  * @param[out] path user sound file path
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid parameter
  * @pre
  * @post
  * @see
@@ -476,7 +476,7 @@ notification_error_e notification_get_sound(notification_h noti,
  * @param[in] path user vibration file path
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid parameter
  * @pre
  * @post
  * @see
@@ -508,10 +508,10 @@ notification_error_e notification_set_vibration(notification_h noti,
   * @param[out] path user vibration file path
   * @return NOTIFICATION_ERROR_NONE if success, other value if failure
   * @retval NOTIFICATION_ERROR_NONE - success
-  * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+  * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid parameter
   * @pre
   * @post
-  * @see 
+  * @see
   * @par Sample code:
   * @code
 #include <notification.h>
@@ -541,7 +541,7 @@ notification_error_e notification_get_vibration(notification_h noti,
  * @param[in] led_argb notification led color
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid parameter
  * @pre
  * @post
  * @see
@@ -573,7 +573,7 @@ notification_error_e notification_set_led(notification_h noti,
   * @param[out] led_argb notification led color
   * @return NOTIFICATION_ERROR_NONE if success, other value if failure
   * @retval NOTIFICATION_ERROR_NONE - success
-  * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+  * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid parameter
   * @pre
   * @post
   * @see
@@ -606,7 +606,7 @@ notification_error_e notification_get_led(notification_h noti,
  * @param[in] off_ms time for turning on the LED
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid parameter
  * @pre
  * @post
  * @see
@@ -637,7 +637,7 @@ notification_error_e notification_set_led_time_period(notification_h noti,
   * @param[out] off_ms time for turning on the LED
   * @return NOTIFICATION_ERROR_NONE if success, other value if failure
   * @retval NOTIFICATION_ERROR_NONE - success
-  * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+  * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid parameter
   * @pre
   * @post
   * @see
@@ -662,6 +662,78 @@ notification_error_e notification_get_led_time_period(notification_h noti,
 						int *on_ms, int *off_ms);
 
 /**
+ * @brief Sets the launch option for a notification.
+ * @details When notification data selected in display application, application launched by app_control_send_launch_request with app_control handle.
+ * @since_tizen 2.3
+ * @param[in] noti The notification handle
+ * @param[in] type Launching option type
+ * @param[in] option App Control handler
+ * @return #NOTIFICATION_ERROR_NONE on success,
+ *         otherwise any other value on failure
+ * @retval #NOTIFICATION_ERROR_NONE         Success
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	notification_h noti = NULL;
+	app_control_h app_control = NULL;
+	int noti_err = NOTIFICATION_ERROR_NONE;
+
+	...
+
+	app_control_create(&app_control);
+	app_control_set_app_id(app_control, "org.tizen.app");
+
+	...
+
+	noti_err  = notification_set_launch_option(noti, NOTIFICATION_LAUNCH_OPTION_APP_CONTROL, (void *)app_control);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		notification_free(noti);
+		return;
+	}
+
+	app_control_destroy(app_control);
+}
+ * @endcode
+ */
+int notification_set_launch_option(notification_h noti,
+								notification_launch_option_type type, void *option);
+
+/**
+ * @brief Gets the launch option from the notification handle.
+ * @since_tizen 2.3
+ * @remarks You must release @a app_control using app_control_destroy().
+ * @param[in]  noti        The notification handle
+ * @param[in] type Launching option type
+ * @param[out] option The pointer of App Control handler
+ * @return #NOTIFICATION_ERROR_NONE on success,
+ *         otherwise any other value on failure
+ * @retval #NOTIFICATION_ERROR_NONE         Success
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	app_control_h app_control = NULL;
+	app_control_create(&app_control);
+
+	...
+
+	noti_err = notification_get_launch_option(noti, NOTIFICATION_LAUNCH_OPTION_APP_CONTROL, (void *)&app_control);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		notification_free(noti);
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_get_launch_option(notification_h noti,
+								notification_launch_option_type type, void *option);
+
+/**
  * @brief Set execution option for a notification
  * @details When notification data selected in display application, application launched by appsvc_run_service with service_handle.
  * @remarks
@@ -672,7 +744,7 @@ notification_error_e notification_get_led_time_period(notification_h noti,
  * @param[in] service_handle appsvc bundle data
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid parameter
  * @pre
  * @post
  * @see
@@ -717,7 +789,7 @@ notification_error_e notification_set_execute_option(notification_h noti,
  * @param[out] service_handle appsvc bundle data
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid parameter
  * @pre
  * @post
  * @see
@@ -753,7 +825,7 @@ notification_error_e notification_get_execute_option(notification_h noti,
  * @param[in] flags property with | operation
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid input value
  * @pre
  * @post
  * @see
@@ -790,7 +862,7 @@ notification_error_e notification_set_property(notification_h noti,
  * @param[out] flags notification property
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid input value
  * @pre
  * @post
  * @see
@@ -821,7 +893,7 @@ notification_error_e notification_get_property(notification_h noti,
  * @param[in] applist with | operation
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid input value
  * @pre
  * @post
  * @see
@@ -859,7 +931,7 @@ notification_error_e notification_set_display_applist(notification_h noti,
  * @param[out] applist display application list.
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid input value
  * @pre
  * @post
  * @see
@@ -890,7 +962,7 @@ notification_error_e notification_get_display_applist(notification_h noti,
  * @param[in] size double type size.
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid input value
  * @pre
  * @post
  * @see
@@ -926,7 +998,7 @@ notification_error_e notification_set_size(notification_h noti,
  * @param[out] size progress size
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid input value
  * @pre
  * @post
  * @see
@@ -957,7 +1029,7 @@ notification_error_e notification_get_size(notification_h noti,
  * @param[in] percentage progress percentage
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid input value
  * @pre
  * @post
  * @see
@@ -993,7 +1065,7 @@ notification_error_e notification_set_progress(notification_h noti,
  * @param[out] percentage progress percentage
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid input value
  * @pre
  * @post
  * @see
@@ -1024,7 +1096,7 @@ notification_error_e notification_get_progress(notification_h noti,
  * @param[in] pkgname caller package name
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid input value
  * @pre
  * @post
  * @see
@@ -1060,7 +1132,7 @@ notification_error_e notification_set_pkgname(notification_h noti,
  * @param[out] pkgname caller package name
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid input value
  * @pre
  * @post
  * @see
@@ -1091,7 +1163,7 @@ notification_error_e notification_get_pkgname(notification_h noti,
  * @param[in] type of layout
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid input value
  * @pre
  * @post
  * @see #notification_ly_type_e
@@ -1107,7 +1179,7 @@ notification_error_e notification_set_layout(notification_h noti,
  * @param[out] type of layout
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid input value
  * @pre
  * @post
  * @see #notification_ly_type_e
@@ -1124,10 +1196,10 @@ notification_error_e notification_get_layout(notification_h noti,
  * @param[out] priv_id Private ID
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
- * @pre 
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid parameter
+ * @pre
  * @post
- * @see 
+ * @see
  * @par Sample code:
  * @code
 #include <notification.h>
@@ -1135,7 +1207,7 @@ notification_error_e notification_get_layout(notification_h noti,
   {
 	 notification_error_e noti_err = NOTIFICATION_ERROR_NONE;
 	 int group_id, priv_id;
- 
+
 	 noti_err  = notification_get_id(noti, &group_id, &priv_id);
 	 if(noti_err != NOTIFICATION_ERROR_NONE) {
 		 return;
@@ -1154,10 +1226,10 @@ notification_error_e notification_get_id(notification_h noti,
  * @param[out] type notification type
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide parameter
- * @pre 
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid parameter
+ * @pre
  * @post
- * @see 
+ * @see
  * @par Sample code:
  * @code
 #include <notification.h>
@@ -1185,7 +1257,7 @@ notification_error_e notification_get_type(notification_h noti,
  * @param[out] priv_id private ID
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - invalid parameter
  * @pre notification_new()
  * @post notification_free()
  * @see #notification_h
@@ -1213,7 +1285,7 @@ notification_error_e notification_insert(notification_h noti,
  * @param[in] noti notification handle that is created by notification_new().
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid input value
  * @retval NOTIFICATION_ERROR_NOT_EXIST_ID - not exist priv id
  * @pre
  * @post
@@ -1243,7 +1315,7 @@ notification_error_e notification_update(notification_h noti);
  * @param[in] user_data user data which you want to use in callback
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid input value
  * @retval NOTIFICATION_ERROR_NOT_EXIST_ID - not exist priv id
  * @pre
  * @post
@@ -1272,7 +1344,7 @@ notification_error_e notification_update_async(notification_h noti,
  * @param[in] type notification type
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid input value
  * @pre
  * @post
  * @see #notification_type_e
@@ -1300,7 +1372,7 @@ notification_error_e notifiation_clear(notification_type_e type);
  * @param[in] type notification type
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid input value
  * @pre
  * @post
  * @see
@@ -1330,7 +1402,7 @@ notification_error_e notification_delete_all_by_type(const char *pkgname,
  * @param[in] priv_id priv ID
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid input value
  * @pre
  * @post
  * @see
@@ -1359,7 +1431,7 @@ notification_error_e notification_delete_by_priv_id(const char *pkgname,
  * @param[in] noti notification handle
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid input value
  * @pre
  * @post
  * @see #notification_h
@@ -1392,7 +1464,7 @@ notification_error_e notification_delete(notification_h noti);
  * @param[in] progress % value of progressive data
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid input value
  * @pre
  * @post
  * @par Sample code:
@@ -1422,7 +1494,7 @@ notification_error_e notification_update_progress(notification_h noti,
  * @param[in] size bytes of progressive data
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid input value
  * @pre
  * @post
  * @par Sample code:
@@ -1451,7 +1523,7 @@ notification_error_e notification_update_size(notification_h noti,
  * @param[in] content text to update
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - Invalide input value
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - Invalid input value
  * @pre
  * @post
  * @par Sample code:
@@ -1477,7 +1549,7 @@ notification_error_e notification_update_content(notification_h noti,
  * @details Available type is #NOTIFICATION_TYPE_NOTI and #NOTIFICATION_TYPE_ONGOING.
  * #NOTIFICATION_TYPE_NOTI is remaining notification data evenif device is restarted.
  * #NOTIFICATION_TYPE_ONGOING can display progressive feather, but notification data is removed after device is restarted.
- * If group_id is #NOTIFICATION_GROUP_ID_NONE, notification data is not grouping. #NOTIFICATION_GROUP_ID_DEFAULT, 
+ * If group_id is #NOTIFICATION_GROUP_ID_NONE, notification data is not grouping. #NOTIFICATION_GROUP_ID_DEFAULT,
  * notification data is grouping with same title. Positive number ( > 0 ) is grouping with same number.
  * If priv_id is #NOTIFICATION_PRIV_ID_NONE, priv_id is set internally and return it when notification_insert() call.
  * Positive number and zero ( >= 0 ) is application set private ID. These ID should have be unique each application package.
@@ -1581,7 +1653,7 @@ notification_h notification_load(char *pkgname,
  * @param[out] clone newly created notification handle that has same with input noti.
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure.
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - invalid parameter
  * @pre
  * @post
  * @see #notification_type_e
@@ -1608,7 +1680,7 @@ notification_error_e notification_clone(notification_h noti, notification_h *clo
  * @param[in] noti notification handle
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure.
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - invalid parameter
  * @pre notification_new()
  * @post
  * @see #notification_h
@@ -1653,7 +1725,7 @@ notification_error_e notification_free(notification_h noti);
  * @param[out] NOTIFICATION_ERROR_NONE if success, other value if failure.
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure.
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - invalid parameter
  * @pre
  * @post
  * @see #notification_list_h
@@ -1696,7 +1768,7 @@ notification_error_e notification_get_grouping_list(notification_type_e type,
  * @param[out] list notification list handle
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure.
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - invalid parameter
  * @pre
  * @post
  * @see #notification_list_h
@@ -1728,7 +1800,7 @@ notification_error_e notification_get_detail_list(const char *pkgname,
  * @param[in] list notification list handle
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure.
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - invalid parameter
  * @pre notification_get_grouping_list() or notification_get_detail_list ()
  * @post
  * @see #notification_list_h
@@ -1763,7 +1835,7 @@ notification_error_e notification_free_list(notification_list_h list);
  * @param[in] user_data user data
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure.
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - invalid parameter
  * @pre notification_new()
  * @post
  * @see notification_unresister_changed_cb()
@@ -1791,7 +1863,7 @@ notification_resister_changed_cb(
  * @param[in] changed_cb callback function
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure.
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - invalid parameter
  * @pre
  * @post
  * @see notification_resister_changed_cb()
@@ -1819,7 +1891,7 @@ notification_unresister_changed_cb(
  * @param[in] user_data user data
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure.
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - invalid parameter
  * @pre
  * @post
  * @see notification_unregister_detailed_changed_cb()
@@ -1847,7 +1919,7 @@ notification_register_detailed_changed_cb(
  * @param[in] changed_cb callback function
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure.
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - invalid parameter
  * @pre
  * @post
  * @see notification_register_detailed_changed_cb()
@@ -1869,13 +1941,135 @@ notification_unregister_detailed_changed_cb(
 		void *user_data);
 
 /**
+ * @brief Sets the tag of the notification handle.
+ * @since_tizen 2.3
+ * @param[in] noti Notification handle
+ * @param[in] tag tag for loading notification handle
+ * @return #NOTIFICATION_ERROR_NONE on success, other value on failure
+ * @retval #NOTIFICATION_ERROR_NONE Success
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval #NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
+ * @see notification_get_tag()
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	notification_h noti = NULL;
+	int noti_err = NOTIFICATION_ERROR_NONE;
+
+	noti = notification_create(NOTIFICATION_TYPE_NOTI);
+	if(noti == NULL) {
+		return;
+	}
+	...
+
+	noti_err = notification_set_tag(noti, tag);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_set_tag(notification_h noti, const char *tag);
+
+/**
+ * @brief Gets the tag of the notification handle.
+ * @since_tizen 2.3
+ * @param[in] noti Notification handle
+ * @param[out] tag tag for loading notification handle
+ * @return #NOTIFICATION_ERROR_NONE on success, other value on failure
+ * @retval #NOTIFICATION_ERROR_NONE Success
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval #NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
+ * @see notification_set_tag()
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	int noti_err = NOTIFICATION_ERROR_NONE;
+	const char *tag = NULL;
+
+	...
+
+	noti_err = notification_get_tag(noti, &tag);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_get_tag(notification_h noti, const char **tag);
+
+/**
+ * @brief Loads a notification from the notification's database with the tag.
+ * @since_tizen 2.3
+ * @privlevel public
+ * @privilege %http://tizen.org/privilege/notification
+ * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
+ * @param[in] tag tag for loading notification handle
+ * @return Notification handle(notification_h) on success, NULL on failure
+ * @retval notification_h Success
+ * @retval NULL Failure
+ * @exception #NOTIFICATION_ERROR_NONE Success
+ * @exception #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid input value
+ * @exception #NOTIFICATION_ERROR_OUT_OF_MEMORY Out of memory
+ * @exception #NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
+ * @see #notification_type_e
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	notification_h noti = NULL;
+
+	noti = notification_load_by_tag(tag);
+	if(noti == NULL) {
+		return;
+	}
+	...
+}
+ * @endcode
+ */
+notification_h notification_load_by_tag(const char *tag);
+
+/**
+ * @brief Posts a notification.
+ * @since_tizen 2.3
+ * @privlevel public
+ * @privilege %http://tizen.org/privilege/notification
+ * @param[in] noti Notification handle
+ * @return #NOTIFICATION_ERROR_NONE if success, other value if failure
+ * @retval #NOTIFICATION_ERROR_NONE Success
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval #NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
+ * @pre Notification handle should be created by notification_create().
+ * @post notification_free().
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+ {
+	int noti_err = NOTIFICATION_ERROR_NONE;
+
+	noti_err  = notification_post(noti);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_post(notification_h noti);
+
+/**
  * @brief Get the information of notification event
  * @details
  * @remarks
  * @param[in] list notification list handle
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure.
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - invalid parameter
  * @pre notification_get_grouping_list() or notification_get_detail_list ()
  * @post
  * @see #notification_op
@@ -1894,8 +2088,8 @@ notification_error_e notification_op_get_data(notification_op *noti_op,
  * @param[out] text response
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
- * @retval NOTIFICATION_ERROR_NO_MEMORY - not enough memory
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - invalid parameter
+ * @retval NOTIFICATION_ERROR_OUT_OF_MEMORY - not enough memory
  * @pre notification handle should be created by notification_new().
  * @post
  * @see
@@ -1914,8 +2108,8 @@ notification_error_e notification_wait_response(notification_h noti,
  * @param[in] text response
  * @return NOTIFICATION_ERROR_NONE if success, other value if failure
  * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_DATA - invalid parameter
- * @retval NOTIFICATION_ERROR_NO_MEMORY - not enough memory
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - invalid parameter
+ * @retval NOTIFICATION_ERROR_OUT_OF_MEMORY - not enough memory
  * @pre notification handle should be created by notification_new().
  * @post
  * @see

@@ -50,7 +50,7 @@ int notification_db_close(sqlite3 ** db)
 	int ret = 0;
 
 	if (db == NULL || *db == NULL) {
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 
 	ret = db_util_close(*db);
@@ -70,10 +70,10 @@ int notification_db_exec(sqlite3 * db, const char *query, int *num_changes)
 	sqlite3_stmt *stmt = NULL;
 
 	if (db == NULL) {
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 	if (query == NULL) {
-		return NOTIFICATION_ERROR_INVALID_DATA;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 
 	ret = sqlite3_prepare_v2(db, query, strlen(query), &stmt, NULL);
