@@ -75,6 +75,19 @@ typedef enum  _notification_launch_option_type {
 } notification_launch_option_type;
 
 /**
+ * @brief Enumeration for event type on notification.
+ * @since_tizen 2.4
+ */
+typedef enum _notification_event_type {
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_1  = 1,  /** < Event type : Click on button 1 */
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_2  = 2,  /** < Event type : Click on button 2 */
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_3  = 3,  /** < Event type : Click on button 3 */
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_4  = 4,  /** < Event type : Click on button 4 */
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_ICON      = 5,  /** < Event type : Click on icon */
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_THUMBNAIL = 6,  /** < Event type : Click on thumbnail */
+} notification_event_type_e;
+
+/**
  * @brief Enumeration for notification sound type.
  * @since_tizen 2.3
  */
@@ -290,6 +303,7 @@ enum _notificaton_display_applist {
 	NOTIFICATION_DISPLAY_APP_LOCK = 0x00000004,
 						/**< Lock screen */
 	NOTIFICATION_DISPLAY_APP_INDICATOR = 0x00000008,/**< Indicator */
+	NOTIFICATION_DISPLAY_APP_HEADS_UP = 0x00000010,/**< Heads-up notification */
 	NOTIFICATION_DISPLAY_APP_ALL = 0xffffffff,
 						/**< All display application */
 };

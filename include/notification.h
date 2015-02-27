@@ -24,6 +24,7 @@
 
 #include <time.h>
 #include <bundle.h>
+#include <app.h>
 
 #include <notification_error.h>
 #include <notification_type.h>
@@ -47,6 +48,8 @@ extern "C" {
 /**
  * @brief Sets an absolute path for an image file to display on the notification view.
  * @since_tizen 2.3
+ * @privlevel N/P
+ * @feature http://tizen.org/feature/notification
  * @param[in] noti       The notification handle
  * @param[in] type       The notification image type
  * @param[in] image_path The image file full path
@@ -693,6 +696,84 @@ int notification_set_launch_option(notification_h noti,
  */
 int notification_get_launch_option(notification_h noti,
 								notification_launch_option_type type, void *option);
+
+
+/**
+ * @brief Sets the handler for a specific event.
+ * @details When some event occurs on notification, application launched by app_control_send_launch_request with app_control handle.\n
+ *          Setting event handler of a button means that the notification will show the button.
+ * @since_tizen 2.4
+ * @privlevel N/P
+ * @feature http://tizen.org/feature/notification
+ * @param[in] noti The notification handle
+ * @param[in] event_type event type
+ * @param[in] event_handler app control handle
+ * @return #NOTIFICATION_ERROR_NONE on success,
+ *         otherwise any other value on failure
+ * @retval #NOTIFICATION_ERROR_NONE         Success
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @see #notification_event_type_e
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	notification_h noti = NULL;
+	app_control_h app_control = NULL;
+	int noti_err = NOTIFICATION_ERROR_NONE;
+
+	...
+
+	app_control_create(&app_control);
+	app_control_set_app_id(app_control, "org.tizen.app");
+
+	...
+
+	noti_err  = notification_set_event_handler(noti, NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_1, app_control);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		notification_free(noti);
+		return;
+	}
+
+	app_control_destroy(app_control);
+}
+ * @endcode
+ */
+int notification_set_event_handler(notification_h noti, notification_event_type_e event_type, app_control_h event_handler);
+
+/**
+ * @brief Gets the event handler of a specific event.
+ * @remarks You must release @a app_control using app_control_destroy().
+ * @since_tizen 2.4
+ * @privlevel N/P
+ * @feature http://tizen.org/feature/notification
+ * @param[in]  noti        The notification handle
+ * @param[in] event_type Launching option type
+ * @param[out] option The pointer of App Control handler
+ * @return #NOTIFICATION_ERROR_NONE on success,
+ *         otherwise any other value on failure
+ * @retval #NOTIFICATION_ERROR_NONE         Success
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @see #notification_event_type_e
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	app_control_h app_control = NULL;
+	app_control_create(&app_control);
+
+	...
+
+	noti_err = notification_get_launch_option(noti, NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_1, (void *)&app_control);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		notification_free(noti);
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_get_event_handler(notification_h noti, notification_event_type_e event_type, app_control_h *event_handler);
 
 /**
  * @brief Sets the property of the notification.
@@ -1470,6 +1551,33 @@ int notification_set_tag(notification_h noti, const char *tag);
  * @endcode
  */
 int notification_get_tag(notification_h noti, const char **tag);
+
+/**
+ * @brief Gets the package name of the notification
+ * @since_tizen 2.4
+ * @privlevel NP
+ * @param[in] noti Notification handle
+ * @param[out] pkgname package name of the notification
+ * @return NOTIFICATION_ERROR_NONE on success, other value on failure
+ * @retval NOTIFICATION_ERROR_NONE Success
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER Invalid input value
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	notification_h noti = NULL;
+	int noti_err = NOTIFICATION_ERROR_NONE;
+	char *pkgname = NULL;
+
+	noti_err  = notification_get_pkgname(noti, &pkgname);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_get_pkgname(notification_h noti, char **pkgname);
 
 /**
  * @brief Loads a notification from the notification's database with the tag.

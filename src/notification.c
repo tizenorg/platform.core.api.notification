@@ -1412,6 +1412,16 @@ EXPORT_API int notification_get_launch_option(notification_h noti,
 	return NOTIFICATION_ERROR_NONE;
 }
 
+EXPORT_API int notification_set_event_handler(notification_h noti, notification_event_type_e event_type, app_control_h event_handler)
+{
+	return NOTIFICATION_ERROR_NOT_SUPPORTED;
+}
+
+EXPORT_API int notification_get_event_handler(notification_h noti, notification_event_type_e event_type, app_control_h *event_handler)
+{
+	return NOTIFICATION_ERROR_NOT_SUPPORTED;
+}
+
 EXPORT_API int notification_set_execute_option(notification_h noti,
 								notification_execute_type_e type,
 								const char *text,

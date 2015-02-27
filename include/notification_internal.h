@@ -356,33 +356,6 @@ NOTIFICATION_DEPRECATED_API int notification_set_pkgname(notification_h noti,
 /**
  * @internal
  * @brief This function will be deprecated.
- * @param[in] noti Notification handle
- * @param[out] pkgname Caller package name
- * @return NOTIFICATION_ERROR_NONE on success, other value on failure
- * @retval NOTIFICATION_ERROR_NONE Success
- * @retval NOTIFICATION_ERROR_INVALID_PARAMETER Invalid input value
- * @par Sample code:
- * @code
-#include <notification.h>
-...
-{
-	notification_h noti = NULL;
-	int noti_err = NOTIFICATION_ERROR_NONE;
-	char *pkgname = NULL;
-
-	noti_err  = notification_get_pkgname(noti, &pkgname);
-	if(noti_err != NOTIFICATION_ERROR_NONE) {
-		return;
-	}
-}
- * @endcode
- */
-NOTIFICATION_DEPRECATED_API int notification_get_pkgname(notification_h noti,
-					      char **pkgname);
-
-/**
- * @internal
- * @brief This function will be deprecated.
  * @details If @a pkgname is NULL, caller_pkgname is set internally.
  * @param[in] pkgname Caller application package name or NULL
  * @param[in] type Notification type
