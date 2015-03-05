@@ -173,6 +173,14 @@ typedef enum _notification_text_type {
 					/**< Group content */
 	NOTIFICATION_TEXT_TYPE_GROUP_CONTENT_FOR_DISPLAY_OPTION_IS_OFF,
 								/**< Group content for content display option is off of the Settings */
+	NOTIFICATION_TEXT_TYPE_BUTTON_1,
+								/**< Text on button 1 */
+	NOTIFICATION_TEXT_TYPE_BUTTON_2,
+								/**< Text on button 2 */
+	NOTIFICATION_TEXT_TYPE_BUTTON_3,
+								/**< Text on button 3 */
+	NOTIFICATION_TEXT_TYPE_BUTTON_4,
+								/**< Text on button 4 */
 	NOTIFICATION_TEXT_TYPE_MAX,
 				/**< Max flag */
 } notification_text_type_e;

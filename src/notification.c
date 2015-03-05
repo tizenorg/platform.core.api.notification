@@ -1414,12 +1414,12 @@ EXPORT_API int notification_get_launch_option(notification_h noti,
 
 EXPORT_API int notification_set_event_handler(notification_h noti, notification_event_type_e event_type, app_control_h event_handler)
 {
-	return NOTIFICATION_ERROR_NOT_SUPPORTED;
+	return NOTIFICATION_ERROR_INVALID_OPERATION;
 }
 
 EXPORT_API int notification_get_event_handler(notification_h noti, notification_event_type_e event_type, app_control_h *event_handler)
 {
-	return NOTIFICATION_ERROR_NOT_SUPPORTED;
+	return NOTIFICATION_ERROR_INVALID_OPERATION;
 }
 
 EXPORT_API int notification_set_execute_option(notification_h noti,
