@@ -765,7 +765,7 @@ int notification_set_event_handler(notification_h noti, notification_event_type_
 
 	...
 
-	noti_err = notification_get_launch_option(noti, NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_1, (void *)&app_control);
+	noti_err = notification_get_event_handler(noti, NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_1, &app_control);
 	if(noti_err != NOTIFICATION_ERROR_NONE) {
 		notification_free(noti);
 		return;

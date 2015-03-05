@@ -1,6 +1,6 @@
 Name:       notification
 Summary:    notification library
-Version:    0.2.23
+Version:    0.2.24
 Release:    1
 Group:      TBD
 License:    Apache
