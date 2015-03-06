@@ -1875,7 +1875,7 @@ int _post_toast_message(char *message)
 	elm_object_style_set(toast_popup, "toast");
 	evas_object_size_hint_weight_set(toast_popup, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 
-	elm_object_part_text_set(toast_popup,"elm.text", message);
+	elm_object_text_set(toast_popup,message);
 
 	if (eina_list_count(toast_list) != 1) {
 		elm_popup_timeout_set(toast_popup, 1.0);
