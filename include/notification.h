@@ -1548,6 +1548,7 @@ int notification_get_tag(notification_h noti, const char **tag);
 /**
  * @internal
  * @brief Gets the package name of the notification
+ * @remarks The pkgname must be released using free()
  * @since_tizen 2.4
  * @privlevel NP
  * @param[in] noti Notification handle

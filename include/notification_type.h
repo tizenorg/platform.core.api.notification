@@ -83,6 +83,8 @@ typedef enum _notification_event_type {
 	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_2  = 2,  /** < Event type : Click on button 2 */
 	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_3  = 3,  /** < Event type : Click on button 3 */
 	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_4  = 4,  /** < Event type : Click on button 4 */
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_5  = 5,  /** < Event type : Click on button 5 */
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_6  = 6,  /** < Event type : Click on button 6 */
 	NOTIFICATION_EVENT_TYPE_CLICK_ON_ICON      = 5,  /** < Event type : Click on icon */
 	NOTIFICATION_EVENT_TYPE_CLICK_ON_THUMBNAIL = 6,  /** < Event type : Click on thumbnail */
 } notification_event_type_e;
@@ -99,7 +101,6 @@ typedef enum _notification_sound_type {
 	NOTIFICATION_SOUND_TYPE_USER_DATA,
 					/**< User sound data */
 	NOTIFICATION_SOUND_TYPE_MAX,
-				/**< Max flag */
 } notification_sound_type_e;
 
 /**
@@ -112,7 +113,7 @@ typedef enum _notification_vibration_type {
 	NOTIFICATION_VIBRATION_TYPE_DEFAULT = 0,/**< Default vibrate pattern */
 	NOTIFICATION_VIBRATION_TYPE_USER_DATA,
 					/**< User vibration data */
-	NOTIFICATION_VIBRATION_TYPE_MAX,/**< Max flag */
+	NOTIFICATION_VIBRATION_TYPE_MAX,
 } notification_vibration_type_e;
 
 /**
@@ -133,11 +134,11 @@ typedef enum _notification_led_op {
  * @since_tizen 2.3
  */
 typedef enum _notification_count_display_type {
-	NOTIFICATION_COUNT_DISPLAY_TYPE_NONE = -1,	/**< None */
+	NOTIFICATION_COUNT_DISPLAY_TYPE_NONE = -1,
 	NOTIFICATION_COUNT_DISPLAY_TYPE_LEFT = 0,	/**< The number is placed to left */
 	NOTIFICATION_COUNT_DISPLAY_TYPE_IN,	/**< The number is placed to center */
 	NOTIFICATION_COUNT_DISPLAY_TYPE_RIGHT,	/**< The number is placed to right */
-	NOTIFICATION_COUNT_DISPLAY_TYPE_MAX,	/**< Max flag */
+	NOTIFICATION_COUNT_DISPLAY_TYPE_MAX,
 } notification_count_display_type_e;
 
 /**
@@ -146,7 +147,6 @@ typedef enum _notification_count_display_type {
  */
 typedef enum _notification_text_type {
 	NOTIFICATION_TEXT_TYPE_NONE = -1,
-					/**< NONE */
 	NOTIFICATION_TEXT_TYPE_TITLE = 0,
 					/**< Title */
 	NOTIFICATION_TEXT_TYPE_CONTENT,
@@ -181,8 +181,11 @@ typedef enum _notification_text_type {
 								/**< Text on button 3 */
 	NOTIFICATION_TEXT_TYPE_BUTTON_4,
 								/**< Text on button 4 */
+	NOTIFICATION_TEXT_TYPE_BUTTON_5,
+								/**< Text on button 5 */
+	NOTIFICATION_TEXT_TYPE_BUTTON_6,
+								/**< Text on button 6 */
 	NOTIFICATION_TEXT_TYPE_MAX,
-				/**< Max flag */
 } notification_text_type_e;
 
 /**
@@ -191,7 +194,6 @@ typedef enum _notification_text_type {
  */
 typedef enum _notification_image_type {
 	NOTIFICATION_IMAGE_TYPE_NONE = -1,
-					/**< NONE */
 	NOTIFICATION_IMAGE_TYPE_ICON = 0,
 					/**< Icon */
 	NOTIFICATION_IMAGE_TYPE_ICON_FOR_INDICATOR,
@@ -216,17 +218,20 @@ typedef enum _notification_image_type {
 						/**< Image for thumbnail list */
 	NOTIFICATION_IMAGE_TYPE_LIST_5,
 						/**< Image for thumbnail list */
+	NOTIFICATION_IMAGE_TYPE_BUTTON_1,
+						/**< Image for button 1 */
+	NOTIFICATION_IMAGE_TYPE_BUTTON_2,
+						/**< Image for button 2 */
+	NOTIFICATION_IMAGE_TYPE_BUTTON_3,
+						/**< Image for button 3 */
+	NOTIFICATION_IMAGE_TYPE_BUTTON_4,
+						/**< Image for button 4 */
+	NOTIFICATION_IMAGE_TYPE_BUTTON_5,
+						/**< Image for button 5 */
+	NOTIFICATION_IMAGE_TYPE_BUTTON_6,
+						/**< Image for button 6 */
 	NOTIFICATION_IMAGE_TYPE_MAX,
-				/**< Max flag */
 } notification_image_type_e;
-
-/*typedef enum _notification_button_type {
-	NOTIFICATION_BUTTON_TYPE_NONE = -1,
-	NOTIFICATION_BUTTON_TYPE_RUN = 0,
-	NOTIFICATION_BUTTON_TYPE_VIEW,
-	NOTIFICATION_BUTTON_TYPE_DISMISS,
-	NOTIFICATION_BUTTON_TYPE_MAX,
-}notification_button_type_e;*/
 
 /**
  * @brief Enumeration for application execution type.
