@@ -607,7 +607,7 @@ NOTIFICATION_DEPRECATED_API int notification_get_execute_option(notification_h n
 /**
  * @internal
  * @brief This function sets notification property for designated package.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  * @privlevel public
  * @privilege http://tizen.org/privilege/core/notification
  * @param[in] pkgname The name of designated package
@@ -621,7 +621,7 @@ int notification_setting_property_set(const char *pkgname, const char *property,
 /**
  * @internal
  * @brief This function gets notification property for designated package.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  * @privlevel public
  * @privilege http://tizen.org/privilege/core/notification
  * @param[in] pkgname The name of designated package

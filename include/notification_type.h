@@ -46,7 +46,7 @@ extern "C" {
 
 /**
  * @brief Enumeration for notification layout type.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
 typedef enum _notification_ly_type {
 	NOTIFICATION_LY_NONE = 0,
@@ -67,7 +67,7 @@ typedef enum _notification_ly_type {
 
 /**
  * @brief Enumeration for notification lauch option type.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
 typedef enum  _notification_launch_option_type {
 	NOTIFICATION_LAUNCH_OPTION_APP_CONTROL = 1,
@@ -76,7 +76,7 @@ typedef enum  _notification_launch_option_type {
 
 /**
  * @brief Enumeration for notification sound type.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
 typedef enum _notification_sound_type {
 	NOTIFICATION_SOUND_TYPE_NONE = -1,
@@ -91,7 +91,7 @@ typedef enum _notification_sound_type {
 
 /**
  * @brief Enumeration for notification vibration type.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
 typedef enum _notification_vibration_type {
 	NOTIFICATION_VIBRATION_TYPE_NONE = -1,
@@ -104,7 +104,7 @@ typedef enum _notification_vibration_type {
 
 /**
  * @brief Enumeration for notification LED operation.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
 typedef enum _notification_led_op {
 	NOTIFICATION_LED_OP_OFF = -1,
@@ -117,7 +117,7 @@ typedef enum _notification_led_op {
 
 /**
  * @brief This will be deprecated.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
 typedef enum _notification_count_display_type {
 	NOTIFICATION_COUNT_DISPLAY_TYPE_NONE = -1,	/**< None */
@@ -129,7 +129,7 @@ typedef enum _notification_count_display_type {
 
 /**
  * @brief Enumeration for notification text type.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
 typedef enum _notification_text_type {
 	NOTIFICATION_TEXT_TYPE_NONE = -1,
@@ -166,7 +166,7 @@ typedef enum _notification_text_type {
 
 /**
  * @brief Enumeration for image type.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
 typedef enum _notification_image_type {
 	NOTIFICATION_IMAGE_TYPE_NONE = -1,
@@ -209,7 +209,7 @@ typedef enum _notification_image_type {
 
 /**
  * @brief Enumeration for application execution type.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
 typedef enum _notification_execute_type {
 	NOTIFICATION_EXECUTE_TYPE_NONE = -1,
@@ -225,7 +225,7 @@ typedef enum _notification_execute_type {
 
 /**
  * @brief Enumeration for notification type.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
 typedef enum _notification_type {
 	NOTIFICATION_TYPE_NONE = -1,
@@ -240,7 +240,7 @@ typedef enum _notification_type {
 
 /**
  * @brief Enumeration for Group ID.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
 enum _notification_group_id {
 	NOTIFICATION_GROUP_ID_NONE = -1,/**< Not Grouping */
@@ -250,7 +250,7 @@ enum _notification_group_id {
 
 /**
  * @brief Enumeration for Private ID.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
 enum _notification_priv_id {
 	NOTIFICATION_PRIV_ID_NONE = -1,
@@ -259,7 +259,7 @@ enum _notification_priv_id {
 
 /**
  * @brief Enumeration for notification property.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
 enum _notification_property {
 	NOTIFICATION_PROP_DISPLAY_ONLY_SIMMODE = 0x00000001,
@@ -281,7 +281,7 @@ enum _notification_property {
 
 /**
  * @brief Enumeration for display application list.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
 enum _notificaton_display_applist {
 	NOTIFICATION_DISPLAY_APP_NOTIFICATION_TRAY = 0x00000001,/**< Notification Tray(Quickpanel) */
@@ -296,7 +296,7 @@ enum _notificaton_display_applist {
 
 /**
  * @brief Enumeration for notification operation code.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
 typedef enum _notification_op_type {
 	NOTIFICATION_OP_NONE = 0,	/**< Default */
@@ -310,7 +310,7 @@ typedef enum _notification_op_type {
 
 /**
  * @brief Enumeration for notification operation data code
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
 typedef enum _notification_op_data_type {
 	NOTIFICATION_OP_DATA_MIN = 0,	/**< Default */
@@ -324,7 +324,7 @@ typedef enum _notification_op_data_type {
 
 /**
  * @brief Enumeration for notification count position in the text.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
 typedef enum _notifcation_count_pos_type {
 	NOTIFICATION_COUNT_POS_NONE = -1,
@@ -340,7 +340,7 @@ typedef enum _notifcation_count_pos_type {
 
 /**
  * @brief Enumeration for notification variable parameter type.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
 typedef enum _notification_variable_type {
 	NOTIFICATION_VARIABLE_TYPE_NONE = -1,
@@ -359,13 +359,13 @@ typedef enum _notification_variable_type {
 
 /**
  * @brief Notification handle.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
 typedef struct _notification *notification_h;
 
 /**
  * @brief The structure for notification operation.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
 typedef struct _notification_op {
 	notification_op_type_e type;	/**< Notification operation type */

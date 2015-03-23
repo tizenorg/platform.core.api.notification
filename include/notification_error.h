@@ -35,7 +35,7 @@
 
 /**
  * @brief Enumeration for notification errors.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
 typedef enum _notification_error {
 	NOTIFICATION_ERROR_NONE = TIZEN_ERROR_NONE,	/**< Success */

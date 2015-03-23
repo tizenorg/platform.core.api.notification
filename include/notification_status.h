@@ -38,7 +38,7 @@ extern "C" {
 /**
  * @internal
  * @brief Called when a new message is posted.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  * @param[in] message The message posted
  * @param[in] data    The user data
  * @pre notification_status_monitor_message_cb_set() used to register this callback.
@@ -49,7 +49,7 @@ typedef void (*notification_status_message_cb)(const char *message, void *data);
 /**
  * @internal
  * @brief Registers a callback to receive a message.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  * @param[in] callback The callback function
  * @param[in] data     The user_data
  * @return #NOTIFICATION_ERROR_NONE if success, other value if failure
@@ -62,7 +62,7 @@ int notification_status_monitor_message_cb_set(notification_status_message_cb ca
 /**
  * @internal
  * @brief Unregisters a callback to receive a message.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  * @param[in] callback The callback function
  * @param[in] data     The user_data
  * @return #NOTIFICATION_ERROR_NONE if success, other value if failure
@@ -72,7 +72,7 @@ int notification_status_monitor_message_cb_unset(void);
 
 /**
  * @brief Sends a string (message) to the notification status monitor.
- * @since_tizen 2.3
+ * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  * @privlevel public
  * @privilege %http://tizen.org/privilege/notification
  * @param[in] message The messages to be posted
