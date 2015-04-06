@@ -13,6 +13,8 @@ SET(DBFILE ".notification.db")
 SET(MAJOR_VER 0)
 SET(VERSION ${MAJOR_VER}.1.0)
 
+ADD_SUBDIRECTORY(test-app)
+
 SET(SRCS 
 	./src/notification.c
 	./src/notification_noti.c
