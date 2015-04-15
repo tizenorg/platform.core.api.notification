@@ -1,6 +1,6 @@
 Name:       notification
 Summary:    notification library
-Version:    0.2.23
+Version:    0.2.24
 Release:    1
 Group:      TBD
 License:    Apache
@@ -168,8 +168,8 @@ fi
 
 chown :5000 /opt/dbspace/.notification.db
 chown :5000 /opt/dbspace/.notification.db-journal
-chmod 640 /opt/dbspace/.notification.db
-chmod 640 /opt/dbspace/.notification.db-journal
+chmod 644 /opt/dbspace/.notification.db
+chmod 644 /opt/dbspace/.notification.db-journal
 if [ -f /usr/lib/rpm-plugins/msm.so ]
 then
     chsmack -a 'notification::db' /opt/dbspace/.notification.db*
