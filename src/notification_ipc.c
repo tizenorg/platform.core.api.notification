@@ -339,7 +339,7 @@ static inline char *_dup_string(const char *string)
 
 	ret = strdup(string);
 	if (!ret)
-		NOTIFICATION_ERR("Error: %s\n", strerror(errno));
+		NOTIFICATION_ERR("Error: %d\n", errno);
 
 	return ret;
 }

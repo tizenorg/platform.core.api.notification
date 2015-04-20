@@ -1091,7 +1091,7 @@ EXPORT_API int notification_noti_delete_all(notification_type_e type, const char
 				if (tmp) {
 					*list_deleted_rowid = tmp;
 				} else {
-					NOTIFICATION_ERR("Heap: %s\n", strerror(errno));
+					NOTIFICATION_ERR("Heap: %d\n", errno);
 					/*!
 					 * \TODO
 					 * How can I handle this?

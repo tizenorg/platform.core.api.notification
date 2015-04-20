@@ -112,7 +112,7 @@ static char *_notification_get_pkgname_by_pid(void)
 
 	dup_pkgname = strdup(pkgname);
 	if (!dup_pkgname)
-		NOTIFICATION_ERR("Heap: %s\n", strerror(errno));
+		NOTIFICATION_ERR("Heap: %d\n", errno);
 
 	return dup_pkgname;
 }
