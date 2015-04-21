@@ -1813,8 +1813,7 @@ err:
 	return ret;
 }
 
-static void
-popup_timeout_cb(void *data, Evas_Object *obj, void *event_info)
+static void popup_timeout_cb(void *data, Evas_Object *obj, void *event_info)
 {
 	Eina_List *list = NULL;
 	char *msg = NULL;

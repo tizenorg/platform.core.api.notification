@@ -546,7 +546,6 @@ EXPORT_API int notification_get_text(notification_h noti,
 	char buf_key[32] = { 0, };
 	const char *ret_val = NULL;
 	const char *get_str = NULL;
-	const char *get_check_type_str = NULL;
 	notification_text_type_e check_type = NOTIFICATION_TEXT_TYPE_NONE;
 	//int display_option_flag = 0;
 
@@ -3131,6 +3130,16 @@ EXPORT_API int notification_register_toast_message(void (*posted_toast_cb) (void
 void notification_call_posted_toast_cb(const char *message)
 {
 	if (posted_toast_message_cb != NULL) {
-		posted_toast_message_cb(message);
+		posted_toast_message_cb((void*)message);
 	}
+}
+
+EXPORT_API int notification_set_permission(notification_h handle, notification_permission_type_e permission_type, const char *app_id)
+{
+	return NOTIFICATION_ERROR_INVALID_OPERATION;
+}
+
+EXPORT_API int notification_get_permission(notification_h handle, notification_permission_type_e *permission_type, const char **app_id)
+{
+	return NOTIFICATION_ERROR_INVALID_OPERATION;
 }

@@ -30,6 +30,7 @@
 #include <notification_debug.h>
 #include <notification_ipc.h>
 #include <notification_private.h>
+#include <notification_setting.h>
 
 #define NOTIFICATION_SETTING_DB "notification_setting"
 #define NOTIFICATION_SETTING_DB_PATH "/opt/usr/dbspace/.notification_parser.db"

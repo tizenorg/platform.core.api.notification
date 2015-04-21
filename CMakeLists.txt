@@ -13,7 +13,7 @@ SET(DBFILE ".notification.db")
 SET(MAJOR_VER 0)
 SET(VERSION ${MAJOR_VER}.1.0)
 
-ADD_SUBDIRECTORY(test-app)
+# ADD_SUBDIRECTORY(test-app)
 
 SET(SRCS 
 	./src/notification.c
@@ -31,7 +31,10 @@ SET(HEADERS-DEVEL
 	./include/notification_error.h
 	./include/notification_type.h
 	./include/notification_list.h
-	./include/notification_status.h)
+	./include/notification_status.h
+	./include/notification_setting.h
+   )
+
 
 SET(HEADERS-SERVICE-DEVEL
 	./include/notification_ipc.h

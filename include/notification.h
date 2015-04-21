@@ -854,7 +854,7 @@ int notification_get_property(notification_h noti,
 		return;
 	}
 
-	noti_err  = notification_set_display_applist(noti, NOTIFICATION_DISPLAY_APP_NOTIFICATION_TRAY | NOTIFICATION_DISPLAY_APP_TICKER);
+	noti_err  = notification_set_display_applist(noti, NOTIFICATION_DISPLAY_APP_NOTIFICATION_TRAY | NOTIFICATION_DISPLAY_APP_TICKER | NOTIFICATION_DISPLAY_APP_INDICATOR);
 	if(noti_err != NOTIFICATION_ERROR_NONE) {
 		notification_free(noti);
 		return;
@@ -1659,6 +1659,81 @@ int notification_delete_all(notification_type_e type);
  * @endcode
  */
 int notification_post(notification_h noti);
+
+/**
+ * @brief Sets permissions to application for updating or deletin the notification
+ * @since_tizen 2.4
+ * @privlevel public
+ * @privilege %http://tizen.org/privilege/notification
+ * @param[in] noti Notification handle
+ * @param[in] permission_type permission type
+ * @param[in] app_id target application id
+ * @return #NOTIFICATION_ERROR_NONE if success, other value if failure
+ * @retval #NOTIFICATION_ERROR_NONE Success
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval #NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
+ * @see #notification_get_permission
+ * @see #notification_permission_type_e
+ * @see #notification_h
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	notification_h noti = NULL;
+	int noti_err = NOTIFICATION_ERROR_NONE;
+
+	noti = notification_create(NOTIFICATION_TYPE_NOTI);
+	if(noti == NULL) {
+		return;
+	}
+	...
+
+	noti_err = notification_set_permission(noti, NOTIFICATION_PERMISSION_TYPE_DELETE, "org.tizen.xxx");
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_set_permission(notification_h handle, notification_permission_type_e permission_type, const char *app_id);
+
+/**
+ * @brief Gets permissions of the notification
+ * @remarks app_id must not be freed. This will be free with notification_free.
+ * @since_tizen 2.4
+ * @privlevel public
+ * @privilege %http://tizen.org/privilege/notification
+ * @param[in] noti Notification handle
+ * @param[out] permission_type permission type
+ * @param[out] app_id target application id
+ * @return #NOTIFICATION_ERROR_NONE if success, other value if failure
+ * @retval #NOTIFICATION_ERROR_NONE Success
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval #NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
+ * @see #notification_set_permission
+ * @see #notification_permission_type_e
+ * @see #notification_h
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	int noti_err = NOTIFICATION_ERROR_NONE;
+	notification_permission_type_e permission_type;
+	const char *app_id = NULL;
+
+	...
+
+	noti_err = notification_get_permission(noti, &permission_type, &app_id);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_get_permission(notification_h handle, notification_permission_type_e *permission_type, const char **app_id);
+
 
 /**
  * @}

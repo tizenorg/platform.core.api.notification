@@ -402,6 +402,11 @@ typedef struct _notification_op {
 	notification_h noti;	/**< Notification handler */
 } notification_op;
 
+typedef enum notification_permission_type {
+    NOTIFICATION_PERMISSION_TYPE_NONE = 0,
+    NOTIFICATION_PERMISSION_TYPE_DELETE = 1,
+    NOTIFICATION_PERMISSION_TYPE_UPDATE = 2,
+} notification_permission_type_e;
 /**
  * @}
  */

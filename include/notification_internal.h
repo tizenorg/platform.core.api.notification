@@ -578,34 +578,6 @@ NOTIFICATION_DEPRECATED_API int notification_get_execute_option(notification_h n
 						     bundle **service_handle);
 
 /**
- * @internal
- * @brief This function sets notification property for designated package.
- * @since_tizen 2.3
- * @privlevel public
- * @privilege http://tizen.org/privilege/core/notification
- * @param[in] pkgname The name of designated package
- * @param[in] property name
- * @param[in] property value
- * @return #NOTIFICATION_ERROR_NONE if success, other value if failure
- * @see #notification_error_e
- */
-int notification_setting_property_set(const char *pkgname, const char *property, const char *value);
-
-/**
- * @internal
- * @brief This function gets notification property for designated package.
- * @since_tizen 2.3
- * @privlevel public
- * @privilege http://tizen.org/privilege/core/notification
- * @param[in] pkgname The name of designated package
- * @param[in] property name
- * @param[in] pointer which can save the getting value
- * @return #NOTIFICATION_ERROR_NONE if success, other value if failure
- * @see #notification
- */
-int notification_setting_property_get(const char *pkgname, const char *property, char **value);
-
-/**
  * @}
  */
 
