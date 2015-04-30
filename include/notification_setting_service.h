@@ -31,6 +31,8 @@ extern "C" {
 int notification_setting_db_set(const char *pkgname, const char *property, const char *value);
 int notification_setting_db_get(const char *pkgname, const char *property, char **value);
 
+int notification_setting_db_update(const char *package_name, int allow_to_notify, int do_not_disturb_except, int visibility_class);
+
 #ifdef __cplusplus
 }
 #endif

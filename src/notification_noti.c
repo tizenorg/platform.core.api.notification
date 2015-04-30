@@ -35,8 +35,6 @@
 #include <notification_private.h>
 
 #define NOTI_BURST_DELETE_UNIT 10
-static Eina_List *toast_list;
-static Eina_List *toast_popup;
 
 static void __free_and_set(void **target_ptr, void *new_ptr) {
 	if (target_ptr != NULL) {
@@ -185,6 +183,7 @@ err:
 
 static int _insertion_query_create(notification_h noti, char **query)
 {
+	int i = 0;
 	int b_encode_len = 0;
 	char *args = NULL;
 	char *group_args = NULL;
@@ -193,6 +192,7 @@ static int _insertion_query_create(notification_h noti, char **query)
 	char *b_service_responding = NULL;
 	char *b_service_single_launch = NULL;
 	char *b_service_multi_launch = NULL;
+	char *b_event_handler[NOTIFICATION_EVENT_TYPE_MAX] = { NULL , };
 	char *b_text = NULL;
 	char *b_key = NULL;
 	char *b_format_args = NULL;
@@ -226,6 +226,13 @@ static int _insertion_query_create(notification_h noti, char **query)
 	if (noti->b_service_multi_launch) {
 		bundle_encode(noti->b_service_multi_launch,
 			      (bundle_raw **) & b_service_multi_launch, &b_encode_len);
+	}
+
+	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
+		if (noti->b_event_handler[i]) {
+			bundle_encode(noti->b_event_handler[i],
+					(bundle_raw **) & b_event_handler[i], &b_encode_len);
+		}
 	}
 
 	if (noti->b_text) {
@@ -263,6 +270,9 @@ static int _insertion_query_create(notification_h noti, char **query)
 		 "args, group_args, "
 		 "b_execute_option, "
 		 "b_service_responding, b_service_single_launch, b_service_multi_launch, "
+		 "b_event_handler_click_on_button_1, b_event_handler_click_on_button_2, b_event_handler_click_on_button_3, "
+		 "b_event_handler_click_on_button_4, b_event_handler_click_on_button_5, b_event_handler_click_on_button_6, "
+		 "b_event_handler_click_on_icon, b_event_handler_click_on_thumbnail, "
 		 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb, led_on_ms, led_off_ms, "
 		 "flags_for_property, flag_simmode, display_applist, "
 		 "progress_size, progress_percentage) values ("
@@ -278,6 +288,9 @@ static int _insertion_query_create(notification_h noti, char **query)
 		 "'%s', '%s', "
 		 "'%s', "
 		 "'%s', '%s', '%s', "
+		 "'%s', '%s', '%s', "
+		 "'%s', '%s', '%s', "
+		 "'%s', '%s', "
 		 "%d, '%s', %d, '%s', %d, %d, %d, %d,"
 		 "%d, %d, %d, "
 		 "$progress_size, $progress_percentage)",
@@ -297,6 +310,14 @@ static int _insertion_query_create(notification_h noti, char **query)
 		 NOTIFICATION_CHECK_STR(b_service_responding),
 		 NOTIFICATION_CHECK_STR(b_service_single_launch),
 		 NOTIFICATION_CHECK_STR(b_service_multi_launch),
+		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_1]),
+		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_2]),
+		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_3]),
+		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_4]),
+		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_5]),
+		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_6]),
+		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_ICON]),
+		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_THUMBNAIL]),
 		 noti->sound_type, NOTIFICATION_CHECK_STR(noti->sound_path),
 		 noti->vibration_type,
 		 NOTIFICATION_CHECK_STR(noti->vibration_path),
@@ -351,6 +372,7 @@ static int _insertion_query_create(notification_h noti, char **query)
 
 static int _update_query_create(notification_h noti, char **query)
 {
+	int i = 0;
 	int b_encode_len = 0;
 	char *args = NULL;
 	char *group_args = NULL;
@@ -359,6 +381,7 @@ static int _update_query_create(notification_h noti, char **query)
 	char *b_service_responding = NULL;
 	char *b_service_single_launch = NULL;
 	char *b_service_multi_launch = NULL;
+	char *b_event_handler[NOTIFICATION_EVENT_TYPE_MAX] = { NULL , };
 	char *b_text = NULL;
 	char *b_key = NULL;
 	char *b_format_args = NULL;
@@ -392,6 +415,13 @@ static int _update_query_create(notification_h noti, char **query)
 	if (noti->b_service_multi_launch) {
 		bundle_encode(noti->b_service_multi_launch,
 			      (bundle_raw **) & b_service_multi_launch, &b_encode_len);
+	}
+
+	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
+		if (noti->b_event_handler[i]) {
+			bundle_encode(noti->b_event_handler[i],
+					(bundle_raw **) & b_event_handler[i], &b_encode_len);
+		}
 	}
 
 	if (noti->b_text) {
@@ -430,6 +460,14 @@ static int _update_query_create(notification_h noti, char **query)
 		 "b_service_responding = '%s', "
 		 "b_service_single_launch = '%s', "
 		 "b_service_multi_launch = '%s', "
+		 "b_event_handler_click_on_button_1 = '%s', "
+		 "b_event_handler_click_on_button_2= '%s', "
+		 "b_event_handler_click_on_button_3= '%s', "
+		 "b_event_handler_click_on_button_4= '%s', "
+		 "b_event_handler_click_on_button_5= '%s', "
+		 "b_event_handler_click_on_button_6= '%s', "
+		 "b_event_handler_click_on_icon= '%s', "
+		 "b_event_handler_click_on_thumbnail= '%s', "
 		 "sound_type = %d, sound_path = '%s', "
 		 "vibration_type = %d, vibration_path = '%s', "
 		 "led_operation = %d, led_argb = %d, "
@@ -452,6 +490,14 @@ static int _update_query_create(notification_h noti, char **query)
 		 NOTIFICATION_CHECK_STR(b_service_responding),
 		 NOTIFICATION_CHECK_STR(b_service_single_launch),
 		 NOTIFICATION_CHECK_STR(b_service_multi_launch),
+		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_1]),
+		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_2]),
+		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_3]),
+		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_4]),
+		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_5]),
+		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_6]),
+		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_ICON]),
+		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_THUMBNAIL]),
 		 noti->sound_type, NOTIFICATION_CHECK_STR(noti->sound_path),
 		 noti->vibration_type,
 		 NOTIFICATION_CHECK_STR(noti->vibration_path),
@@ -506,6 +552,7 @@ static int _update_query_create(notification_h noti, char **query)
 
 static void _notification_noti_populate_from_stmt(sqlite3_stmt * stmt, notification_h noti) {
 	int col = 0;
+	int i = 0;
 
 	if (stmt == NULL || noti == NULL) {
 		return ;
@@ -539,6 +586,10 @@ static void _notification_noti_populate_from_stmt(sqlite3_stmt * stmt, notificat
 	    notification_db_column_bundle(stmt, col++);
 	noti->b_service_multi_launch =
 	    notification_db_column_bundle(stmt, col++);
+
+	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
+		noti->b_event_handler[i] = notification_db_column_bundle(stmt, col++);
+	}
 
 	noti->sound_type = sqlite3_column_int(stmt, col++);
 	__free_and_set((void **)&(noti->sound_path), notification_db_column_text(stmt, col++));
@@ -792,6 +843,9 @@ int notification_noti_get_by_priv_id(notification_h noti, char *pkgname, int pri
 			 "tag, b_text, b_key, b_format_args, num_format_args, "
 			 "text_domain, text_dir, time, insert_time, args, group_args, "
 			 "b_execute_option, b_service_responding, b_service_single_launch, b_service_multi_launch, "
+			 "b_event_handler_click_on_button_1, b_event_handler_click_on_button_2, b_event_handler_click_on_button_3, "
+			 "b_event_handler_click_on_button_4, b_event_handler_click_on_button_5, b_event_handler_click_on_button_6, "
+			 "b_event_handler_click_on_icon, b_event_handler_click_on_thumbnail, "
 			 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb, led_on_ms, led_off_ms, "
 			 "flags_for_property, display_applist, progress_size, progress_percentage "
 			 "from noti_list ";
@@ -864,6 +918,9 @@ EXPORT_API int notification_noti_get_by_tag(notification_h noti, char *pkgname, 
 			 "tag, b_text, b_key, b_format_args, num_format_args, "
 			 "text_domain, text_dir, time, insert_time, args, group_args, "
 			 "b_execute_option, b_service_responding, b_service_single_launch, b_service_multi_launch, "
+			 "b_event_handler_click_on_button_1, b_event_handler_click_on_button_2, b_event_handler_click_on_button_3, "
+			 "b_event_handler_click_on_button_4, b_event_handler_click_on_button_5, b_event_handler_click_on_button_6, "
+			 "b_event_handler_click_on_icon, b_event_handler_click_on_thumbnail, "
 			 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb, led_on_ms, led_off_ms, "
 			 "flags_for_property, display_applist, progress_size, progress_percentage "
 			 "from noti_list where caller_pkgname = ? and tag = ?", -1, &stmt, NULL);
@@ -889,6 +946,9 @@ EXPORT_API int notification_noti_get_by_tag(notification_h noti, char *pkgname, 
 			 "tag, b_text, b_key, b_format_args, num_format_args, "
 			 "text_domain, text_dir, time, insert_time, args, group_args, "
 			 "b_execute_option, b_service_responding, b_service_single_launch, b_service_multi_launch, "
+			 "b_event_handler_click_on_button_1, b_event_handler_click_on_button_2, b_event_handler_click_on_button_3, "
+			 "b_event_handler_click_on_button_4, b_event_handler_click_on_button_5, b_event_handler_click_on_button_6, "
+			 "b_event_handler_click_on_icon, b_event_handler_click_on_thumbnail, "
 			 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb, led_on_ms, led_off_ms, "
 			 "flags_for_property, display_applist, progress_size, progress_percentage "
 			 "from noti_list where  tag = ?", -1, &stmt, NULL);
@@ -1555,6 +1615,9 @@ int notification_noti_get_grouping_list(notification_type_e type,
 		 "tag, b_text, b_key, b_format_args, num_format_args, "
 		 "text_domain, text_dir, time, insert_time, args, group_args, "
 		 "b_execute_option, b_service_responding, b_service_single_launch, b_service_multi_launch, "
+		 "b_event_handler_click_on_button_1, b_event_handler_click_on_button_2, b_event_handler_click_on_button_3, "
+		 "b_event_handler_click_on_button_4, b_event_handler_click_on_button_5, b_event_handler_click_on_button_6, "
+		 "b_event_handler_click_on_icon, b_event_handler_click_on_thumbnail, "
 		 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb, led_on_ms, led_off_ms, "
 		 "flags_for_property, display_applist, progress_size, progress_percentage "
 		 "from noti_list ");
@@ -1658,6 +1721,9 @@ int notification_noti_get_detail_list(const char *pkgname,
 		 "tag, b_text, b_key, b_format_args, num_format_args, "
 		 "text_domain, text_dir, time, insert_time, args, group_args, "
 		 "b_execute_option, b_service_responding, b_service_single_launch, b_service_multi_launch, "
+		 "b_event_handler_click_on_button_1, b_event_handler_click_on_button_2, b_event_handler_click_on_button_3, "
+		 "b_event_handler_click_on_button_4, b_event_handler_click_on_button_5, b_event_handler_click_on_button_6, "
+		 "b_event_handler_click_on_icon, b_event_handler_click_on_thumbnail, "
 		 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb, led_on_ms, led_off_ms, "
 		 "flags_for_property, display_applist, progress_size, progress_percentage "
 		 "from noti_list ");
@@ -1811,128 +1877,4 @@ err:
 	}
 
 	return ret;
-}
-
-static void popup_timeout_cb(void *data, Evas_Object *obj, void *event_info)
-{
-	Eina_List *list = NULL;
-	char *msg = NULL;
-	int count = 0;
-
-	evas_object_del(toast_popup);
-	toast_popup = NULL;
-	evas_object_del((Evas_Object *)data);
-
-	count = eina_list_count(toast_list);
-
-	if (count == 1){
-		msg = (char *)eina_list_data_get(toast_list);
-		free(msg);
-
-		eina_list_free(toast_list);
-		toast_list = NULL;
-	} else if (count > 1) {
-		msg = (char *)eina_list_data_get(toast_list);
-		toast_list = eina_list_remove(toast_list, msg);
-		free(msg);
-		_post_toast_message((char *)eina_list_data_get(toast_list));
-	}
-}
-
-int _post_toast_message(char *message)
-{
-	int let = 0;
-	Evas_Object *toast_window;
-	Evas *e;
-	Ecore_Evas *ee;
-	double scale = elm_config_scale_get();
-
-
-	toast_window = elm_win_add(NULL, "toast", ELM_WIN_BASIC);
-
-	elm_win_alpha_set(toast_window, EINA_TRUE);
-	elm_win_title_set(toast_window, "toast");
-
-	elm_win_indicator_mode_set(toast_window, ELM_WIN_INDICATOR_SHOW);
-	elm_win_indicator_type_set(toast_window,ELM_WIN_INDICATOR_TYPE_1);
-
-	//elm_win_autodel_set(toast_win, EINA_TRUE);
-	if (elm_win_wm_rotation_supported_get(toast_window)) {
-		int rots[4] = { 0, 90, 180, 270 };
-		elm_win_wm_rotation_available_rotations_set(toast_window, (const int*)(&rots), 4);
-	}
-
-	e = evas_object_evas_get(toast_window);
-	ee = ecore_evas_ecore_evas_get(e);
-	ecore_evas_name_class_set(ee, "TOAST_POPUP", "SYSTEM_POPUP");
-
-	evas_object_resize(toast_window, (480 * scale), (650 * scale));
-	ecore_x_window_shape_input_rectangle_set(elm_win_xwindow_get(toast_window), 0, 0, (480 * scale), (650 * scale));
-
-	toast_popup = elm_popup_add(toast_window);
-
-	elm_object_style_set(toast_popup, "toast");
-	evas_object_size_hint_weight_set(toast_popup, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-
-	elm_object_text_set(toast_popup,message);
-
-	if (eina_list_count(toast_list) != 1) {
-		elm_popup_timeout_set(toast_popup, 1.0);
-	}
-	else {
-		elm_popup_timeout_set(toast_popup, 3.0);
-	}
-	evas_object_smart_callback_add(toast_popup, "timeout", popup_timeout_cb, (void *)toast_window);
-
-	elm_win_prop_focus_skip_set(toast_window, EINA_TRUE);
-
-	evas_object_show(toast_window);
-	evas_object_show(toast_popup);
-
-	return 0;
-}
-
-EXPORT_API int notification_noti_post_toast_message(const char *message)
-{
-	int let = 0;
-	char *msg = NULL;
-	int count = 0;
-
-	msg = (char *)calloc(strlen(message) + 1, sizeof(char));
-	strcpy(msg, message);
-
-/*
-	if (eina_list_count(toast_list) == 10) {
-		toast_list = eina_list_last(toast_list);
-		eina_list_data_set(toast_list, msg);
-		toast_list = eina_list_nth_list(toast_list, 0);
-	}
-	else {
-*/
-
-	count = eina_list_count(toast_list);
-	if (count == 0) {
-		toast_list = eina_list_append(toast_list, msg);
-		let = _post_toast_message(msg);
-	}
-	else if (count == 1) {
-		if (strcmp(msg, (char *)eina_list_nth(toast_list, count - 1)) == 0) {
-			elm_popup_timeout_set(toast_popup, 3.0);
-		}
-		else {
-			toast_list = eina_list_append(toast_list, msg);
-			elm_popup_timeout_set(toast_popup, 1.0);
-		}
-	}
-	else if (count >= 2) {
-		if (strcmp(msg, (char *)eina_list_nth(toast_list, count - 1)) == 0) {
-			free(msg);
-			return 0;
-		}
-		else {
-			toast_list = eina_list_append(toast_list, msg);
-		}
-	}
-
-	return 0;
 }

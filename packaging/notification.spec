@@ -1,6 +1,6 @@
 Name:       notification
 Summary:    notification library
-Version:    0.2.27
+Version:    0.2.28
 Release:    1
 Group:      TBD
 License:    Apache
@@ -111,6 +111,14 @@ then
 			b_service_responding TEXT,
 			b_service_single_launch TEXT,
 			b_service_multi_launch TEXT,
+			b_event_handler_click_on_button_1 TEXT,
+			b_event_handler_click_on_button_2 TEXT,
+			b_event_handler_click_on_button_3 TEXT,
+			b_event_handler_click_on_button_4 TEXT,
+			b_event_handler_click_on_button_5 TEXT,
+			b_event_handler_click_on_button_6 TEXT,
+			b_event_handler_click_on_icon TEXT,
+			b_event_handler_click_on_thumbnail TEXT,
 			sound_type INTEGER default 0,
 			sound_path TEXT,
 			vibration_type INTEGER default 0,
@@ -140,7 +148,7 @@ then
 			rowid INTEGER PRIMARY KEY AUTOINCREMENT,
 			UNIQUE (caller_pkgname, group_id)
 		);
-		create 	table if not exists ongoing_list ( 
+		create table if not exists ongoing_list ( 
 			caller_pkgname TEXT NOT NULL,
 			launch_pkgname TEXT,
 			icon_path TEXT,
@@ -160,9 +168,25 @@ then
 			flag INTEGER default 0,
 			progress_size DOUBLE default 0,
 			progress_percentage DOUBLE default 0,
-			rowid INTEGER PRIMARY KEY AUTOINCREMENT,	
-			UNIQUE (caller_pkgname, priv_id)  
+			rowid INTEGER PRIMARY KEY AUTOINCREMENT,
+			UNIQUE (caller_pkgname, priv_id)
 		); 
+		CREATE TABLE IF NOT EXISTS notification_setting ( 
+			priv_id INTERGER PRIMARY KEY,
+			package_name TEXT NOT NULL,
+			allow_to_notify INTEGER DEFAULT 1,
+			do_not_disturb_except INTEGER DEFAULT 0,
+			visibility_class INTEGER DEFAULT 0,
+			UNIQUE (priv_id, package_name)
+		); 
+
+		INSERT INTO notification_setting (priv_id, package_name, allow_to_notify, do_not_disturb_except, visibility_class) VALUES (1, "org.tizen.photos", 1, 0, 0);
+		INSERT INTO notification_setting (priv_id, package_name, allow_to_notify, do_not_disturb_except, visibility_class) VALUES (2, "org.tizen.email", 1, 0, 0);
+		INSERT INTO notification_setting (priv_id, package_name, allow_to_notify, do_not_disturb_except, visibility_class) VALUES (3, "org.tizen.message", 1, 0, 0);
+		INSERT INTO notification_setting (priv_id, package_name, allow_to_notify, do_not_disturb_except, visibility_class) VALUES (4, "org.tizen.internet", 1, 0, 0);
+		INSERT INTO notification_setting (priv_id, package_name, allow_to_notify, do_not_disturb_except, visibility_class) VALUES (5, "org.tizen.games", 1, 0, 0);
+
+		CREATE UNIQUE INDEX package_name_idx1 ON notification_setting (package_name);
 	'
 fi
 

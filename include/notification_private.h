@@ -44,6 +44,8 @@ struct _notification {
 	bundle *b_service_single_launch;
 	bundle *b_service_multi_launch;
 
+	bundle *b_event_handler[NOTIFICATION_EVENT_TYPE_MAX];
+
 	char *domain;		/* Text domain for localization */
 	char *dir;		/* Text dir for localization */
 
@@ -80,5 +82,7 @@ struct _notification {
 };
 
 void notification_call_changed_cb(notification_op *op_list, int op_num);
+
+char *notification_get_pkgname_by_pid(void);
 
 #endif				/* __NOTIFICATION_PRIVATE_H__ */
