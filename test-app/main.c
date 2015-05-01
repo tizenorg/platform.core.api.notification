@@ -144,6 +144,7 @@ void testapp_show_menu (testapp_menu_type_e menu)
 		testapp_print (" 2.  Post simple notifications repeatedly\n");
 		testapp_print (" 3.  Post a notification on indicator\n");
 		testapp_print (" 4.  Post status status message\n");
+		testapp_print (" 5.  Delete all notification\n");
 		testapp_print ("------------------------------------------\n");
 		break;
 	default:
@@ -279,7 +280,16 @@ static int testapp_test_post_status_message()
 	return noti_err;
 }
 
+static int testapp_test_delete_all_notifications()
+{
+	int noti_err = NOTIFICATION_ERROR_NONE;
 
+	noti_err = notification_delete_all(NOTIFICATION_TYPE_NOTI);
+
+	testapp_print("notification_delete_all returns[%d]", noti_err);
+
+	return noti_err;
+}
 
 static gboolean testapp_interpret_command_basic_test (int selected_number)
 {
@@ -301,6 +311,10 @@ static gboolean testapp_interpret_command_basic_test (int selected_number)
         case 4:
 			testapp_test_post_status_message();
 			break;
+
+        case 5:
+        	testapp_test_delete_all_notifications();
+        	break;
 
         case 0:
 			go_to_loop = FALSE;
