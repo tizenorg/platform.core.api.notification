@@ -577,6 +577,10 @@ NOTIFICATION_DEPRECATED_API int notification_get_execute_option(notification_h n
 						     const char **text,
 						     bundle **service_handle);
 
+int notification_set_ongoing_flag(notification_h noti, bool ongoing_flag);
+
+int notification_get_ongoing_flag(notification_h noti, bool *ongoing_flag);
+
 /**
  * @}
  */

@@ -3238,3 +3238,13 @@ EXPORT_API int notification_get_permission(notification_h handle, notification_p
 {
 	return NOTIFICATION_ERROR_INVALID_OPERATION;
 }
+
+EXPORT_API int notification_set_ongoing_flag(notification_h noti, bool ongoing_flag)
+{
+	return NOTIFICATION_ERROR_INVALID_OPERATION;
+}
+
+EXPORT_API int notification_get_ongoing_flag(notification_h noti, bool *ongoing_flag)
+{
+	return NOTIFICATION_ERROR_INVALID_OPERATION;
+}
