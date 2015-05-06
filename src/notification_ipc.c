@@ -1461,7 +1461,7 @@ int notification_ipc_update_setting(notification_setting_h setting)
 	struct packet *packet;
 	struct packet *result;
 
-	packet = packet_create("update_noti_setting", "siii", setting->package_name, (int)setting->allow_to_notify, (int)setting->do_not_disturb_except, (int)setting->visibility_class);
+	packet = packet_create("update_noti_setting", "siii", setting->package_name, (int)(setting->allow_to_notify), (int)(setting->do_not_disturb_except), (int)(setting->visibility_class));
 	result = com_core_packet_oneshot_send(NOTIFICATION_ADDR,
 		packet,
 		NOTIFICATION_IPC_TIMEOUT);
@@ -1482,6 +1482,47 @@ int notification_ipc_update_setting(notification_setting_h setting)
 		else {
 			return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 		}
+	}
+
+	return status;
+}
+
+int notification_ipc_update_system_setting(notification_system_setting_h system_setting)
+{
+	int status = 0;
+	int ret = 0;
+	struct packet *packet = NULL;
+	struct packet *result = NULL;
+
+	packet = packet_create("update_noti_sys_setting", "ii", (int)(system_setting->do_not_disturb), (int)(system_setting->visibility_class));
+	if (packet == NULL) {
+		NOTIFICATION_ERR("packet_create failed.");
+		goto out;
+	}
+	result = com_core_packet_oneshot_send(NOTIFICATION_ADDR, packet, NOTIFICATION_IPC_TIMEOUT);
+	packet_destroy(packet);
+
+	if (result != NULL) {
+		if (packet_get(result, "ii", &status, &ret) != 2) {
+			NOTIFICATION_ERR("Failed to get a result packet");
+			status = NOTIFICATION_ERROR_IO_ERROR;
+			goto out;
+		}
+
+	} else {
+		NOTIFICATION_ERR("failed to receive answer(delete)");
+		if (notification_ipc_is_master_ready() == 1) {
+			status = NOTIFICATION_ERROR_PERMISSION_DENIED;
+			goto out;
+		}
+		else {
+			status = NOTIFICATION_ERROR_SERVICE_NOT_READY;
+			goto out;
+		}
+	}
+out:
+	if (result) {
+		packet_unref(result);
 	}
 
 	return status;

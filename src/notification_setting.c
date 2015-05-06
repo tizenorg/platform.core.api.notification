@@ -33,21 +33,6 @@
 #include <notification_setting.h>
 #include <notification_setting_internal.h>
 
-#define SAFE_STRDUP(s) \
-		({\
-	char* _s = (char*)s;\
-	(_s)? strdup(_s) : NULL;\
-})
-
-#define SAFE_FREE(s) \
-		({\
-	if (s) {\
-		free(s);\
-		s = NULL;\
-	}\
-})
-
-#define NOTIFICATION_SETTING_DB_TABLE "notification_setting"
 
 static int _get_table_field_data_int(char  **table, int *buf, int index)
 {
@@ -228,7 +213,7 @@ EXPORT_API int notification_setting_get_setting_by_package_name(const char *pack
 	sql_return = sqlite3_get_table(local_db_handle, sql_query, &query_result, &row_count, &column_count, NULL);
 
 	if (sql_return != SQLITE_OK && sql_return != -1) {
-		NOTIFICATION_ERR("NOTIFICATION_ERROR_FROM_DB failed [%d][%s]", sql_return, sql_query);
+		NOTIFICATION_ERR("sqlite3_get_table failed [%d][%s]", sql_return, sql_query);
 		err = NOTIFICATION_ERROR_FROM_DB;
 		goto out;
 	}
@@ -445,7 +430,7 @@ EXPORT_API int notification_setting_update_setting(notification_setting_h settin
 
 	err = notification_ipc_update_setting(setting);
 	if (err != NOTIFICATION_ERROR_NONE) {
-		NOTIFICATION_ERR("notification_ipc_noti_setting_property_set returns[%d]\n", err);
+		NOTIFICATION_ERR("notification_setting_update_setting returns[%d]\n", err);
 		goto out;
 	}
 
@@ -464,8 +449,11 @@ EXPORT_API int notification_setting_free_notification(notification_setting_h set
 		}
 
 	SAFE_FREE(setting->package_name);
+
+
 	/* add codes to free all properties */
 
+	SAFE_FREE(setting);
 out:
 
 	return err;
@@ -510,8 +498,235 @@ EXPORT_API int notification_setting_db_update(const char *package_name, int allo
 	return err;
 }
 
+/* system setting --------------------------------*/
 
-/* OLD IMPLEMENTATION */
+EXPORT_API int notification_system_setting_load_system_setting(notification_system_setting_h *system_setting)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+	sqlite3 *local_db_handle = NULL;
+	char *sql_query = NULL;
+	char **query_result = NULL;
+	int sql_return;
+	int row_count = 0;
+	int column_count = 0;
+	int col_index = 0;
+	notification_system_setting_h result_system_setting= NULL;
+
+	if (system_setting == NULL) {
+		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
+		err =  NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	sql_return = db_util_open(DBPATH, &local_db_handle, 0);
+
+	if (sql_return != SQLITE_OK || local_db_handle == NULL) {
+		NOTIFICATION_ERR("db_util_open failed [%d]", sql_return);
+		err = NOTIFICATION_ERROR_FROM_DB;
+		goto out;
+	}
+
+	sql_query = sqlite3_mprintf("SELECT do_not_disturb, visibility_class "
+			"FROM %s ", NOTIFICATION_SYSTEM_SETTING_DB_TABLE);
+
+	if (!sql_query) {
+		NOTIFICATION_ERR("fail to alloc query");
+		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
+		goto out;
+	}
+
+	sql_return = sqlite3_get_table(local_db_handle, sql_query, &query_result, &row_count, &column_count, NULL);
+
+	if (sql_return != SQLITE_OK && sql_return != -1) {
+		NOTIFICATION_ERR("sqlite3_get_table failed [%d][%s]", sql_return, sql_query);
+		err = NOTIFICATION_ERROR_FROM_DB;
+		goto out;
+	}
+
+	if (!row_count) {
+		NOTIFICATION_DBG ("No setting found...");
+		err= NOTIFICATION_ERROR_NOT_EXIST_ID;
+		goto out;
+	}
+
+	NOTIFICATION_DBG ("row_count [%d] column_count [%d]", row_count, column_count);
+
+	row_count = 1;
+
+	if (!(result_system_setting = (struct notification_system_setting*)malloc(sizeof(struct notification_system_setting)))) {
+		NOTIFICATION_ERR("malloc failed...");
+		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
+		goto out;
+	}
+
+	col_index = column_count;
+
+	_get_table_field_data_int(query_result, (int*)&(result_system_setting->do_not_disturb), col_index++);
+	_get_table_field_data_int(query_result, &(result_system_setting->visibility_class), col_index++);
+
+	*system_setting = result_system_setting;
+
+out:
+	if (query_result)
+			sqlite3_free_table(query_result);
+
+	if (sql_query)
+		sqlite3_free(sql_query);
+
+	if (local_db_handle) {
+		sql_return = db_util_close(local_db_handle);
+		if (sql_return != SQLITE_OK) {
+			NOTIFICATION_WARN("fail to db_util_close - [%d]", sql_return);
+		}
+	}
+
+	return err;
+}
+
+EXPORT_API int notification_system_setting_update_system_setting(notification_system_setting_h system_setting)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (system_setting == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	err = notification_ipc_update_system_setting(system_setting);
+	if (err != NOTIFICATION_ERROR_NONE) {
+		NOTIFICATION_ERR("notification_ipc_update_system_setting returns[%d]\n", err);
+		goto out;
+	}
+
+out:
+	return err;
+}
+
+EXPORT_API int notification_system_setting_free_system_setting(notification_system_setting_h system_setting)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (system_setting == NULL) {
+			NOTIFICATION_ERR("Invalid parameter\n");
+			err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+			goto out;
+		}
+
+	/* add codes to free all properties */
+
+	SAFE_FREE(system_setting);
+
+out:
+
+	return err;
+}
+
+EXPORT_API int notification_system_setting_get_do_not_disturb(notification_system_setting_h system_setting, bool *value)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (system_setting == NULL || value == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	*value = system_setting->do_not_disturb;
+
+out:
+
+	return err;
+}
+
+EXPORT_API int notification_system_setting_set_do_not_disturb(notification_system_setting_h system_setting, bool value)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (system_setting == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	system_setting->do_not_disturb = value;
+
+out:
+
+	return err;
+}
+
+EXPORT_API int notification_system_setting_get_visibility_class(notification_system_setting_h system_setting, int *value)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (system_setting == NULL || value == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	*value = system_setting->visibility_class;
+
+out:
+
+	return err;
+}
+
+EXPORT_API int notification_system_setting_set_visibility_class(notification_system_setting_h system_setting, int value)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (system_setting == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	system_setting->visibility_class = value;
+
+out:
+
+	return err;
+}
+
+EXPORT_API int notification_setting_db_update_system_setting(int do_not_disturb, int visibility_class)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+	sqlite3 *db = NULL;
+	char *sqlbuf = NULL;
+	int sqlret;
+
+	sqlret = db_util_open(DBPATH, &db, 0);
+	if (sqlret != SQLITE_OK || db == NULL) {
+		NOTIFICATION_ERR("db_util_open failed [%s][%d]", DBPATH, sqlret);
+		return NOTIFICATION_ERROR_FROM_DB;
+	}
+
+	sqlbuf = sqlite3_mprintf("UPDATE %s SET do_not_disturb = %d, visibility_class = %d ",
+			NOTIFICATION_SYSTEM_SETTING_DB_TABLE, do_not_disturb, visibility_class);
+
+	if (!sqlbuf) {
+		NOTIFICATION_ERR("fail to alloc query");
+		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
+		goto return_close_db;
+	}
+
+	err = notification_db_exec(db, sqlbuf, NULL);
+
+	return_close_db:
+	if (sqlbuf)
+		sqlite3_free(sqlbuf);
+
+	sqlret = db_util_close(db);
+	if (sqlret != SQLITE_OK) {
+		NOTIFICATION_WARN("fail to db_util_close - [%d]", sqlret);
+	}
+
+	return err;
+}
+
+/* OLD IMPLEMENTATION ----------------------------*/
 #define NOTIFICATION_SETTING_DB "notification_setting"
 #define NOTIFICATION_SETTING_DB_PATH "/opt/usr/dbspace/.notification_parser.db"
 

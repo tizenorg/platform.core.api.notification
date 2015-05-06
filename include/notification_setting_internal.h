@@ -1,9 +1,9 @@
 /*
  *  libnotification
  *
- * Copyright (c) 2000 - 2011 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2015 Samsung Electronics Co., Ltd. All rights reserved.
  *
- * Contact: Seungtaek Chung <seungtaek.chung@samsung.com>, Mi-Ju Lee <miju52.lee@samsung.com>, Xi Zhichan <zhichan.xi@samsung.com>
+ * Contact: Kyho Jo <kyuho.jo@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,18 @@
  *
  */
 
-#ifndef INCLUDE_NOTIFICATION_SETTING_INTERNAL_H_
-#define INCLUDE_NOTIFICATION_SETTING_INTERNAL_H_
+#ifndef __NOTIFICATION_SETTING_INTERNAL_H__
+#define __NOTIFICATION_SETTING_INTERNAL_H__
 
 #include <stdbool.h>
 #include "notification.h"
+#include "notification_setting.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/* Application setting */
 struct notification_setting {
 	char *package_name;
 	bool  allow_to_notify;
@@ -48,6 +50,18 @@ int notification_setting_set_allow_to_notify(notification_setting_h setting, boo
 int notification_setting_get_do_not_disturb_except(notification_setting_h setting, bool *value);
 int notification_setting_set_do_not_disturb_except(notification_setting_h setting, bool value);
 
+/* System setting */
+typedef struct notification_system_setting* notification_system_setting_h;
+
+int notification_system_setting_load_system_setting(notification_system_setting_h *system_setting);
+int notification_system_setting_update_system_setting(notification_system_setting_h system_setting);
+int notification_system_setting_free_system_setting(notification_system_setting_h system_setting);
+
+int notification_system_setting_get_do_not_disturb(notification_system_setting_h system_setting, bool *value);
+int notification_system_setting_set_do_not_disturb(notification_system_setting_h system_setting, bool value);
+
+int notification_system_setting_get_visibility_class(notification_system_setting_h system_setting, int *value);
+int notification_system_setting_set_visibility_class(notification_system_setting_h system_setting, int value);
 
 /* OLD IMPLEMENTATION */
 int notification_setting_property_set(const char *pkgname, const char *property, const char *value) NOTIFICATION_DEPRECATED_API;
@@ -56,4 +70,4 @@ int notification_setting_property_get(const char *pkgname, const char *property,
 #ifdef __cplusplus
 }
 #endif
-#endif /* INCLUDE_NOTIFICATION_SETTING_INTERNAL_H_ */
+#endif /* __NOTIFICATION_SETTING_INTERNAL_H__ */

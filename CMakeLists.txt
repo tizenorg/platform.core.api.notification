@@ -33,6 +33,7 @@ SET(HEADERS-DEVEL
 	./include/notification_list.h
 	./include/notification_status.h
 	./include/notification_setting.h
+	./include/notification_setting_internal.h
    )
 
 

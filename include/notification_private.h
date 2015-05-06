@@ -26,6 +26,23 @@
 #define EXPORT_API __attribute__ ((visibility("default")))
 #endif
 
+#define SAFE_STRDUP(s) \
+		({\
+	char* _s = (char*)s;\
+	(_s)? strdup(_s) : NULL;\
+})
+
+#define SAFE_FREE(s) \
+		({\
+	if (s) {\
+		free(s);\
+		s = NULL;\
+	}\
+})
+
+#define NOTIFICATION_SETTING_DB_TABLE "notification_setting"
+#define NOTIFICATION_SYSTEM_SETTING_DB_TABLE "notification_system_setting"
+
 struct _notification {
 	notification_type_e type;
 	notification_ly_type_e layout;
@@ -79,6 +96,11 @@ struct _notification {
 	char *temp_title;
 	char *temp_content;
 	char *tag;
+};
+
+struct notification_system_setting {
+	bool do_not_disturb;
+	int  visibility_class;
 };
 
 void notification_call_changed_cb(notification_op *op_list, int op_num);

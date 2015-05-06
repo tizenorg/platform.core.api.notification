@@ -24,6 +24,7 @@
 
 #include <notification.h>
 #include <notification_setting.h>
+#include <notification_setting_internal.h>
 
 #define NOTIFICATION_ADDR "/tmp/.notification.service"
 #define NOTIFICATION_DEL_PACKET_UNIT 10
@@ -55,6 +56,7 @@ int notification_ipc_add_deffered_task(void (*deferred_task_cb)(void *data), voi
 int notification_ipc_del_deffered_task(void (*deferred_task_cb)(void *data));
 
 int notification_ipc_update_setting(notification_setting_h setting);
+int notification_ipc_update_system_setting(notification_system_setting_h system_setting);
 int notification_ipc_noti_setting_property_set(const char *pkgname, const char *property, const char *value);
 int notification_ipc_noti_setting_property_get(const char *pkgname, const char *property, char **value);
 

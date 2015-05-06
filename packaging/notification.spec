@@ -1,6 +1,6 @@
 Name:       notification
 Summary:    notification library
-Version:    0.2.29
+Version:    0.2.30
 Release:    1
 Group:      TBD
 License:    Apache
@@ -179,12 +179,19 @@ then
 			visibility_class INTEGER DEFAULT 0,
 			UNIQUE (priv_id, package_name)
 		); 
+		CREATE TABLE IF NOT EXISTS notification_system_setting ( 
+			priv_id INTERGER PRIMARY KEY,
+			do_not_disturb INTEGER DEFAULT 0,
+			visibility_class INTEGER DEFAULT 0,
+			UNIQUE (priv_id, package_name)
+		); 
 
 		INSERT INTO notification_setting (priv_id, package_name, allow_to_notify, do_not_disturb_except, visibility_class) VALUES (1, "org.tizen.photos", 1, 0, 0);
 		INSERT INTO notification_setting (priv_id, package_name, allow_to_notify, do_not_disturb_except, visibility_class) VALUES (2, "org.tizen.email", 1, 0, 0);
 		INSERT INTO notification_setting (priv_id, package_name, allow_to_notify, do_not_disturb_except, visibility_class) VALUES (3, "org.tizen.message", 1, 0, 0);
 		INSERT INTO notification_setting (priv_id, package_name, allow_to_notify, do_not_disturb_except, visibility_class) VALUES (4, "org.tizen.internet", 1, 0, 0);
 		INSERT INTO notification_setting (priv_id, package_name, allow_to_notify, do_not_disturb_except, visibility_class) VALUES (5, "org.tizen.games", 1, 0, 0);
+		INSERT INTO notification_system_setting (do_not_disturb, visibility_class) VALUES (0, 0, 0);
 
 		CREATE UNIQUE INDEX package_name_idx1 ON notification_setting (package_name);
 	'
@@ -218,6 +225,7 @@ vconftool set -t string memory/private/libstatus/message "" -i -g 5000 -f  $SMAC
 %{_includedir}/notification/notification_list.h
 %{_includedir}/notification/notification_status.h
 %{_includedir}/notification/notification_setting.h
+%{_includedir}/notification/notification_setting_internal.h
 %{_libdir}/pkgconfig/notification.pc
 
 %files service-devel

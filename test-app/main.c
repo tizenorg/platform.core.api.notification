@@ -158,6 +158,7 @@ void testapp_show_menu (testapp_menu_type_e menu)
 		testapp_print ("==========================================\n");
 		testapp_print (" 1.  Get setting list\n");
 		testapp_print (" 2.  Update setting\n");
+		testapp_print (" 3.  Update system setting\n");
 		testapp_print ("------------------------------------------\n");
 		break;
 	default:
@@ -494,7 +495,7 @@ static int testapp_test_get_setting_list()
 		testapp_print("[%d] : package_name[%s], allow_to_notify[%d], do_not_disturb_except[%d], visibility_class[%d]\n"
 				,i, package_name, allow_to_notify, do_not_disturb_except, visibility_class);
 		free(package_name);
-		notification_setting_free_notification(setting_array + i);
+		notification_setting_free_notification(setting_array );
 	}
 
 	if (setting_array)
@@ -517,6 +518,47 @@ static int testapp_test_update_setting()
 		notification_setting_set_allow_to_notify(setting, 0);
 		notification_setting_update_setting(setting);
 	}
+
+	return err;
+}
+
+static int testapp_test_update_system_setting()
+{
+	int err = NOTIFICATION_ERROR_NONE;
+	bool do_not_disturb;
+	int visibility_class;
+	notification_system_setting_h system_setting = NULL;
+
+
+	err = notification_system_setting_load_system_setting(&system_setting);
+
+	if (err != NOTIFICATION_ERROR_NONE || system_setting == NULL) {
+		testapp_print("notification_system_setting_load_system_setting failed [%d]\n", err);
+		goto out;
+	}
+
+	notification_system_setting_get_do_not_disturb(system_setting, &do_not_disturb);
+	testapp_print("do_not_disturb [%d]\n", do_not_disturb);
+	do_not_disturb = !do_not_disturb;
+	notification_system_setting_set_do_not_disturb(system_setting, do_not_disturb);
+
+	notification_system_setting_get_visibility_class(system_setting, &visibility_class);
+	testapp_print("visibility_class [%d]\n", visibility_class);
+	visibility_class = !visibility_class;
+	notification_system_setting_set_visibility_class(system_setting, visibility_class);
+
+	err = notification_system_setting_update_system_setting(system_setting);
+
+	if (err != NOTIFICATION_ERROR_NONE || system_setting == NULL) {
+		testapp_print("notification_system_setting_update_system_setting failed [%d]\n", err);
+		goto out;
+	}
+
+out:
+	if (system_setting)
+		notification_system_setting_free_system_setting(system_setting);
+
+	return err;
 }
 
 static gboolean testapp_interpret_command_setting_test (int selected_number)
@@ -530,6 +572,10 @@ static gboolean testapp_interpret_command_setting_test (int selected_number)
 
 	case 2:
 		testapp_test_update_setting();
+		break;
+
+	case 3:
+		testapp_test_update_system_setting();
 		break;
 
 	case 0:
