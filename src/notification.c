@@ -1355,7 +1355,7 @@ EXPORT_API int notification_set_launch_option(notification_h noti,
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 
-	if ((ret = app_control_to_bundle(app_control, &b)) == APP_CONTROL_ERROR_NONE) {
+	if ((ret = app_control_export_as_bundle(app_control, &b)) == APP_CONTROL_ERROR_NONE) {
 		return notification_set_execute_option(noti,
 				NOTIFICATION_EXECUTE_TYPE_SINGLE_LAUNCH,
 				NULL, NULL,
@@ -1429,7 +1429,7 @@ EXPORT_API int notification_set_event_handler(notification_h noti, notification_
 		goto out;
 	}
 
-	if ((err = app_control_to_bundle(event_handler, &app_control_bundle)) != APP_CONTROL_ERROR_NONE) {
+	if ((err = app_control_export_as_bundle(event_handler, &app_control_bundle)) != APP_CONTROL_ERROR_NONE) {
 		NOTIFICATION_ERR("app_control_to_bundle failed [%d]", err);
 		goto out;
 	}

@@ -1,6 +1,6 @@
 Name:       notification
 Summary:    notification library
-Version:    0.2.30
+Version:    0.2.31
 Release:    1
 Group:      TBD
 License:    Apache
@@ -223,7 +223,9 @@ vconftool set -t string memory/private/libstatus/message "" -i -g 5000 -f  $SMAC
 %{_includedir}/notification/notification_error.h
 %{_includedir}/notification/notification_type.h
 %{_includedir}/notification/notification_list.h
+%{_includedir}/notification/notification_ongoing_flag.h
 %{_includedir}/notification/notification_status.h
+%{_includedir}/notification/notification_status_internal.h
 %{_includedir}/notification/notification_setting.h
 %{_includedir}/notification/notification_setting_internal.h
 %{_libdir}/pkgconfig/notification.pc

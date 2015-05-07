@@ -36,6 +36,7 @@
 #include <notification_debug.h>
 #include <notification_private.h>
 #include <notification_status.h>
+#include <notification_status_internal.h>
 
 #define PATH_NAME    "/Org/Tizen/System/Notification/Status_message"
 #define INTERFACE_NAME "org.tizen.system.notification.status_message"

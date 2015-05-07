@@ -356,10 +356,10 @@ static int testapp_test_post_heads_up_notification_with_button()
 		goto FINISH_OFF;
 	}
 
-	noti_err = notification_post(noti_handle);
-
 	app_control_destroy(app_control);
 	app_control = NULL;
+
+	noti_err = notification_post(noti_handle);
 
 	if (noti_err != NOTIFICATION_ERROR_NONE) {
 		testapp_print("notification_post failed[%d]", noti_err);
@@ -373,11 +373,9 @@ static int testapp_test_post_heads_up_notification_with_button()
 		goto FINISH_OFF;
 	}
 
-	/*
 	if (noti_handle)
 		notification_free(noti_handle);
 	noti_handle = NULL;
-	*/
 
 	noti_handle = notification_load(NULL, priv_id);
 
@@ -396,7 +394,7 @@ static int testapp_test_post_heads_up_notification_with_button()
 	app_control_get_app_id(app_control, &app_id);
 
 	if (app_id) {
-		testapp_print("result app_id [%s]", app_id);
+		testapp_print("result app_id [%s]\n", app_id);
 		free(app_id);
 	}
 
