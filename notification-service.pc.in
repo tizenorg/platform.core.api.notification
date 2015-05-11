@@ -1,0 +1,11 @@
+prefix=@PREFIX@
+exec_prefix=@EXEC_PREFIX@
+libdir=@LIBDIR@
+includedir=@INCLUDEDIR@/service
+
+Name: notification
+Description: Notification Library
+Version: @VERSION@
+Requires: bundle
+Libs: -L${libdir} -lnotification
+Cflags: -I${includedir}
