@@ -224,6 +224,7 @@ vconftool set -t string memory/private/libstatus/message "" -i -g 5000 -f  $SMAC
 %{_includedir}/notification/notification_type.h
 %{_includedir}/notification/notification_list.h
 %{_includedir}/notification/notification_ongoing_flag.h
+%{_includedir}/notification/notification_text_domain.h
 %{_includedir}/notification/notification_status.h
 %{_includedir}/notification/notification_status_internal.h
 %{_includedir}/notification/notification_setting.h
