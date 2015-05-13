@@ -991,7 +991,7 @@ static struct packet *_handler_delete_multiple(pid_t pid, int handle, const stru
 	int buf[10] = {0,};
 	int num_deleted = 0;
 
-	NOTIFICATION_ERR("delete_noti_multiple");
+	NOTIFICATION_INFO("delete_noti_multiple");
 
 	if (!packet) {
 		NOTIFICATION_ERR("a packet is null");
@@ -1009,21 +1009,23 @@ static struct packet *_handler_delete_multiple(pid_t pid, int handle, const stru
 			&(buf[8]),
 			&(buf[9]));
 
-	NOTIFICATION_ERR("packet data count:%d", ret);
-	NOTIFICATION_ERR("packet data num deleted:%d", num_deleted);
+	NOTIFICATION_INFO("packet data count:%d", ret);
+	NOTIFICATION_INFO("packet data num deleted:%d", num_deleted);
 
 	int i = 0;
 	for (i = 0 ; i < 10 ; i++) {
-		NOTIFICATION_ERR("packet data[%d]:%d",i, buf[i]);
+		NOTIFICATION_INFO("packet data[%d]:%d",i, buf[i]);
 	}
 
 	if (ret == 11) {
 		notification_op *noti_op = notification_ipc_create_op(
 				NOTIFICATION_OP_DELETE, num_deleted, buf, num_deleted, NULL);
-		if (noti_op != NULL) {
-			notification_call_changed_cb(noti_op, num_deleted);
-			free(noti_op);
+		if (noti_op == NULL) {
+			NOTIFICATION_ERR("notification_ipc_create_op failed");
+			return NULL;
 		}
+		notification_call_changed_cb(noti_op, num_deleted);
+		free(noti_op);
 	}
 
 	return NULL;

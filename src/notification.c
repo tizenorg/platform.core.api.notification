@@ -2248,7 +2248,7 @@ static notification_h _notification_create(notification_type_e type)
 	noti->sound_type = NOTIFICATION_SOUND_TYPE_NONE;
 	noti->vibration_type = NOTIFICATION_VIBRATION_TYPE_NONE;
 	noti->led_operation = NOTIFICATION_LED_OP_OFF;
-	noti->display_applist = NOTIFICATION_DISPLAY_APP_ALL;
+	noti->display_applist = NOTIFICATION_DISPLAY_APP_NOTIFICATION_TRAY;
 	/*!
 	 * \NOTE
 	 * Other fields are already initialized with ZERO.
