@@ -843,7 +843,6 @@ err:
 EXPORT_API int notification_noti_get_by_tag(notification_h noti, char *pkgname, char* tag)
 {
 	int ret = 0;
-	char *query = NULL;
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
 
@@ -903,36 +902,7 @@ EXPORT_API int notification_noti_get_by_tag(notification_h noti, char *pkgname, 
 			goto err;
 		}
 	}
-/*
-	char *base_query = "select "
-			 "type, layout, caller_pkgname, launch_pkgname, image_path, group_id, priv_id, "
-			 "tag, b_text, b_key, b_format_args, num_format_args, "
-			 "text_domain, text_dir, time, insert_time, args, group_args, "
-			 "b_execute_option, b_service_responding, b_service_single_launch, b_service_multi_launch, "
-			 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb, led_on_ms, led_off_ms, "
-			 "flags_for_property, display_applist, progress_size, progress_percentage "
-			 "from noti_list ";
 
-	if (pkgname != NULL) {
-		query = sqlite3_mprintf("%s where caller_pkgname = '%s' and tag = '%s'",
-				base_query ,pkgname, tag);
-	} else {
-		query = sqlite3_mprintf("%s where tag = '%s'", base_query,  tag);
-	}
-	if (query == NULL) {
-		ret = NOTIFICATION_ERROR_OUT_OF_MEMORY;
-		goto err;
-	}
-
-	ret = sqlite3_prepare_v2(db, query, -1, &stmt, NULL);
-	if (ret != SQLITE_OK) {
-		NOTIFICATION_ERR("select Query : %s", query);
-		NOTIFICATION_ERR("select DB error(%d) : %s", ret,
-				 sqlite3_errmsg(db));
-		ret = NOTIFICATION_ERROR_FROM_DB;
-		goto err;
-	}
-*/
 	ret = sqlite3_step(stmt);
 	if (ret == SQLITE_ROW) {
 		_notification_noti_populate_from_stmt(stmt, noti);
@@ -941,9 +911,6 @@ EXPORT_API int notification_noti_get_by_tag(notification_h noti, char *pkgname, 
 		ret = NOTIFICATION_ERROR_FROM_DB;
 	}
 err:
-	if (query) {
-		sqlite3_free(query);
-	}
 
 	if (stmt) {
 		sqlite3_finalize(stmt);
@@ -1740,7 +1707,6 @@ EXPORT_API int notification_noti_check_tag(notification_h noti)
 {
 	int result = 0;
 	int ret = NOTIFICATION_ERROR_NONE;
-	char *query = NULL;
 	sqlite3 *db;
 	sqlite3_stmt *stmt = NULL;
 
@@ -1806,9 +1772,6 @@ EXPORT_API int notification_noti_check_tag(notification_h noti)
 	}
 
 err:
-	if (query) {
-		sqlite3_free(query);
-	}
 
 	return ret;
 }
@@ -1855,7 +1818,9 @@ int _post_toast_message(char *message)
 	elm_win_title_set(toast_window, "toast");
 
 	elm_win_indicator_mode_set(toast_window, ELM_WIN_INDICATOR_SHOW);
+	/* 
 	elm_win_indicator_type_set(toast_window,ELM_WIN_INDICATOR_TYPE_1);
+	*/
 
 	//elm_win_autodel_set(toast_win, EINA_TRUE);
 	if (elm_win_wm_rotation_supported_get(toast_window)) {
@@ -1868,7 +1833,9 @@ int _post_toast_message(char *message)
 	ecore_evas_name_class_set(ee, "TOAST_POPUP", "SYSTEM_POPUP");
 
 	evas_object_resize(toast_window, (480 * scale), (650 * scale));
+	/*
 	ecore_x_window_shape_input_rectangle_set(elm_win_xwindow_get(toast_window), 0, 0, (480 * scale), (650 * scale));
+	*/
 
 	toast_popup = elm_popup_add(toast_window);
 
@@ -1897,10 +1864,16 @@ EXPORT_API int notification_noti_post_toast_message(const char *message)
 {
 	int let = 0;
 	char *msg = NULL;
+	char *temp_string = NULL;
 	int count = 0;
 
 	msg = (char *)calloc(strlen(message) + 1, sizeof(char));
-	strcpy(msg, message);
+
+	if (msg == NULL) {
+		return NOTIFICATION_ERROR_OUT_OF_MEMORY;
+	}
+
+	strncpy(msg, message, strlen(message) + 1);
 
 /*
 	if (eina_list_count(toast_list) == 10) {
@@ -1917,7 +1890,10 @@ EXPORT_API int notification_noti_post_toast_message(const char *message)
 		let = _post_toast_message(msg);
 	}
 	else if (count == 1) {
-		if (strcmp(msg, (char *)eina_list_nth(toast_list, count - 1)) == 0) {
+		temp_string = (char*)eina_list_nth(toast_list, count - 1);
+		if (temp_string == NULL)
+			return 0;
+		if (strcmp(msg, temp_string) == 0) {
 			elm_popup_timeout_set(toast_popup, 3.0);
 		}
 		else {
@@ -1926,7 +1902,10 @@ EXPORT_API int notification_noti_post_toast_message(const char *message)
 		}
 	}
 	else if (count >= 2) {
-		if (strcmp(msg, (char *)eina_list_nth(toast_list, count - 1)) == 0) {
+		temp_string = (char*)eina_list_nth(toast_list, count - 1);
+		if (temp_string == NULL)
+			return 0;
+		if (strcmp(msg, temp_string) == 0) {
 			free(msg);
 			return 0;
 		}

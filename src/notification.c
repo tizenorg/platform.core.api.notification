@@ -2480,6 +2480,10 @@ notification_resister_changed_cb(void (*changed_cb)
 	noti_cb_list_new =
 	    (notification_cb_list_s *) malloc(sizeof(notification_cb_list_s));
 
+	if (noti_cb_list_new == NULL) {
+		return NOTIFICATION_ERROR_OUT_OF_MEMORY;
+	}
+
 	noti_cb_list_new->next = NULL;
 	noti_cb_list_new->prev = NULL;
 
@@ -2573,6 +2577,10 @@ notification_register_detailed_changed_cb(
 
 	noti_cb_list_new =
 	    (notification_cb_list_s *) malloc(sizeof(notification_cb_list_s));
+
+	if (noti_cb_list_new == NULL) {
+		return NOTIFICATION_ERROR_OUT_OF_MEMORY;
+	}
 
 	noti_cb_list_new->next = NULL;
 	noti_cb_list_new->prev = NULL;

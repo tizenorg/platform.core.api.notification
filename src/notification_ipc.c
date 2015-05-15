@@ -308,6 +308,11 @@ notification_op *notification_ipc_create_op(notification_op_type_e type, int num
 	}
 
 	op_list = (notification_op *)malloc(sizeof(notification_op) * num_op);
+
+	if (op_list == NULL) {
+		return NULL;
+	}
+
 	memset(op_list, 0x0, sizeof(notification_op) * num_op);
 
 	for (i = 0; i < num_op; i++) {
