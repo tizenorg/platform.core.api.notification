@@ -150,6 +150,7 @@ void testapp_show_menu (testapp_menu_type_e menu)
 		testapp_print (" 4.  Post status status message\n");
 		testapp_print (" 5.  Delete all notification\n");
 		testapp_print (" 6.  Post a heads notification with a button\n");
+		testapp_print (" 7.  Post a notification with domain text\n");
 		testapp_print ("------------------------------------------\n");
 		break;
 	case TESTAPP_MENU_TYPE_SETTING_TEST_MENU:
@@ -188,6 +189,8 @@ static int testapp_add_a_notification()
 	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_INFO_SUB_2, "I'm Info Sub 2", "INFO_SUB_2", NOTIFICATION_VARIABLE_TYPE_NONE);
 	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_INFO_3, "I'm Info 3", "INFO_3", NOTIFICATION_VARIABLE_TYPE_NONE);
 	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_INFO_SUB_3, "I'm Info Sub 3", "INFO_SUB_3", NOTIFICATION_VARIABLE_TYPE_NONE);
+
+	noti_err = notification_set_display_applist(noti_handle, NOTIFICATION_DISPLAY_APP_INDICATOR | NOTIFICATION_DISPLAY_APP_NOTIFICATION_TRAY | NOTIFICATION_DISPLAY_APP_TICKER);
 
 	noti_err  = notification_post(noti_handle);
 
@@ -256,9 +259,9 @@ static int testapp_test_post_notification_on_indicator()
 	}
 
 	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_TITLE, "I'm Title", "TITLE", NOTIFICATION_VARIABLE_TYPE_NONE);
-	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_CONTENT, "I'm Content", "CONTENT", NOTIFICATION_VARIABLE_TYPE_NONE);
+	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_CONTENT, "I'm Content", "This is very loooooooooooooooooooooooooooooooooooooooooong message", NOTIFICATION_VARIABLE_TYPE_NONE);
 
-	noti_err  = notification_set_display_applist(noti_handle, NOTIFICATION_DISPLAY_APP_INDICATOR);
+	noti_err  = notification_set_display_applist(noti_handle, NOTIFICATION_DISPLAY_APP_TICKER | NOTIFICATION_DISPLAY_APP_INDICATOR);
 
 	if(noti_err != NOTIFICATION_ERROR_NONE) {
 		testapp_print("notification_set_display_applist failed[%d]", noti_err);
@@ -409,6 +412,69 @@ FINISH_OFF:
 	return noti_err;
 }
 
+static int testapp_test_post_notification_with_domain_text()
+{
+	notification_h noti_handle = NULL;
+	int noti_err = NOTIFICATION_ERROR_NONE;
+	int app_control_err = APP_CONTROL_ERROR_NONE;
+	int priv_id = 0;
+	int group_id = 0;
+	char *app_id = NULL;
+	time_t result = time(NULL);
+	char tag[100] = { 0, };
+
+	noti_handle = notification_create(NOTIFICATION_TYPE_NOTI);
+
+	if (noti_handle == NULL) {
+		testapp_print("notification_create failed");
+		goto FINISH_OFF;
+	}
+
+	noti_err = notification_set_text_domain(noti_handle, "message", "/usr/apps/org.tizen.message/res/locale");
+
+	if (noti_err != NOTIFICATION_ERROR_NONE) {
+		testapp_print("notification_set_display_applist failed[%d]\n", noti_err);
+		goto FINISH_OFF;
+	}
+
+	noti_err = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_TITLE, "I'm Title", "TITLE", NOTIFICATION_VARIABLE_TYPE_NONE);
+	noti_err = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_CONTENT, "I'm Content", "[%s] *** [%s]",
+			NOTIFICATION_VARIABLE_TYPE_STRING, "IDS_MSGF_BODY_NO_SUBJECT",
+			NOTIFICATION_VARIABLE_TYPE_STRING, "IDS_MSGF_POP_NEW_MESSAGE",
+			NOTIFICATION_VARIABLE_TYPE_NONE);
+
+	noti_err = notification_set_display_applist(noti_handle, NOTIFICATION_DISPLAY_APP_NOTIFICATION_TRAY);
+
+	if (noti_err != NOTIFICATION_ERROR_NONE) {
+		testapp_print("notification_set_display_applist failed[%d]\n", noti_err);
+		goto FINISH_OFF;
+	}
+
+	snprintf(tag, 100, "%d", result);
+
+	noti_err = notification_set_tag(noti_handle, tag);
+
+	if (noti_err != NOTIFICATION_ERROR_NONE) {
+		testapp_print("notification_set_tag failed[%d]\n", noti_err);
+		goto FINISH_OFF;
+	}
+
+	noti_err = notification_post(noti_handle);
+
+	if (noti_err != NOTIFICATION_ERROR_NONE) {
+		testapp_print("notification_post failed[%d]", noti_err);
+		goto FINISH_OFF;
+	}
+
+FINISH_OFF:
+
+
+	if (noti_handle)
+		notification_free(noti_handle);
+
+	return noti_err;
+}
+
 static gboolean testapp_interpret_command_basic_test (int selected_number)
 {
 	gboolean go_to_loop = TRUE;
@@ -436,6 +502,10 @@ static gboolean testapp_interpret_command_basic_test (int selected_number)
 
 	case 6:
 		testapp_test_post_heads_up_notification_with_button();
+		break;
+
+	case 7:
+		testapp_test_post_notification_with_domain_text();
 		break;
 
 	case 0:
@@ -493,11 +563,9 @@ static int testapp_test_get_setting_list()
 		testapp_print("[%d] : package_name[%s], allow_to_notify[%d], do_not_disturb_except[%d], visibility_class[%d]\n"
 				,i, package_name, allow_to_notify, do_not_disturb_except, visibility_class);
 		free(package_name);
-		notification_setting_free_notification(setting_array );
 	}
 
-	if (setting_array)
-		free(setting_array);
+	notification_setting_free_notification(setting_array);
 
 	return err;
 }

@@ -694,7 +694,6 @@ out:
 EXPORT_API int notification_setting_db_update_system_setting(int do_not_disturb, int visibility_class)
 {
 	int err = NOTIFICATION_ERROR_NONE;
-	char *query_buffer = NULL;
 	int sqlret;
 	int field_index = 0;
 	sqlite3 *db = NULL;
@@ -708,15 +707,9 @@ EXPORT_API int notification_setting_db_update_system_setting(int do_not_disturb,
 		goto return_close_db;
 	}
 
-	query_buffer = strdup("UPDATE ? SET do_not_disturb = ?, visibility_class = ? ");
+	sqlite3_exec(db, "BEGIN immediate;", NULL, NULL, NULL);
 
-	if (query_buffer == NULL) {
-		NOTIFICATION_ERR("fail to alloc query");
-		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
-		goto return_close_db;
-	}
-
-	sqlret = sqlite3_prepare_v2(db, query_buffer, strlen(query_buffer), &db_statement, NULL);
+	sqlret = sqlite3_prepare_v2(db, "UPDATE notification_system_setting SET do_not_disturb = ?, visibility_class = ?;", -1, &db_statement, NULL);
 
 	if (sqlret != SQLITE_OK) {
 		NOTIFICATION_ERR("sqlite3_prepare_v2 failed [%d][%s]", sqlret, sqlite3_errmsg(db));
@@ -724,7 +717,6 @@ EXPORT_API int notification_setting_db_update_system_setting(int do_not_disturb,
 		goto return_close_db;
 	}
 
-	sqlite3_bind_text(db_statement, field_index++, NOTIFICATION_SYSTEM_SETTING_DB_TABLE, -1, SQLITE_STATIC);
 	sqlite3_bind_int(db_statement, field_index++, do_not_disturb);
 	sqlite3_bind_int(db_statement, field_index++, visibility_class);
 
@@ -738,22 +730,24 @@ EXPORT_API int notification_setting_db_update_system_setting(int do_not_disturb,
 
 	sqlret = sqlite3_changes(db);
 
-	if (sqlret != SQLITE_OK && sqlret != SQLITE_DONE) {
-		NOTIFICATION_ERR("sqlite3_changes failed [%d][%s]", sqlret, sqlite3_errmsg(db));
-		err =  NOTIFICATION_ERROR_FROM_DB;
-		goto return_close_db;
+	if (sqlret == 0) {
+		NOTIFICATION_WARN("No changes on DB");
 	}
 
 return_close_db:
-
-	if (query_buffer)
-		free(query_buffer);
-
-	if (db_statement)
+	if (db_statement) {
 		sqlite3_finalize(db_statement);
+	}
 
-	if (db)
+	if (db) {
+		if (err == NOTIFICATION_ERROR_NONE) {
+			sqlite3_exec(db, "END;", NULL, NULL, NULL);
+		}
+		else {
+			sqlite3_exec(db, "ROLLBACK;", NULL, NULL, NULL);
+		}
 		sqlret = db_util_close(db);
+	}
 
 	if (sqlret != SQLITE_OK) {
 		NOTIFICATION_WARN("fail to db_util_close - [%d]", sqlret);

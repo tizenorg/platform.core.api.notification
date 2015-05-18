@@ -550,6 +550,7 @@ EXPORT_API int notification_get_text(notification_h noti,
 	//int display_option_flag = 0;
 
 	char *temp_str = NULL;
+	char *translated_str = NULL;
 	char result_str[NOTI_TEXT_RESULT_LEN] = { 0, };
 	char buf_str[1024] = { 0, };
 	int num_args = 0;
@@ -707,10 +708,8 @@ EXPORT_API int notification_get_text(notification_h noti,
 
 					strncat(result_str, buf_str,
 							max_len);
-
 					num_args++;
 				}
-
 			}
 
 			/* Check variable IN pos */
@@ -780,9 +779,20 @@ EXPORT_API int notification_get_text(notification_h noti,
 						ret_val =
 						    bundle_get_val(b, buf_key);
 
-						snprintf(buf_str,
-							 sizeof(buf_str), "%s",
-							 ret_val);
+						if (ret_val != NULL && noti->domain != NULL	&& noti->dir != NULL) {
+							/* Get application string */
+							bindtextdomain(noti->domain, noti->dir);
+							translated_str = dgettext(noti->domain, ret_val);
+							NOTIFICATION_INFO("translated_str[%s]", translated_str);
+						} else if (ret_val != NULL) {
+							/* Get system string */
+							translated_str = dgettext("sys_string", ret_val);
+							NOTIFICATION_INFO("translated_str[%s]", translated_str);
+						} else {
+							translated_str = NULL;
+						}
+
+						strncpy(buf_str, sizeof(buf_str), translated_str);
 
 						int src_len = strlen(result_str);
 						int max_len = NOTI_TEXT_RESULT_LEN - src_len - 1;
@@ -985,6 +995,8 @@ EXPORT_API int notification_get_text(notification_h noti,
 	} else {
 		*text = NULL;
 	}
+
+	NOTIFICATION_INFO("text[%s]", *text);
 
 	return NOTIFICATION_ERROR_NONE;
 }
@@ -2248,7 +2260,7 @@ static notification_h _notification_create(notification_type_e type)
 	noti->sound_type = NOTIFICATION_SOUND_TYPE_NONE;
 	noti->vibration_type = NOTIFICATION_VIBRATION_TYPE_NONE;
 	noti->led_operation = NOTIFICATION_LED_OP_OFF;
-	noti->display_applist = NOTIFICATION_DISPLAY_APP_NOTIFICATION_TRAY;
+	noti->display_applist = NOTIFICATION_DISPLAY_APP_NOTIFICATION_TRAY | NOTIFICATION_DISPLAY_APP_TICKER | NOTIFICATION_DISPLAY_APP_INDICATOR;
 	/*!
 	 * \NOTE
 	 * Other fields are already initialized with ZERO.

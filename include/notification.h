@@ -1319,7 +1319,7 @@ int notification_delete_all(notification_type_e type);
 int notification_post(notification_h noti);
 
 /**
- * @brief Sets permissions to application for updating or deletin the notification
+ * @brief Sets permission to application for updating or deleting the notification
  * @since_tizen 2.4
  * @privlevel public
  * @privilege %http://tizen.org/privilege/notification
@@ -1327,7 +1327,6 @@ int notification_post(notification_h noti);
  * @param[in] permission_type permission type
  * @param[in] app_id target application id
  * @return #NOTIFICATION_ERROR_NONE if success, other value if failure
- * @retval #NOTIFICATION_ERROR_NONE Success
  * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval #NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
  * @see #notification_get_permission
@@ -1349,16 +1348,17 @@ int notification_post(notification_h noti);
 
 	noti_err = notification_set_permission(noti, NOTIFICATION_PERMISSION_TYPE_DELETE, "org.tizen.xxx");
 	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		notification_free(noti);
 		return;
 	}
 }
  * @endcode
  */
-int notification_set_permission(notification_h handle, notification_permission_type_e permission_type, const char *app_id);
+int notification_set_permission(notification_h noti, notification_permission_type_e permission_type, const char *app_id);
 
 /**
- * @brief Gets permissions of the notification
- * @remarks app_id must not be freed. This will be free with notification_free.
+ * @brief Gets permission of the notification
+ * @remarks @a app_id must be freed with notification_free() function.
  * @since_tizen 2.4
  * @privlevel public
  * @privilege %http://tizen.org/privilege/notification
@@ -1366,7 +1366,6 @@ int notification_set_permission(notification_h handle, notification_permission_t
  * @param[out] permission_type permission type
  * @param[out] app_id target application id
  * @return #NOTIFICATION_ERROR_NONE if success, other value if failure
- * @retval #NOTIFICATION_ERROR_NONE Success
  * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval #NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
  * @see #notification_set_permission
@@ -1385,12 +1384,13 @@ int notification_set_permission(notification_h handle, notification_permission_t
 
 	noti_err = notification_get_permission(noti, &permission_type, &app_id);
 	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		notification_free(noti);
 		return;
 	}
 }
  * @endcode
  */
-int notification_get_permission(notification_h handle, notification_permission_type_e *permission_type, const char **app_id);
+int notification_get_permission(notification_h noti, notification_permission_type_e *permission_type, const char **app_id);
 
 /**
  * @brief Gets the package name of the notification
