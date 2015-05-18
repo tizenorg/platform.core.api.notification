@@ -3,7 +3,7 @@ Summary:    notification library
 Version:    0.2.25
 Release:    1
 Group:      TBD
-License:    Apache License, Version 2.0
+License:    Apache-2.0
 Source0:    %{name}-%{version}.tar.gz
 BuildRequires: pkgconfig(sqlite3)
 BuildRequires: pkgconfig(db-util)
@@ -62,7 +62,8 @@ export CXXFLAGS="$CXXFLAGS -DTIZEN_DEBUG_ENABLE"
 export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
 %endif
 export LDFLAGS+="-Wl,--rpath=%{_prefix}/lib -Wl,--as-needed"
-LDFLAGS="$LDFLAGS" cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix}
+LDFLAGS="$LDFLAGS"
+%cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix}
 make %{?jobs:-j%jobs}
 
 %install
