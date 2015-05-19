@@ -40,6 +40,8 @@ int notification_setting_update_setting(notification_setting_h setting);
 
 int notification_setting_free_notification(notification_setting_h setting);
 
+int notification_setting_refresh_setting_table();
+
 #ifdef __cplusplus
 }
 #endif

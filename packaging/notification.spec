@@ -1,6 +1,6 @@
 Name:       notification
 Summary:    notification library
-Version:    0.2.33
+Version:    0.2.34
 Release:    1
 Group:      TBD
 License:    Apache
@@ -172,7 +172,7 @@ then
 			UNIQUE (caller_pkgname, priv_id)
 		); 
 		CREATE TABLE IF NOT EXISTS notification_setting ( 
-			priv_id INTERGER PRIMARY KEY,
+			priv_id INTEGER PRIMARY KEY AUTOINCREMENT,
 			package_name TEXT NOT NULL,
 			allow_to_notify INTEGER DEFAULT 1,
 			do_not_disturb_except INTEGER DEFAULT 0,
@@ -186,11 +186,6 @@ then
 			UNIQUE (priv_id)
 		); 
 
-		INSERT INTO notification_setting (priv_id, package_name, allow_to_notify, do_not_disturb_except, visibility_class) VALUES (1, "org.tizen.photos", 1, 0, 0);
-		INSERT INTO notification_setting (priv_id, package_name, allow_to_notify, do_not_disturb_except, visibility_class) VALUES (2, "org.tizen.email", 1, 0, 0);
-		INSERT INTO notification_setting (priv_id, package_name, allow_to_notify, do_not_disturb_except, visibility_class) VALUES (3, "org.tizen.message", 1, 0, 0);
-		INSERT INTO notification_setting (priv_id, package_name, allow_to_notify, do_not_disturb_except, visibility_class) VALUES (4, "org.tizen.internet", 1, 0, 0);
-		INSERT INTO notification_setting (priv_id, package_name, allow_to_notify, do_not_disturb_except, visibility_class) VALUES (5, "org.tizen.games", 1, 0, 0);
 		INSERT INTO notification_system_setting (priv_id, do_not_disturb, visibility_class) VALUES (0, 0, 0);
 
 		CREATE UNIQUE INDEX package_name_idx1 ON notification_setting (package_name);

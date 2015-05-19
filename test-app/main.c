@@ -160,6 +160,7 @@ void testapp_show_menu (testapp_menu_type_e menu)
 		testapp_print (" 1.  Get setting list\n");
 		testapp_print (" 2.  Update setting\n");
 		testapp_print (" 3.  Update system setting\n");
+		testapp_print (" 4.  Refresh setting table\n");
 		testapp_print ("------------------------------------------\n");
 		break;
 	default:
@@ -595,7 +596,6 @@ static int testapp_test_update_system_setting()
 	int visibility_class;
 	notification_system_setting_h system_setting = NULL;
 
-
 	err = notification_system_setting_load_system_setting(&system_setting);
 
 	if (err != NOTIFICATION_ERROR_NONE || system_setting == NULL) {
@@ -627,6 +627,21 @@ out:
 	return err;
 }
 
+static int testapp_test_refresh_setting_table()
+{
+	int err = NOTIFICATION_ERROR_NONE;
+	err = notification_setting_refresh_setting_table();
+
+	if (err != NOTIFICATION_ERROR_NONE) {
+		testapp_print("notification_setting_refresh_setting_table failed [%d]\n", err);
+		goto out;
+	}
+
+out:
+
+	return err;
+}
+
 static gboolean testapp_interpret_command_setting_test (int selected_number)
 {
 	gboolean go_to_loop = TRUE;
@@ -642,6 +657,10 @@ static gboolean testapp_interpret_command_setting_test (int selected_number)
 
 	case 3:
 		testapp_test_update_system_setting();
+		break;
+
+	case 4:
+		testapp_test_refresh_setting_table();
 		break;
 
 	case 0:
