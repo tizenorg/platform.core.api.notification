@@ -503,7 +503,7 @@ static bool _is_package_in_setting_table(sqlite3 *db, const char *package_name)
 {
 	sqlite3_stmt *db_statement = NULL;
 	int sqlite3_ret = SQLITE_OK;
-	int err = true;
+	bool err = true;
 	int field_index = 1;
 
 	sqlite3_ret = sqlite3_prepare_v2(db, "SELECT package_name FROM notification_setting WHERE package_name = ?", -1, &db_statement, NULL);
@@ -532,6 +532,80 @@ static bool _is_package_in_setting_table(sqlite3 *db, const char *package_name)
 out:
 	if (db_statement) {
 		sqlite3_finalize(db_statement);
+	}
+
+	return err;
+}
+
+static int _get_count_of_setting(sqlite3 *db, int *count)
+{
+	int sqlite3_ret = SQLITE_OK;
+	int err = NOTIFICATION_ERROR_NONE;
+	const char *sql_query = "SELECT COUNT(priv_id) FROM notification_setting";
+	char **result_table = NULL;
+
+	if (count == NULL) {
+		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	sqlite3_ret = sqlite3_get_table(db, sql_query, &result_table, NULL, NULL, NULL);
+
+	if (sqlite3_ret != SQLITE_OK || result_table[1] == NULL) {
+		NOTIFICATION_ERR("sqlite3_get_table failed [%d][%s]", sqlite3_ret, sqlite3_errmsg(db));
+		err = NOTIFICATION_ERROR_FROM_DB;
+		goto out;
+	}
+
+	*count = atoi(result_table[1]);
+
+out:
+
+	if (result_table)
+		sqlite3_free_table(result_table);
+
+	return err;
+}
+
+static int _get_count_of_package(int *count)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+	int pkgmgr_ret = PACKAGE_MANAGER_ERROR_NONE;
+	package_manager_filter_h package_filter = NULL;
+	int package_count = 0;
+
+	if (count == NULL) {
+		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	if ((pkgmgr_ret = package_manager_filter_create (&package_filter)) != PACKAGE_MANAGER_ERROR_NONE) {
+		NOTIFICATION_ERR("package_manager_filter_create failed [%08X]", pkgmgr_ret);
+		err = NOTIFICATION_ERROR_FROM_DB;
+		goto out;
+	}
+
+	if ((pkgmgr_ret = package_manager_filter_add_bool(package_filter, "PMINFO_PKGINFO_PROP_PACKAGE_NODISPLAY_SETTING", false)) != PACKAGE_MANAGER_ERROR_NONE) {
+		NOTIFICATION_ERR("package_manager_filter_add_bool failed [%08X]", pkgmgr_ret);
+		err = NOTIFICATION_ERROR_FROM_DB;
+		goto out;
+	}
+
+	if ((pkgmgr_ret = package_manager_filter_count(package_filter, &package_count)) != PACKAGE_MANAGER_ERROR_NONE) {
+		NOTIFICATION_ERR("package_manager_filter_count failed [%08X]", pkgmgr_ret);
+		err = NOTIFICATION_ERROR_FROM_DB;
+		goto out;
+	}
+
+	*count = package_count;
+
+out:
+	if (package_filter) {
+		if ((pkgmgr_ret = package_manager_filter_destroy(package_filter)) != PACKAGE_MANAGER_ERROR_NONE) {
+			NOTIFICATION_WARN("package_manager_filter_destroy failed [%08X]", pkgmgr_ret);
+		}
 	}
 
 	return err;
@@ -598,12 +672,31 @@ EXPORT_API int notification_setting_refresh_setting_table()
 	sqlite3 *db = NULL;
 	int sqlite3_ret = SQLITE_OK;
 	int pkgmgr_ret = PACKAGE_MANAGER_ERROR_NONE;
+	int setting_count = 0;
+	int package_count = 0;
 
 	sqlite3_ret = db_util_open(DBPATH, &db, 0);
 
 	if (sqlite3_ret != SQLITE_OK || db == NULL) {
 		NOTIFICATION_ERR("db_util_open failed [%s][%d]", DBPATH, sqlite3_ret);
 		err = NOTIFICATION_ERROR_FROM_DB;
+		goto out;
+	}
+
+	if ((err = _get_count_of_setting(db, &setting_count)) != NOTIFICATION_ERROR_NONE) {
+		NOTIFICATION_ERR("_get_count_of_setting failed [%08X]", err);
+		goto out;
+	}
+
+	if ((err = _get_count_of_package(&package_count)) != NOTIFICATION_ERROR_NONE) {
+		NOTIFICATION_ERR("_get_count_of_package failed [%08X]", err);
+		goto out;
+	}
+
+	NOTIFICATION_INFO("setting_count [%d], package_count [%d]", setting_count, package_count);
+
+	if (setting_count == package_count) {
+		NOTIFICATION_INFO("No need to refresh");
 		goto out;
 	}
 
@@ -631,7 +724,7 @@ out:
 		}
 	}
 
-	NOTIFICATION_INFO("notification_setting_refresh_setting_table returns [%d]", err);
+	NOTIFICATION_INFO("notification_setting_refresh_setting_table returns [%08X]", err);
 
 	return err;
 }
