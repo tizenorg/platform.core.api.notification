@@ -1394,7 +1394,6 @@ int notification_get_permission(notification_h noti, notification_permission_typ
 
 /**
  * @brief Gets the package name of the notification
- * @remarks The pkgname must be released using free()
  * @since_tizen 2.4
  * @param[in] noti Notification handle
  * @param[out] pkgname The package name of the notification
@@ -1416,7 +1415,6 @@ int notification_get_permission(notification_h noti, notification_permission_typ
 
 	if(noti_err != NOTIFICATION_ERROR_NONE) {
 		notification_free(noti);
-		free(pkgname);
 		return;
 	}
 }

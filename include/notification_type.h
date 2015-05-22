@@ -131,7 +131,8 @@ typedef enum _notification_led_op {
 } notification_led_op_e;
 
 /**
- * @brief This will be deprecated.
+ * @deprecated Deprecated since 2.3.1
+ * @brief Enumeration for setting display type of count
  * @since_tizen 2.3
  */
 typedef enum _notification_count_display_type {
@@ -296,11 +297,11 @@ enum _notification_property {
 	NOTIFICATION_PROP_DISABLE_AUTO_DELETE = 0x00000004,
 							/**< Disable auto delete when it selected */
 	NOTIFICATION_PROP_LAUNCH_UG = 0x00000008,
-						/**< Will be deprecated. Notification Tray should launch application using appsvc API */
+						/**< Notification Tray should launch application using appsvc API (Deprecated since 2.3.1) */
 	NOTIFICATION_PROP_DISABLE_TICKERNOTI = 0x00000010,
-							/**< Will be deprecated. Use notification_set_display_applist API */
+							/**< Use notification_set_display_applist API (Deprecated since 2.3.1) */
 	NOTIFICATION_PROP_PERMANENT_DISPLAY = 0x00000020,
-							/** < Will be deprecated. */
+							/**< The notification will not be removed (Deprecated since 2.3.1) */
 	NOTIFICATION_PROP_DISABLE_UPDATE_ON_INSERT = 0x00000040,/**< Disable update when it inserted. */
 	NOTIFICATION_PROP_DISABLE_UPDATE_ON_DELETE = 0x00000080,/**< Disable update when it deleted. */
 	NOTIFICATION_PROP_VOLATILE_DISPLAY = 0x00000100,/**< Deleted when device is rebooted eventhough NOTIFICATION_TYPE_NOTI type */
@@ -332,7 +333,7 @@ typedef enum _notification_op_type {
 	NOTIFICATION_OP_UPDATE,	/**< Notification updated */
 	NOTIFICATION_OP_DELETE,	/**< Notification deleted */
 	NOTIFICATION_OP_DELETE_ALL,	/**< Notifications deleted */
-	NOTIFICATION_OP_REFRESH,	/**< Deprecated */
+	NOTIFICATION_OP_REFRESH,	/**< (Deprecated Since 2.3.1) */
 	NOTIFICATION_OP_SERVICE_READY,	/**< Notification service is ready  */
 } notification_op_type_e;
 
