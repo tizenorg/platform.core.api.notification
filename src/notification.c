@@ -3253,10 +3253,16 @@ EXPORT_API int notification_get_permission(notification_h handle, notification_p
 
 EXPORT_API int notification_set_ongoing_flag(notification_h noti, bool ongoing_flag)
 {
-	return NOTIFICATION_ERROR_INVALID_OPERATION;
+	if (noti == NULL)
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
+
+	return NOTIFICATION_ERROR_NONE;
 }
 
 EXPORT_API int notification_get_ongoing_flag(notification_h noti, bool *ongoing_flag)
 {
-	return NOTIFICATION_ERROR_INVALID_OPERATION;
+	if (noti == NULL)
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
+
+	return NOTIFICATION_ERROR_NONE;
 }
