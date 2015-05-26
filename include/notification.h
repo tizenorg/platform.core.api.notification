@@ -24,6 +24,7 @@
 
 #include <time.h>
 #include <bundle.h>
+#include <app.h>
 
 #include <notification_error.h>
 #include <notification_type.h>
@@ -317,75 +318,6 @@ int notification_set_time_to_text(notification_h noti, notification_text_type_e 
  */
 int notification_get_time_from_text(notification_h noti, notification_text_type_e type,
 								time_t *time);
-
-/**
- * @internal
- * @brief Sets the text domain to localize the notification.
- * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
- * @param[in] noti   The notification handle
- * @param[in] domain The text domain
- * @param[in] dir    The text dir
- * @return #NOTIFICATION_ERROR_NONE on success,
- *         otherwise any other value on failure
- * @retval #NOTIFICATION_ERROR_NONE         Success
- * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
- * @par Sample code:
- * @code
-#include <notification.h>
-...
-{
-	notification_h noti = NULL;
-	int noti_err = NOTIFICATION_ERROR_NONE;
-
-	noti = notification_create(NOTIFICATION_TYPE_NOTI);
-	if(noti == NULL) {
-		return;
-	}
-
-	noti_err  = notification_set_text_domain(noti, PACKAGE, LOCALEDIR);
-	if(noti_err != NOTIFICATION_ERROR_NONE) {
-		notification_free(noti);
-		return;
-	}
-}
- * @endcode
- */
-int notification_set_text_domain(notification_h noti,
-						  const char *domain,
-						  const char *dir);
-
-/**
- * @internal
- * @brief Gets the text domain from the notification handle.
- * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
- * @remarks Do not free returned domain and dir. They are freed when notification_free() or notification_free_list() is called.
- * @param[in]  noti   The notification handle
- * @param[out] domain The domain
- * @param[out] dir    The locale dir
- * @return #NOTIFICATION_ERROR_NONE on success,
- *         otherwise any other value on failure
- * @retval #NOTIFICATION_ERROR_NONE         Success
- * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
- * @par Sample code:
- * @code
-#include <notification.h>
-...
-{
-	notification_h noti = NULL;
-	int noti_err = NOTIFICATION_ERROR_NONE;
-	char *domain = NULL;
-	char *dir = NULL;
-
-	noti_err  = notification_get_text_domain(noti, &domain, &dir);
-	if(noti_err != NOTIFICATION_ERROR_NONE) {
-		return;
-	}
-}
- * @endcode
- */
-int notification_get_text_domain(notification_h noti,
-						  char **domain,
-						  char **dir);
 
 /**
  * @brief Sets the sound type for the notification.
@@ -695,6 +627,79 @@ int notification_get_launch_option(notification_h noti,
 								notification_launch_option_type type, void *option);
 
 /**
+ * @brief Sets the handler for a specific event.
+ * @details When some event occurs on notification, application launched by app_control_send_launch_request with app_control handle.\n
+ *          Setting event handler of a button means that the notification will show the button.
+ * @since_tizen 2.4
+ * @param[in] noti The notification handle
+ * @param[in] event_type event type
+ * @param[in] event_handler app control handle
+ * @return #NOTIFICATION_ERROR_NONE on success,
+ *         otherwise any other value on failure
+ * @retval #NOTIFICATION_ERROR_NONE         Success
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @see #notification_event_type_e
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	notification_h noti = NULL;
+	app_control_h app_control = NULL;
+	int noti_err = NOTIFICATION_ERROR_NONE;
+
+	...
+
+	app_control_create(&app_control);
+	app_control_set_app_id(app_control, "org.tizen.app");
+
+	...
+
+	noti_err  = notification_set_event_handler(noti, NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_1, app_control);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		notification_free(noti);
+		return;
+	}
+
+	app_control_destroy(app_control);
+}
+ * @endcode
+ */
+int notification_set_event_handler(notification_h noti, notification_event_type_e event_type, app_control_h event_handler);
+
+/**
+ * @brief Gets the event handler of a specific event.
+ * @remarks You must release @a app_control using app_control_destroy().
+ * @since_tizen 2.4
+ * @param[in]  noti        The notification handle
+ * @param[in] event_type Launching option type
+ * @param[out] option The pointer of App Control handler
+ * @return #NOTIFICATION_ERROR_NONE on success,
+ *         otherwise any other value on failure
+ * @retval #NOTIFICATION_ERROR_NONE         Success
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @see #notification_event_type_e
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	app_control_h app_control = NULL;
+	app_control_create(&app_control);
+
+	...
+
+	noti_err = notification_get_event_handler(noti, NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_1, &app_control);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		notification_free(noti);
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_get_event_handler(notification_h noti, notification_event_type_e event_type, app_control_h *event_handler);
+
+/**
  * @brief Sets the property of the notification.
  * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  * @param[in] noti  The notification handle
@@ -780,7 +785,7 @@ int notification_get_property(notification_h noti,
 		return;
 	}
 
-	noti_err  = notification_set_display_applist(noti, NOTIFICATION_DISPLAY_APP_NOTIFICATION_TRAY | NOTIFICATION_DISPLAY_APP_TICKER);
+	noti_err  = notification_set_display_applist(noti, NOTIFICATION_DISPLAY_APP_NOTIFICATION_TRAY | NOTIFICATION_DISPLAY_APP_TICKER | NOTIFICATION_DISPLAY_APP_INDICATOR);
 	if(noti_err != NOTIFICATION_ERROR_NONE) {
 		notification_free(noti);
 		return;
@@ -1000,41 +1005,6 @@ int notification_get_layout(notification_h noti,
  */
 int notification_get_type(notification_h noti,
 					   notification_type_e * type);
-
-/**
- * @internal
- * @brief Inserts a notification.
- * @details The notification will be inserted to the database and then it will appear in the notification area.
- *          When notification_create() is called, if priv_id is #NOTIFICATION_PRIV_ID_NONE, priv_id returns the internally set priv_id.
- * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
- * @privlevel public
- * @privilege %http://tizen.org/privilege/notification
- * @param[in]  noti    The notification handle
- * @param[out] priv_id The private ID
- * @return #NOTIFICATION_ERROR_NONE on success,
- *         otherwise any other value on failure
- * @retval #NOTIFICATION_ERROR_NONE         Success
- * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
- * @retval NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
- * @pre Notification handle should be created by notification_create().
- * @post notification_free().
- * @par Sample code:
- * @code
-#include <notification.h>
-...
- {
-	int noti_err = NOTIFICATION_ERROR_NONE;
-
-	noti_err  = notification_insert(noti, NULL);
-	if(noti_err != NOTIFICATION_ERROR_NONE) {
-		return;
-	}
-}
- * @endcode
- */
-int notification_insert(notification_h noti,
-					 int *priv_id);
-
 /**
  * @brief Updates notification data.
  * @details The updated notification will appear in the notification area.
@@ -1063,40 +1033,6 @@ int notification_insert(notification_h noti,
  * @endcode
  */
 int notification_update(notification_h noti);
-
-/**
- * @internal
- * @brief Updates a notification, asynchronously.
- * @details The updated notification will appear in the notification area.
- * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
- * @privlevel public
- * @privilege %http://tizen.org/privilege/notification
- * @remarks This function updates the notification asynchronously.
- * @param[in] noti      The notification handle that is created by notification_create()
- * @param[in] result_cb The callback called when an update completed
- * @param[in] user_data The user data which you want to use in callback
- * @return #NOTIFICATION_ERROR_NONE on success,
- *         otherwise any other value on failure
- * @retval #NOTIFICATION_ERROR_NONE         Success
- * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid input value
- * @retval #NOTIFICATION_ERROR_NOT_EXIST_ID Priv ID does not exist
- * @retval #NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
- * @par Sample code:
- * @code
-#include <notification.h>
-...
- {
-	int noti_err = NOTIFICATION_ERROR_NONE;
-
-	noti_err  = notification_update_async(NULL, result_cb, data);
-	if(noti_err != NOTIFICATION_ERROR_NONE) {
-		return;
-	}
-}
- * @endcode
- */
-int notification_update_async(notification_h noti,
-		void (*result_cb)(int priv_id, int result, void *data), void *user_data);
 
 /**
  * @brief Deletes a notification with the given handle.
@@ -1228,186 +1164,9 @@ int notification_free(notification_h noti);
  */
 
 /**
- * @internal
- * @addtogroup NOTIFICATION_LIST
- * @{
- */
-
-/**
- * @internal
- * @brief Returns the notification list handle.
- * @details If count is equal to @c -1, all notifications are returned.
- * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
- * @privlevel public
- * @privilege %http://tizen.org/privilege/notification
- * @param[in]  type  The notification type
- * @param[in]  count The returned notification data number
- * @param[out] #NOTIFICATION_ERROR_NONE on success, other value on failure
- * @return #NOTIFICATION_ERROR_NONE on success,
- *         otherwise any other value on failure
- * @retval #NOTIFICATION_ERROR_NONE         Success
- * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
- * @retval #NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
- * @see #notification_list_h
- * @par Sample code:
- * @code
-#include <notification.h>
-...
-{
-	notification_list_h noti_list = NULL;
-	int noti_err = NOTIFICATION_ERROR_NONE;
-
-	noti_err = notification_get_list(NOTIFICATION_TYPE_NONE, -1, &noti_list);
-	if(noti_err != NOTIFICATION_ERROR_NONE) {
-		return;
-	}
-}
- * @endcode
- */
-int notification_get_list(notification_type_e type,
-					   int count,
-					   notification_list_h * list);
-
-/**
- * @internal
- * @brief Returns the notification detail list handle of grouping data.
- * @details If count is equal to c -1, all notifications are returned.
- * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
- * @privlevel public
- * @privilege %http://tizen.org/privilege/notification
- * @param[in]  pkgname  The caller application package name
- * @param[in]  group_id The group ID
- * @param[in]  priv_id  The private ID
- * @param[in]  count    The returned notification data number
- * @param[out] list     The notification list handle
- * @return #NOTIFICATION_ERROR_NONE if success,
- *         other value if failure
- * @retval #NOTIFICATION_ERROR_NONE Success
- * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
- * @retval NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
- * @see #notification_list_h
- * @par Sample code:
- * @code
-#include <notification.h>
-...
-{
-	notification_list_h noti_list = NULL;
-	int noti_err = NOTIFICATION_ERROR_NONE;
-
-	noti_err = notification_get_detail_list(pkgname, group_id, priv_id, -1, &noti_list);
-	if(noti_err != NOTIFICATION_ERROR_NONE) {
-		return;
-	}
-}
- * @endcode
- */
-int notification_get_detail_list(const char *pkgname,
-						  int group_id,
-						  int priv_id,
-						  int count,
-						  notification_list_h *list);
-
-/**
- * @internal
- * @brief Frees a notification list.
- * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
- * @privlevel public
- * @privilege %http://tizen.org/privilege/notification
- * @param[in] list The notification list handle
- * @return #NOTIFICATION_ERROR_NONE on success,
- *         otherwise any other value on failure
- * @retval #NOTIFICATION_ERROR_NONE         Success
- * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
- * @retval NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
- * @pre notification_get_grouping_list() or notification_get_detail_list().
- * @see #notification_list_h
- * @par Sample code:
- * @code
-#include <notification.h>
-...
-{
-	notification_list_h noti_list = NULL;
-	int noti_err = NOTIFICATION_ERROR_NONE;
-
-	...
-
-	noti_err = notification_free_list(noti_list);
-	if(noti_err != NOTIFICATION_ERROR_NONE) {
-		return;
-	}
-}
- * @endcode
- */
-int notification_free_list(notification_list_h list);
-
-/**
- * @}
- */
-
-/**
  * @addtogroup NOTIFICATION_MODULE
  * @{
  */
-
-/**
- * @internal
- * @brief Registers a callback for all notification events.
- * @details The registered callback could be called for all notification events.
- * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
- * @privlevel public
- * @privilege %http://tizen.org/privilege/notification
- * @param[in] changed_cb The callback function
- * @param[in] user_data  The user data
- * @return #NOTIFICATION_ERROR_NONE on success,
- *         otherwise any other value on failure
- * @retval #NOTIFICATION_ERROR_NONE         Success
- * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
- * @retval #NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
- * @see notification_unregister_detailed_changed_cb()
- * @par Sample code:
- * @code
-#include <notification.h>
-...
-{
-	noti_err = notification_register_detailed_changed_cb(app_changed_cb, user_data);
-	if(noti_err != NOTIFICATION_ERROR_NONE) {
-		return;
-	}
-}
- * @endcode
- */
-int notification_register_detailed_changed_cb(
-		void (*detailed_changed_cb)(void *data, notification_type_e type, notification_op *op_list, int num_op),
-		void *user_data);
-
-/**
- * @internal
- * @brief Unregisters a callback for all notification events.
- * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
- * @privlevel public
- * @privilege %http://tizen.org/privilege/notification
- * @param[in] changed_cb The callback function
- * @return #NOTIFICATION_ERROR_NONE on success,
- *         otherwise any other value on failure
- * @retval #NOTIFICATION_ERROR_NONE         Success
- * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
- * @retval #NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
- * @see notification_register_detailed_changed_cb()
- * @par Sample code:
- * @code
-#include <notification.h>
-...
-{
-	noti_err = notification_register_detailed_changed_cb(app_changed_cb, user_data);
-	if(noti_err != NOTIFICATION_ERROR_NONE) {
-		return;
-	}
-}
- * @endcode
- */
-int notification_unregister_detailed_changed_cb(
-		void (*detailed_changed_cb)(void *data, notification_type_e type, notification_op *op_list, int num_op),
-		void *user_data);
 
 /**
  * @brief Sets the tag of the notification handle.
@@ -1556,6 +1315,110 @@ int notification_delete_all(notification_type_e type);
  * @endcode
  */
 int notification_post(notification_h noti);
+
+/**
+ * @brief Sets permission to application for updating or deleting the notification
+ * @since_tizen 2.4
+ * @privlevel public
+ * @privilege %http://tizen.org/privilege/notification
+ * @param[in] noti Notification handle
+ * @param[in] permission_type permission type
+ * @param[in] app_id target application id
+ * @return #NOTIFICATION_ERROR_NONE if success, other value if failure
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval #NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
+ * @see #notification_get_permission
+ * @see #notification_permission_type_e
+ * @see #notification_h
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	notification_h noti = NULL;
+	int noti_err = NOTIFICATION_ERROR_NONE;
+
+	noti = notification_create(NOTIFICATION_TYPE_NOTI);
+	if(noti == NULL) {
+		return;
+	}
+	...
+
+	noti_err = notification_set_permission(noti, NOTIFICATION_PERMISSION_TYPE_DELETE, "org.tizen.xxx");
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		notification_free(noti);
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_set_permission(notification_h noti, notification_permission_type_e permission_type, const char *app_id);
+
+/**
+ * @brief Gets permission of the notification
+ * @remarks @a app_id must be freed with notification_free() function.
+ * @since_tizen 2.4
+ * @privlevel public
+ * @privilege %http://tizen.org/privilege/notification
+ * @param[in] noti Notification handle
+ * @param[out] permission_type permission type
+ * @param[out] app_id target application id
+ * @return #NOTIFICATION_ERROR_NONE if success, other value if failure
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval #NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
+ * @see #notification_set_permission
+ * @see #notification_permission_type_e
+ * @see #notification_h
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	int noti_err = NOTIFICATION_ERROR_NONE;
+	notification_permission_type_e permission_type;
+	const char *app_id = NULL;
+
+	...
+
+	noti_err = notification_get_permission(noti, &permission_type, &app_id);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		notification_free(noti);
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_get_permission(notification_h noti, notification_permission_type_e *permission_type, const char **app_id);
+
+/**
+ * @brief Gets the package name of the notification
+ * @since_tizen 2.4
+ * @param[in] noti Notification handle
+ * @param[out] pkgname The package name of the notification
+ * @return #NOTIFICATION_ERROR_NONE on success, otherwise a negative error value
+ * @retval NOTIFICATION_ERROR_NONE Success
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER Invalid input value
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	notification_h noti = NULL;
+	int noti_err = NOTIFICATION_ERROR_NONE;
+	char *pkgname = NULL;
+
+	...
+
+	noti_err  = notification_get_pkgname(noti, &pkgname);
+
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		notification_free(noti);
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_get_pkgname(notification_h noti, char **pkgname);
 
 /**
  * @}

@@ -22,16 +22,25 @@
 #ifndef __NOTIFICATION_SETTING_H__
 #define __NOTIFICATION_SETTING_H__
 
-#include <notification.h>
-
-typedef struct _notification_setting_h notification_setting_h;
+#include <stdbool.h>
+#include "notification.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-notification_error_e notification_setting_property_set(const char *pkgname, const char *property, const char *value);
-notification_error_e notification_setting_property_get(const char *pkgname, const char *property, char **value);
+typedef struct notification_setting* notification_setting_h;
+
+int notification_setting_get_setting(notification_setting_h *setting);
+
+int notification_setting_get_visibility_class(notification_setting_h setting, int *value);
+int notification_setting_set_visibility_class(notification_setting_h setting, int value);
+
+int notification_setting_update_setting(notification_setting_h setting);
+
+int notification_setting_free_notification(notification_setting_h setting);
+
+int notification_setting_refresh_setting_table();
 
 #ifdef __cplusplus
 }

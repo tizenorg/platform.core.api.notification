@@ -48,6 +48,7 @@ typedef enum _notification_error {
 	NOTIFICATION_ERROR_FROM_DBUS = TIZEN_ERROR_NOTIFICATION | 0x03,	/**< Error from DBus */
 	NOTIFICATION_ERROR_NOT_EXIST_ID = TIZEN_ERROR_NOTIFICATION | 0x04,	/**< Not exist private ID */
 	NOTIFICATION_ERROR_SERVICE_NOT_READY = TIZEN_ERROR_NOTIFICATION | 0x05,	/**< No reponse from notification service */
+	NOTIFICATION_ERROR_INVALID_OPERATION = TIZEN_ERROR_INVALID_OPERATION, /**< Function not implemented (@b Since: 2.4) */
 } notification_error_e;
 
 /** 

@@ -6,6 +6,6 @@ includedir=@INCLUDEDIR@
 Name: notification
 Description: Notification Library
 Version: @VERSION@
-Requires: bundle capi-base-common
+Requires: bundle capi-base-common capi-appfw-application
 Libs: -L${libdir} -lnotification
 Cflags: -I${includedir}

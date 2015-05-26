@@ -31,7 +31,14 @@ SET(HEADERS-DEVEL
 	./include/notification_error.h
 	./include/notification_type.h
 	./include/notification_list.h
-	./include/notification_status.h)
+	./include/notification_ongoing_flag.h
+	./include/notification_text_domain.h
+	./include/notification_status.h
+	./include/notification_status_internal.h
+	./include/notification_setting.h
+	./include/notification_setting_internal.h
+   )
+
 
 SET(HEADERS-SERVICE-DEVEL
 	./include/notification_ipc.h
@@ -75,6 +82,14 @@ ADD_DEFINITIONS("-DICONDIR=\"${ICONDIR}\"")
 ADD_DEFINITIONS("-DDBDIR=\"${DBDIR}\"")
 ADD_DEFINITIONS("-DDBFILE=\"${DBFILE}\"")
 ADD_DEFINITIONS("-DIMGDIR=\"${IMGDIR}\"")
+
+IF (HAVE_X11)
+ADD_DEFINITIONS("-DHAVE_X11")
+ENDIF (HAVE_X11)
+
+IF (HAVE_WAYLAND)
+ADD_DEFINITIONS("-DHAVE_WAYLAND")
+ENDIF (HAVE_WAYLAND)
 
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${SRCS})
 SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES SOVERSION ${MAJOR_VER})

@@ -356,33 +356,6 @@ NOTIFICATION_DEPRECATED_API int notification_set_pkgname(notification_h noti,
 /**
  * @internal
  * @brief This function will be deprecated.
- * @param[in] noti Notification handle
- * @param[out] pkgname Caller package name
- * @return NOTIFICATION_ERROR_NONE on success, other value on failure
- * @retval NOTIFICATION_ERROR_NONE Success
- * @retval NOTIFICATION_ERROR_INVALID_PARAMETER Invalid input value
- * @par Sample code:
- * @code
-#include <notification.h>
-...
-{
-	notification_h noti = NULL;
-	int noti_err = NOTIFICATION_ERROR_NONE;
-	char *pkgname = NULL;
-
-	noti_err  = notification_get_pkgname(noti, &pkgname);
-	if(noti_err != NOTIFICATION_ERROR_NONE) {
-		return;
-	}
-}
- * @endcode
- */
-NOTIFICATION_DEPRECATED_API int notification_get_pkgname(notification_h noti,
-					      char **pkgname);
-
-/**
- * @internal
- * @brief This function will be deprecated.
  * @details If @a pkgname is NULL, caller_pkgname is set internally.
  * @param[in] pkgname Caller application package name or NULL
  * @param[in] type Notification type
@@ -606,32 +579,131 @@ NOTIFICATION_DEPRECATED_API int notification_get_execute_option(notification_h n
 
 /**
  * @internal
- * @brief This function sets notification property for designated package.
- * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
+ * @brief Inserts a notification.
+ * @details The notification will be inserted to the database and then it will appear in the notification area.
+ *          When notification_create() is called, if priv_id is #NOTIFICATION_PRIV_ID_NONE, priv_id returns the internally set priv_id.
+ * @since_tizen 2.3
  * @privlevel public
- * @privilege http://tizen.org/privilege/core/notification
- * @param[in] pkgname The name of designated package
- * @param[in] property name
- * @param[in] property value
- * @return #NOTIFICATION_ERROR_NONE if success, other value if failure
- * @see #notification_error_e
+ * @privilege %http://tizen.org/privilege/notification
+ * @param[in]  noti    The notification handle
+ * @param[out] priv_id The private ID
+ * @return #NOTIFICATION_ERROR_NONE on success,
+ *         otherwise any other value on failure
+ * @retval #NOTIFICATION_ERROR_NONE         Success
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
+ * @pre Notification handle should be created by notification_create().
+ * @post notification_free().
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+ {
+	int noti_err = NOTIFICATION_ERROR_NONE;
+
+	noti_err  = notification_insert(noti, NULL);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
  */
-int notification_setting_property_set(const char *pkgname, const char *property, const char *value);
+int notification_insert(notification_h noti,
+					 int *priv_id);
 
 /**
  * @internal
- * @brief This function gets notification property for designated package.
- * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
+ * @brief Updates a notification, asynchronously.
+ * @details The updated notification will appear in the notification area.
+ * @since_tizen 2.3
  * @privlevel public
- * @privilege http://tizen.org/privilege/core/notification
- * @param[in] pkgname The name of designated package
- * @param[in] property name
- * @param[in] pointer which can save the getting value
- * @return #NOTIFICATION_ERROR_NONE if success, other value if failure
- * @see #notification
- */
-int notification_setting_property_get(const char *pkgname, const char *property, char **value);
+ * @privilege %http://tizen.org/privilege/notification
+ * @remarks This function updates the notification asynchronously.
+ * @param[in] noti      The notification handle that is created by notification_create()
+ * @param[in] result_cb The callback called when an update completed
+ * @param[in] user_data The user data which you want to use in callback
+ * @return #NOTIFICATION_ERROR_NONE on success,
+ *         otherwise any other value on failure
+ * @retval #NOTIFICATION_ERROR_NONE         Success
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid input value
+ * @retval #NOTIFICATION_ERROR_NOT_EXIST_ID Priv ID does not exist
+ * @retval #NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+ {
+	int noti_err = NOTIFICATION_ERROR_NONE;
 
+	noti_err  = notification_update_async(NULL, result_cb, data);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_update_async(notification_h noti,
+		void (*result_cb)(int priv_id, int result, void *data), void *user_data);
+
+/**
+ * @internal
+ * @brief Registers a callback for all notification events.
+ * @details The registered callback could be called for all notification events.
+ * @since_tizen 2.3
+ * @privlevel public
+ * @privilege %http://tizen.org/privilege/notification
+ * @param[in] changed_cb The callback function
+ * @param[in] user_data  The user data
+ * @return #NOTIFICATION_ERROR_NONE on success,
+ *         otherwise any other value on failure
+ * @retval #NOTIFICATION_ERROR_NONE         Success
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval #NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
+ * @see notification_unregister_detailed_changed_cb()
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	noti_err = notification_register_detailed_changed_cb(app_changed_cb, user_data);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_register_detailed_changed_cb(
+		void (*detailed_changed_cb)(void *data, notification_type_e type, notification_op *op_list, int num_op),
+		void *user_data);
+
+/**
+ * @internal
+ * @brief Unregisters a callback for all notification events.
+ * @since_tizen 2.3
+ * @privlevel public
+ * @privilege %http://tizen.org/privilege/notification
+ * @param[in] changed_cb The callback function
+ * @return #NOTIFICATION_ERROR_NONE on success,
+ *         otherwise any other value on failure
+ * @retval #NOTIFICATION_ERROR_NONE         Success
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval #NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
+ * @see notification_register_detailed_changed_cb()
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	noti_err = notification_register_detailed_changed_cb(app_changed_cb, user_data);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_unregister_detailed_changed_cb(
+		void (*detailed_changed_cb)(void *data, notification_type_e type, notification_op *op_list, int num_op),
+		void *user_data);
 /**
  * @}
  */

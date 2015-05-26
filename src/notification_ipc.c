@@ -35,6 +35,7 @@
 #include <notification_type.h>
 #include <notification_private.h>
 #include <notification_debug.h>
+#include <notification_setting_internal.h>
 
 #define NOTIFICATION_IPC_TIMEOUT 0.0
 
@@ -366,6 +367,7 @@ static inline bundle *_create_bundle_from_string(unsigned char *string)
  */
 EXPORT_API int notification_ipc_make_noti_from_packet(notification_h noti, const struct packet *packet)
 {
+	int i = 0;
 	int ret = 0;
 	int type;
 	int layout;
@@ -380,6 +382,7 @@ EXPORT_API int notification_ipc_make_noti_from_packet(notification_h noti, const
 	unsigned char *b_service_responding = NULL;
 	unsigned char *b_service_single_launch = NULL;
 	unsigned char *b_service_multi_launch = NULL;
+	unsigned char *b_event_handler[NOTIFICATION_EVENT_TYPE_MAX] = { NULL, };
 	char *domain = NULL;
 	char *dir = NULL;
 	unsigned char *b_text = NULL;
@@ -413,7 +416,7 @@ EXPORT_API int notification_ipc_make_noti_from_packet(notification_h noti, const
 	}
 
 	ret = packet_get(packet,
-			"iiiiisssssssssssssisisisiiiiiiiiddsssss",
+			"iiiiisssssssssssssssssssssisisisiiiiiiiiddsssss",
 			&type,
 			&layout,
 			&group_id,
@@ -427,6 +430,14 @@ EXPORT_API int notification_ipc_make_noti_from_packet(notification_h noti, const
 			&b_service_responding,
 			&b_service_single_launch,
 			&b_service_multi_launch,
+			&b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_1],
+			&b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_2],
+			&b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_3],
+			&b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_4],
+			&b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_5],
+			&b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_6],
+			&b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_ICON],
+			&b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_THUMBNAIL],
 			&domain,
 			&dir,
 			&b_text,
@@ -454,7 +465,7 @@ EXPORT_API int notification_ipc_make_noti_from_packet(notification_h noti, const
 			&temp_content,
 			&tag);
 
-	if (ret != 39) {
+	if (ret != 47) {
 		NOTIFICATION_ERR("failed to create a noti from packet");
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
@@ -473,6 +484,9 @@ EXPORT_API int notification_ipc_make_noti_from_packet(notification_h noti, const
 	noti->b_service_responding = _create_bundle_from_string(b_service_responding);
 	noti->b_service_single_launch = _create_bundle_from_string(b_service_single_launch);
 	noti->b_service_multi_launch = _create_bundle_from_string(b_service_multi_launch);
+	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
+		noti->b_event_handler[i] = _create_bundle_from_string(b_event_handler[i]);
+	}
 	noti->domain = _dup_string(domain);
 	noti->dir = _dup_string(dir);
 	noti->b_text = _create_bundle_from_string(b_text);
@@ -511,6 +525,7 @@ EXPORT_API int notification_ipc_make_noti_from_packet(notification_h noti, const
 
 EXPORT_API struct packet *notification_ipc_make_packet_from_noti(notification_h noti, const char *command, int packet_type)
 {
+	int i = 0;
 	int b_encode_len = 0;
 	struct packet *result = NULL;
 	char *args = NULL;
@@ -520,6 +535,7 @@ EXPORT_API struct packet *notification_ipc_make_packet_from_noti(notification_h 
 	char *b_service_responding = NULL;
 	char *b_service_single_launch = NULL;
 	char *b_service_multi_launch = NULL;
+	char *b_event_handler[NOTIFICATION_EVENT_TYPE_MAX] = { NULL , };
 	char *b_text = NULL;
 	char *b_key = NULL;
 	char *b_format_args = NULL;
@@ -551,6 +567,13 @@ EXPORT_API struct packet *notification_ipc_make_packet_from_noti(notification_h 
 	if (noti->b_service_multi_launch) {
 		bundle_encode(noti->b_service_multi_launch,
 			      (bundle_raw **) & b_service_multi_launch, &b_encode_len);
+	}
+
+	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
+		if (noti->b_event_handler[i]) {
+			bundle_encode(noti->b_event_handler[i],
+					(bundle_raw **) & b_event_handler[i], &b_encode_len);
+		}
 	}
 
 	if (noti->b_text) {
@@ -596,7 +619,7 @@ EXPORT_API struct packet *notification_ipc_make_packet_from_noti(notification_h 
 	}
 
 	result = func_to_create_packet(command,
-			"iiiiisssssssssssssisisisiiiiiiiiddsssss",
+			"iiiiisssssssssssssssssssssisisisiiiiiiiiddsssss",
 			noti->type,
 			noti->layout,
 			noti->group_id,
@@ -610,6 +633,14 @@ EXPORT_API struct packet *notification_ipc_make_packet_from_noti(notification_h 
 			NOTIFICATION_CHECK_STR(b_service_responding),
 			NOTIFICATION_CHECK_STR(b_service_single_launch),
 			NOTIFICATION_CHECK_STR(b_service_multi_launch),
+			NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_1]),
+			NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_2]),
+			NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_3]),
+			NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_4]),
+			NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_5]),
+			NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_6]),
+			NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_ICON]),
+			NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_THUMBNAIL]),
 			NOTIFICATION_CHECK_STR(noti->domain),
 			NOTIFICATION_CHECK_STR(noti->dir),
 			NOTIFICATION_CHECK_STR(b_text),
@@ -659,6 +690,12 @@ out:
 		free(b_service_multi_launch);
 	}
 
+	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
+		if (b_event_handler[i]) {
+			free(b_event_handler[i]);
+		}
+	}
+
 	if (b_text) {
 		free(b_text);
 	}
@@ -678,6 +715,7 @@ out:
 
 EXPORT_API struct packet *notification_ipc_make_reply_packet_from_noti(notification_h noti, struct packet *packet)
 {
+	int i = 0;
 	int b_encode_len = 0;
 	struct packet *result = NULL;
 	char *args = NULL;
@@ -687,6 +725,7 @@ EXPORT_API struct packet *notification_ipc_make_reply_packet_from_noti(notificat
 	char *b_service_responding = NULL;
 	char *b_service_single_launch = NULL;
 	char *b_service_multi_launch = NULL;
+	char *b_event_handler[NOTIFICATION_EVENT_TYPE_MAX] = { NULL , };
 	char *b_text = NULL;
 	char *b_key = NULL;
 	char *b_format_args = NULL;
@@ -717,6 +756,13 @@ EXPORT_API struct packet *notification_ipc_make_reply_packet_from_noti(notificat
 	if (noti->b_service_multi_launch) {
 		bundle_encode(noti->b_service_multi_launch,
 			      (bundle_raw **) & b_service_multi_launch, &b_encode_len);
+	}
+
+	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
+		if (noti->b_event_handler[i]) {
+			bundle_encode(noti->b_event_handler[i],
+					(bundle_raw **) & b_event_handler[i], &b_encode_len);
+		}
 	}
 
 	if (noti->b_text) {
@@ -754,7 +800,7 @@ EXPORT_API struct packet *notification_ipc_make_reply_packet_from_noti(notificat
 	}
 
 	result = packet_create_reply(packet,
-			"iiiiisssssssssssssisisisiiiiiiiiddsssss",
+			"iiiiisssssssssssssssssssssisisisiiiiiiiiddsssss",
 			noti->type,
 			noti->layout,
 			noti->group_id,
@@ -768,6 +814,14 @@ EXPORT_API struct packet *notification_ipc_make_reply_packet_from_noti(notificat
 			NOTIFICATION_CHECK_STR(b_service_responding),
 			NOTIFICATION_CHECK_STR(b_service_single_launch),
 			NOTIFICATION_CHECK_STR(b_service_multi_launch),
+			NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_1]),
+			NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_2]),
+			NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_3]),
+			NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_4]),
+			NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_5]),
+			NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_6]),
+			NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_ICON]),
+			NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_THUMBNAIL]),
 			NOTIFICATION_CHECK_STR(noti->domain),
 			NOTIFICATION_CHECK_STR(noti->dir),
 			NOTIFICATION_CHECK_STR(b_text),
@@ -814,6 +868,12 @@ EXPORT_API struct packet *notification_ipc_make_reply_packet_from_noti(notificat
 	}
 	if (b_service_multi_launch) {
 		free(b_service_multi_launch);
+	}
+
+	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
+		if (b_event_handler[i]) {
+			free(b_event_handler[i]);
+		}
 	}
 
 	if (b_text) {
@@ -936,7 +996,7 @@ static struct packet *_handler_delete_multiple(pid_t pid, int handle, const stru
 	int buf[10] = {0,};
 	int num_deleted = 0;
 
-	NOTIFICATION_ERR("delete_noti_multiple");
+	NOTIFICATION_INFO("delete_noti_multiple");
 
 	if (!packet) {
 		NOTIFICATION_ERR("a packet is null");
@@ -954,21 +1014,23 @@ static struct packet *_handler_delete_multiple(pid_t pid, int handle, const stru
 			&(buf[8]),
 			&(buf[9]));
 
-	NOTIFICATION_ERR("packet data count:%d", ret);
-	NOTIFICATION_ERR("packet data num deleted:%d", num_deleted);
+	NOTIFICATION_INFO("packet data count:%d", ret);
+	NOTIFICATION_INFO("packet data num deleted:%d", num_deleted);
 
 	int i = 0;
 	for (i = 0 ; i < 10 ; i++) {
-		NOTIFICATION_ERR("packet data[%d]:%d",i, buf[i]);
+		NOTIFICATION_INFO("packet data[%d]:%d",i, buf[i]);
 	}
 
 	if (ret == 11) {
 		notification_op *noti_op = notification_ipc_create_op(
 				NOTIFICATION_OP_DELETE, num_deleted, buf, num_deleted, NULL);
-		if (noti_op != NULL) {
-			notification_call_changed_cb(noti_op, num_deleted);
-			free(noti_op);
+		if (noti_op == NULL) {
+			NOTIFICATION_ERR("notification_ipc_create_op failed");
+			return NULL;
 		}
+		notification_call_changed_cb(noti_op, num_deleted);
+		free(noti_op);
 	}
 
 	return NULL;
@@ -1393,6 +1455,81 @@ int notification_ipc_request_refresh(void)
 		else {
 			return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 		}
+	}
+
+	return status;
+}
+
+
+int notification_ipc_update_setting(notification_setting_h setting)
+{
+	int status = 0;
+	int ret = 0;
+	struct packet *packet;
+	struct packet *result;
+
+	packet = packet_create("update_noti_setting", "siii", setting->package_name, (int)(setting->allow_to_notify), (int)(setting->do_not_disturb_except), (int)(setting->visibility_class));
+	result = com_core_packet_oneshot_send(NOTIFICATION_ADDR,
+		packet,
+		NOTIFICATION_IPC_TIMEOUT);
+	packet_destroy(packet);
+
+	if (result != NULL) {
+		if (packet_get(result, "ii", &status, &ret) != 2) {
+			NOTIFICATION_ERR("Failed to get a result packet");
+			packet_unref(result);
+			return NOTIFICATION_ERROR_IO_ERROR;
+		}
+		packet_unref(result);
+	} else {
+		NOTIFICATION_ERR("failed to receive answer(delete)");
+		if (notification_ipc_is_master_ready() == 1) {
+			return NOTIFICATION_ERROR_PERMISSION_DENIED;
+		}
+		else {
+			return NOTIFICATION_ERROR_SERVICE_NOT_READY;
+		}
+	}
+
+	return status;
+}
+
+int notification_ipc_update_system_setting(notification_system_setting_h system_setting)
+{
+	int status = 0;
+	int ret = 0;
+	struct packet *packet = NULL;
+	struct packet *result = NULL;
+
+	packet = packet_create("update_noti_sys_setting", "ii", (int)(system_setting->do_not_disturb), (int)(system_setting->visibility_class));
+	if (packet == NULL) {
+		NOTIFICATION_ERR("packet_create failed.");
+		goto out;
+	}
+	result = com_core_packet_oneshot_send(NOTIFICATION_ADDR, packet, NOTIFICATION_IPC_TIMEOUT);
+	packet_destroy(packet);
+
+	if (result != NULL) {
+		if (packet_get(result, "ii", &status, &ret) != 2) {
+			NOTIFICATION_ERR("Failed to get a result packet");
+			status = NOTIFICATION_ERROR_IO_ERROR;
+			goto out;
+		}
+
+	} else {
+		NOTIFICATION_ERR("failed to receive answer(delete)");
+		if (notification_ipc_is_master_ready() == 1) {
+			status = NOTIFICATION_ERROR_PERMISSION_DENIED;
+			goto out;
+		}
+		else {
+			status = NOTIFICATION_ERROR_SERVICE_NOT_READY;
+			goto out;
+		}
+	}
+out:
+	if (result) {
+		packet_unref(result);
 	}
 
 	return status;

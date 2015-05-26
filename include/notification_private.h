@@ -26,6 +26,23 @@
 #define EXPORT_API __attribute__ ((visibility("default")))
 #endif
 
+#define SAFE_STRDUP(s) \
+		({\
+	char* _s = (char*)s;\
+	(_s)? strdup(_s) : NULL;\
+})
+
+#define SAFE_FREE(s) \
+		({\
+	if (s) {\
+		free(s);\
+		s = NULL;\
+	}\
+})
+
+#define NOTIFICATION_SETTING_DB_TABLE "notification_setting"
+#define NOTIFICATION_SYSTEM_SETTING_DB_TABLE "notification_system_setting"
+
 struct _notification {
 	notification_type_e type;
 	notification_ly_type_e layout;
@@ -43,6 +60,8 @@ struct _notification {
 	bundle *b_service_responding;
 	bundle *b_service_single_launch;
 	bundle *b_service_multi_launch;
+
+	bundle *b_event_handler[NOTIFICATION_EVENT_TYPE_MAX];
 
 	char *domain;		/* Text domain for localization */
 	char *dir;		/* Text dir for localization */
@@ -79,6 +98,13 @@ struct _notification {
 	char *tag;
 };
 
+struct notification_system_setting {
+	bool do_not_disturb;
+	int  visibility_class;
+};
+
 void notification_call_changed_cb(notification_op *op_list, int op_num);
+
+char *notification_get_pkgname_by_pid(void);
 
 #endif				/* __NOTIFICATION_PRIVATE_H__ */

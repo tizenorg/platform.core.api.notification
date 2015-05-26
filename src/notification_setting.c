@@ -23,6 +23,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <db-util.h>
+#include <package_manager.h>
+#include <tizen_type.h>
 
 #include <notification.h>
 #include <notification_db.h>
@@ -30,11 +32,964 @@
 #include <notification_debug.h>
 #include <notification_ipc.h>
 #include <notification_private.h>
+#include <notification_setting.h>
+#include <notification_setting_internal.h>
 
+
+static int _get_table_field_data_int(char  **table, int *buf, int index)
+{
+	if ((table == NULL) || (buf == NULL) || (index < 0))  {
+		NOTIFICATION_ERR("table[%p], buf[%p], index[%d]", table, buf, index);
+		return false;
+	}
+
+	if (table[index] != NULL) {
+		*buf = atoi(table[index]);
+		return true;
+	}
+
+	*buf = 0;
+	return false;
+}
+
+static int _get_table_field_data_string(char **table, char **buf, int ucs2, int index)
+{
+	int ret = false;
+
+	if ((table == NULL) || (buf == NULL) || (index < 0))  {
+		NOTIFICATION_ERR("table[%p], buf[%p], index[%d]", table, buf, index);
+		return false;
+	}
+
+	char *pTemp = table[index];
+	int sLen = 0;
+	if (pTemp == NULL)
+		*buf = NULL;
+	else {
+		sLen = strlen(pTemp);
+		if(sLen) {
+			*buf = (char *) malloc(sLen + 1);
+			if (*buf == NULL) {
+				NOTIFICATION_ERR("malloc is failed");
+				goto out;
+			}
+			memset(*buf, 0, sLen + 1);
+			strncpy(*buf, pTemp, sLen);
+		}
+		else
+			*buf = NULL;
+	}
+
+	ret = true;
+out:
+
+	return ret;
+}
+
+
+
+EXPORT_API int notification_setting_get_setting_array(notification_setting_h *setting_array, int *count)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+	sqlite3 *local_db_handle = NULL;
+	char *sql_query = NULL;
+	char **query_result = NULL;
+	int sql_return;
+	int row_count = 0;
+	int column_count = 0;
+	int i = 0;
+	int col_index = 0;
+	notification_setting_h result_setting_array= NULL;
+
+	if (setting_array == NULL || count == NULL) {
+		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
+		err =  NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	sql_return = db_util_open(DBPATH, &local_db_handle, 0);
+
+	if (sql_return != SQLITE_OK || local_db_handle == NULL) {
+		NOTIFICATION_ERR("db_util_open failed [%d]", sql_return);
+		err = NOTIFICATION_ERROR_FROM_DB;
+		goto out;
+	}
+
+	sql_query = sqlite3_mprintf("SELECT package_name, allow_to_notify, do_not_disturb_except, visibility_class "
+			"FROM %s "
+			"ORDER BY package_name", NOTIFICATION_SETTING_DB_TABLE);
+
+	if (!sql_query) {
+		NOTIFICATION_ERR("fail to alloc query");
+		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
+		goto out;
+	}
+
+	sql_return = sqlite3_get_table(local_db_handle, sql_query, &query_result, &row_count, &column_count, NULL);
+
+	if (sql_return != SQLITE_OK && sql_return != -1) {
+		NOTIFICATION_ERR("NOTIFICATION_ERROR_FROM_DB failed [%d][%s]", sql_return, sql_query);
+		err = NOTIFICATION_ERROR_FROM_DB;
+		goto out;
+	}
+
+	if (!row_count) {
+		NOTIFICATION_DBG ("No setting found...");
+		err= NOTIFICATION_ERROR_NOT_EXIST_ID;
+		goto out;
+	}
+
+	NOTIFICATION_DBG ("row_count [%d] column_count [%d]", row_count, column_count);
+	if (!(result_setting_array = (struct notification_setting*)malloc(sizeof(struct notification_setting) * row_count))) {
+		NOTIFICATION_ERR("malloc failed...");
+		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
+		goto out;
+	}
+
+	col_index = column_count;
+
+	for (i = 0; i < row_count; i++) {
+		_get_table_field_data_string(query_result, &(result_setting_array[i].package_name), 1, col_index++);
+		_get_table_field_data_int(query_result, (int*)&(result_setting_array[i].allow_to_notify), col_index++);
+		_get_table_field_data_int(query_result, (int*)&(result_setting_array[i].do_not_disturb_except), col_index++);
+		_get_table_field_data_int(query_result, &(result_setting_array[i].visibility_class), col_index++);
+	}
+
+	*setting_array = result_setting_array;
+	*count = row_count;
+
+out:
+	if (query_result)
+			sqlite3_free_table(query_result);
+
+	if (sql_query)
+		sqlite3_free(sql_query);
+
+	if (local_db_handle) {
+		sql_return = db_util_close(local_db_handle);
+		if (sql_return != SQLITE_OK) {
+			NOTIFICATION_WARN("fail to db_util_close - [%d]", sql_return);
+		}
+	}
+
+	return err;
+}
+
+EXPORT_API int notification_setting_get_setting_by_package_name(const char *package_name, notification_setting_h *setting)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+	sqlite3 *local_db_handle = NULL;
+	char *sql_query = NULL;
+	char **query_result = NULL;
+	int sql_return;
+	int row_count = 0;
+	int column_count = 0;
+	int i = 0;
+	int col_index = 0;
+	notification_setting_h result_setting_array= NULL;
+
+	if (package_name == NULL || setting == NULL) {
+		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
+		err =  NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	sql_return = db_util_open(DBPATH, &local_db_handle, 0);
+
+	if (sql_return != SQLITE_OK || local_db_handle == NULL) {
+		NOTIFICATION_ERR("db_util_open failed [%d]", sql_return);
+		err = NOTIFICATION_ERROR_FROM_DB;
+		goto out;
+	}
+
+	sql_query = sqlite3_mprintf("SELECT package_name, allow_to_notify, do_not_disturb_except, visibility_class "
+			"FROM %s "
+			"WHERE package_name = %Q ", NOTIFICATION_SETTING_DB_TABLE, package_name);
+
+	if (!sql_query) {
+		NOTIFICATION_ERR("fail to alloc query");
+		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
+		goto out;
+	}
+
+	sql_return = sqlite3_get_table(local_db_handle, sql_query, &query_result, &row_count, &column_count, NULL);
+
+	if (sql_return != SQLITE_OK && sql_return != -1) {
+		NOTIFICATION_ERR("sqlite3_get_table failed [%d][%s]", sql_return, sql_query);
+		err = NOTIFICATION_ERROR_FROM_DB;
+		goto out;
+	}
+
+	if (!row_count) {
+		NOTIFICATION_DBG ("No setting found...");
+		err= NOTIFICATION_ERROR_NOT_EXIST_ID;
+		goto out;
+	}
+
+	NOTIFICATION_DBG ("row_count [%d] column_count [%d]", row_count, column_count);
+
+	row_count = 1;
+
+	if (!(result_setting_array = (struct notification_setting*)malloc(sizeof(struct notification_setting) * row_count))) {
+		NOTIFICATION_ERR("malloc failed...");
+		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
+		goto out;
+	}
+
+	col_index = column_count;
+
+	_get_table_field_data_string(query_result, &(result_setting_array[i].package_name), 1, col_index++);
+	_get_table_field_data_int(query_result, (int*)&(result_setting_array[i].allow_to_notify), col_index++);
+	_get_table_field_data_int(query_result, (int*)&(result_setting_array[i].do_not_disturb_except), col_index++);
+	_get_table_field_data_int(query_result, &(result_setting_array[i].visibility_class), col_index++);
+
+	*setting = result_setting_array;
+
+out:
+	if (query_result)
+			sqlite3_free_table(query_result);
+
+	if (sql_query)
+		sqlite3_free(sql_query);
+
+	if (local_db_handle) {
+		sql_return = db_util_close(local_db_handle);
+		if (sql_return != SQLITE_OK) {
+			NOTIFICATION_WARN("fail to db_util_close - [%d]", sql_return);
+		}
+	}
+
+	return err;
+}
+
+EXPORT_API int notification_setting_get_setting(notification_setting_h *setting)
+{
+	char *package_name = NULL;
+
+	package_name = notification_get_pkgname_by_pid();
+
+	if (package_name == NULL)
+		return NOTIFICATION_ERROR_NOT_EXIST_ID;
+
+	return notification_setting_get_setting_by_package_name(package_name, setting);
+}
+
+EXPORT_API int notification_setting_get_package_name(notification_setting_h setting, char **value)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (setting == NULL || value == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	if (setting->package_name == NULL) {
+		NOTIFICATION_ERR("setting->package_name is null\n");
+		err = NOTIFICATION_ERROR_NOT_EXIST_ID;
+		goto out;
+	}
+
+	*value = SAFE_STRDUP(setting->package_name);
+
+out:
+
+	return err;
+}
+
+EXPORT_API int notification_setting_set_package_name(notification_setting_h setting, char *value)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (setting == NULL || value == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	if (setting->package_name != NULL) {
+		free(setting->package_name);
+	}
+
+	setting->package_name = SAFE_STRDUP(value);
+
+out:
+
+	return err;
+}
+
+EXPORT_API int notification_setting_get_allow_to_notify(notification_setting_h setting, bool *value)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (setting == NULL || value == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	*value = setting->allow_to_notify;
+
+out:
+
+	return err;
+}
+
+EXPORT_API int notification_setting_set_allow_to_notify(notification_setting_h setting, bool value)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (setting == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	setting->allow_to_notify = value;
+
+out:
+
+	return err;
+}
+
+EXPORT_API int notification_setting_get_do_not_disturb_except(notification_setting_h setting, bool *value)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (setting == NULL || value == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	*value = setting->do_not_disturb_except;
+
+out:
+
+	return err;
+}
+
+EXPORT_API int notification_setting_set_do_not_disturb_except(notification_setting_h setting, bool value)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (setting == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	setting->do_not_disturb_except = value;
+
+out:
+
+	return err;
+}
+
+EXPORT_API int notification_setting_get_visibility_class(notification_setting_h setting, int *value)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (setting == NULL || value == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	*value = setting->visibility_class;
+
+out:
+
+	return err;
+}
+
+EXPORT_API int notification_setting_set_visibility_class(notification_setting_h setting, int value)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (setting == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	setting->visibility_class = value;
+
+out:
+
+	return err;
+}
+
+EXPORT_API int notification_setting_update_setting(notification_setting_h setting)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (setting == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	err = notification_ipc_update_setting(setting);
+	if (err != NOTIFICATION_ERROR_NONE) {
+		NOTIFICATION_ERR("notification_setting_update_setting returns[%d]\n", err);
+		goto out;
+	}
+
+out:
+	return err;
+}
+
+EXPORT_API int notification_setting_free_notification(notification_setting_h setting)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (setting == NULL) {
+			NOTIFICATION_ERR("Invalid parameter\n");
+			err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+			goto out;
+		}
+
+	SAFE_FREE(setting->package_name);
+
+	/* add codes to free all properties */
+
+	SAFE_FREE(setting);
+out:
+
+	return err;
+}
+
+EXPORT_API int notification_setting_db_update(const char *package_name, int allow_to_notify, int do_not_disturb_except, int visibility_class)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+	sqlite3 *db = NULL;
+	char *sqlbuf = NULL;
+	int sqlret;
+
+	if (package_name == NULL)
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
+
+	sqlret = db_util_open(DBPATH, &db, 0);
+	if (sqlret != SQLITE_OK || db == NULL) {
+		NOTIFICATION_ERR("db_util_open failed [%s][%d]", DBPATH, sqlret);
+		return NOTIFICATION_ERROR_FROM_DB;
+	}
+
+	sqlbuf = sqlite3_mprintf("UPDATE %s SET allow_to_notify = %d, do_not_disturb_except = %d, visibility_class = %d " \
+			"WHERE package_name = %Q",
+			NOTIFICATION_SETTING_DB_TABLE, allow_to_notify, do_not_disturb_except, visibility_class, package_name);
+	if (!sqlbuf) {
+		NOTIFICATION_ERR("fail to alloc query");
+		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
+		goto return_close_db;
+	}
+
+	err = notification_db_exec(db, sqlbuf, NULL);
+
+	return_close_db:
+	if (sqlbuf)
+		sqlite3_free(sqlbuf);
+
+	sqlret = db_util_close(db);
+	if (sqlret != SQLITE_OK) {
+		NOTIFICATION_WARN("fail to db_util_close - [%d]", sqlret);
+	}
+
+	return err;
+}
+
+static bool _is_package_in_setting_table(sqlite3 *db, const char *package_name)
+{
+	sqlite3_stmt *db_statement = NULL;
+	int sqlite3_ret = SQLITE_OK;
+	bool err = true;
+	int field_index = 1;
+
+	sqlite3_ret = sqlite3_prepare_v2(db, "SELECT package_name FROM notification_setting WHERE package_name = ?", -1, &db_statement, NULL);
+
+	if (sqlite3_ret != SQLITE_OK) {
+		NOTIFICATION_ERR("sqlite3_prepare_v2 failed [%d][%s]", sqlite3_ret, sqlite3_errmsg(db));
+		err = false;
+		goto out;
+	}
+
+	sqlite3_bind_text(db_statement, field_index++, package_name, -1, SQLITE_TRANSIENT);
+
+	sqlite3_ret = sqlite3_step(db_statement);
+
+	if (sqlite3_ret == SQLITE_DONE) {
+		NOTIFICATION_INFO("no matched package_name found[%s][%d]", package_name, sqlite3_ret);
+		err = false;
+		goto out;
+	}
+
+	if (sqlite3_ret != SQLITE_OK) {
+		NOTIFICATION_ERR("sqlite3_step failed [%d][%s]", sqlite3_ret, sqlite3_errmsg(db));
+		err = false;
+		goto out;
+	}
+out:
+	if (db_statement) {
+		sqlite3_finalize(db_statement);
+	}
+
+	return err;
+}
+
+static int _get_count_of_setting(sqlite3 *db, int *count)
+{
+	int sqlite3_ret = SQLITE_OK;
+	int err = NOTIFICATION_ERROR_NONE;
+	const char *sql_query = "SELECT COUNT(priv_id) FROM notification_setting";
+	char **result_table = NULL;
+
+	if (count == NULL) {
+		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	sqlite3_ret = sqlite3_get_table(db, sql_query, &result_table, NULL, NULL, NULL);
+
+	if (sqlite3_ret != SQLITE_OK || result_table[1] == NULL) {
+		NOTIFICATION_ERR("sqlite3_get_table failed [%d][%s]", sqlite3_ret, sqlite3_errmsg(db));
+		err = NOTIFICATION_ERROR_FROM_DB;
+		goto out;
+	}
+
+	*count = atoi(result_table[1]);
+
+out:
+
+	if (result_table)
+		sqlite3_free_table(result_table);
+
+	return err;
+}
+
+static int _get_count_of_package(int *count)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+	int pkgmgr_ret = PACKAGE_MANAGER_ERROR_NONE;
+	package_manager_filter_h package_filter = NULL;
+	int package_count = 0;
+
+	if (count == NULL) {
+		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	if ((pkgmgr_ret = package_manager_filter_create (&package_filter)) != PACKAGE_MANAGER_ERROR_NONE) {
+		NOTIFICATION_ERR("package_manager_filter_create failed [%08X]", pkgmgr_ret);
+		err = NOTIFICATION_ERROR_FROM_DB;
+		goto out;
+	}
+
+	if ((pkgmgr_ret = package_manager_filter_add_bool(package_filter, "PMINFO_PKGINFO_PROP_PACKAGE_NODISPLAY_SETTING", false)) != PACKAGE_MANAGER_ERROR_NONE) {
+		NOTIFICATION_ERR("package_manager_filter_add_bool failed [%08X]", pkgmgr_ret);
+		err = NOTIFICATION_ERROR_FROM_DB;
+		goto out;
+	}
+
+	if ((pkgmgr_ret = package_manager_filter_count(package_filter, &package_count)) != PACKAGE_MANAGER_ERROR_NONE) {
+		NOTIFICATION_ERR("package_manager_filter_count failed [%08X]", pkgmgr_ret);
+		err = NOTIFICATION_ERROR_FROM_DB;
+		goto out;
+	}
+
+	*count = package_count;
+
+out:
+	if (package_filter) {
+		if ((pkgmgr_ret = package_manager_filter_destroy(package_filter)) != PACKAGE_MANAGER_ERROR_NONE) {
+			NOTIFICATION_WARN("package_manager_filter_destroy failed [%08X]", pkgmgr_ret);
+		}
+	}
+
+	return err;
+}
+
+static bool foreach_package_info_callback(package_info_h package_info, void *user_data)
+{
+	sqlite3 *db = user_data;
+	sqlite3_stmt *db_statement = NULL;
+	char *package_name = NULL;
+	int pkgmgr_ret = PACKAGE_MANAGER_ERROR_NONE;
+	int sqlite3_ret = SQLITE_OK;
+	int field_index = 1;
+	int err = true;
+
+	if ((pkgmgr_ret = package_info_get_package(package_info, &package_name)) != PACKAGE_MANAGER_ERROR_NONE) {
+		NOTIFICATION_ERR("package_info_get_package failed [%d]", pkgmgr_ret);
+		err = false;
+		goto out;
+	}
+
+	if (_is_package_in_setting_table(db, package_name) == true) {
+		NOTIFICATION_INFO("[%s] is exist", package_name);
+		goto out;
+	}
+
+	NOTIFICATION_INFO("[%s] will be inserted", package_name);
+
+	sqlite3_ret = sqlite3_prepare_v2(db, "INSERT INTO notification_setting (package_name) VALUES (?) ", -1, &db_statement, NULL);
+
+	if (sqlite3_ret != SQLITE_OK) {
+		NOTIFICATION_ERR("sqlite3_prepare_v2 failed [%d][%s]", sqlite3_ret, sqlite3_errmsg(db));
+		err = false;
+		goto out;
+	}
+
+	sqlite3_bind_text(db_statement, field_index++, package_name, -1, SQLITE_TRANSIENT);
+
+	sqlite3_ret = sqlite3_step(db_statement);
+
+	NOTIFICATION_INFO("sqlite3_step returns[%d]", sqlite3_ret);
+
+	if (sqlite3_ret != SQLITE_OK && sqlite3_ret != SQLITE_DONE) {
+		NOTIFICATION_ERR("sqlite3_step failed [%d][%s]", sqlite3_ret, sqlite3_errmsg(db));
+		err = false;
+	}
+
+out:
+	if (db_statement) {
+		sqlite3_finalize(db_statement);
+	}
+
+	if(package_name) {
+		free(package_name);
+	}
+
+	NOTIFICATION_INFO("foreach_package_info_callback returns[%d]", err);
+	return err;
+}
+
+EXPORT_API int notification_setting_refresh_setting_table()
+{
+	int err = NOTIFICATION_ERROR_NONE;
+	sqlite3 *db = NULL;
+	int sqlite3_ret = SQLITE_OK;
+	int pkgmgr_ret = PACKAGE_MANAGER_ERROR_NONE;
+	int setting_count = 0;
+	int package_count = 0;
+
+	sqlite3_ret = db_util_open(DBPATH, &db, 0);
+
+	if (sqlite3_ret != SQLITE_OK || db == NULL) {
+		NOTIFICATION_ERR("db_util_open failed [%s][%d]", DBPATH, sqlite3_ret);
+		err = NOTIFICATION_ERROR_FROM_DB;
+		goto out;
+	}
+
+	if ((err = _get_count_of_setting(db, &setting_count)) != NOTIFICATION_ERROR_NONE) {
+		NOTIFICATION_ERR("_get_count_of_setting failed [%08X]", err);
+		goto out;
+	}
+
+	if ((err = _get_count_of_package(&package_count)) != NOTIFICATION_ERROR_NONE) {
+		NOTIFICATION_ERR("_get_count_of_package failed [%08X]", err);
+		goto out;
+	}
+
+	NOTIFICATION_INFO("setting_count [%d], package_count [%d]", setting_count, package_count);
+
+	if (setting_count == package_count) {
+		NOTIFICATION_INFO("No need to refresh");
+		goto out;
+	}
+
+	sqlite3_exec(db, "BEGIN immediate;", NULL, NULL, NULL);
+
+	pkgmgr_ret = package_manager_foreach_package_info(foreach_package_info_callback, db);
+	if (pkgmgr_ret != PACKAGE_MANAGER_ERROR_NONE) {
+		NOTIFICATION_ERR("package_manager_filter_foreach_package_info failed [%d]", pkgmgr_ret);
+		err = NOTIFICATION_ERROR_FROM_DB;
+		goto out;
+	}
+
+out:
+
+	if (db) {
+		if (err == NOTIFICATION_ERROR_NONE) {
+			sqlite3_exec(db, "END;", NULL, NULL, NULL);
+		}
+		else {
+			sqlite3_exec(db, "ROLLBACK;", NULL, NULL, NULL);
+		}
+
+		if ((sqlite3_ret = db_util_close(db)) != SQLITE_OK) {
+			NOTIFICATION_WARN("fail to db_util_close - [%d]", sqlite3_ret);
+		}
+	}
+
+	NOTIFICATION_INFO("notification_setting_refresh_setting_table returns [%08X]", err);
+
+	return err;
+}
+
+/* system setting --------------------------------*/
+
+EXPORT_API int notification_system_setting_load_system_setting(notification_system_setting_h *system_setting)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+	sqlite3 *local_db_handle = NULL;
+	char *sql_query = NULL;
+	char **query_result = NULL;
+	int sql_return;
+	int row_count = 0;
+	int column_count = 0;
+	int col_index = 0;
+	notification_system_setting_h result_system_setting= NULL;
+
+	if (system_setting == NULL) {
+		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
+		err =  NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	sql_return = db_util_open(DBPATH, &local_db_handle, 0);
+
+	if (sql_return != SQLITE_OK || local_db_handle == NULL) {
+		NOTIFICATION_ERR("db_util_open failed [%d]", sql_return);
+		err = NOTIFICATION_ERROR_FROM_DB;
+		goto out;
+	}
+
+	sql_query = sqlite3_mprintf("SELECT do_not_disturb, visibility_class "
+			"FROM %s ", NOTIFICATION_SYSTEM_SETTING_DB_TABLE);
+
+	if (!sql_query) {
+		NOTIFICATION_ERR("fail to alloc query");
+		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
+		goto out;
+	}
+
+	sql_return = sqlite3_get_table(local_db_handle, sql_query, &query_result, &row_count, &column_count, NULL);
+
+	if (sql_return != SQLITE_OK && sql_return != -1) {
+		NOTIFICATION_ERR("sqlite3_get_table failed [%d][%s]", sql_return, sql_query);
+		err = NOTIFICATION_ERROR_FROM_DB;
+		goto out;
+	}
+
+	if (!row_count) {
+		NOTIFICATION_DBG ("No setting found...");
+		err= NOTIFICATION_ERROR_NOT_EXIST_ID;
+		goto out;
+	}
+
+	NOTIFICATION_DBG ("row_count [%d] column_count [%d]", row_count, column_count);
+
+	row_count = 1;
+
+	if (!(result_system_setting = (struct notification_system_setting*)malloc(sizeof(struct notification_system_setting)))) {
+		NOTIFICATION_ERR("malloc failed...");
+		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
+		goto out;
+	}
+
+	col_index = column_count;
+
+	_get_table_field_data_int(query_result, (int*)&(result_system_setting->do_not_disturb), col_index++);
+	_get_table_field_data_int(query_result, &(result_system_setting->visibility_class), col_index++);
+
+	*system_setting = result_system_setting;
+
+out:
+	if (query_result)
+			sqlite3_free_table(query_result);
+
+	if (sql_query)
+		sqlite3_free(sql_query);
+
+	if (local_db_handle) {
+		sql_return = db_util_close(local_db_handle);
+		if (sql_return != SQLITE_OK) {
+			NOTIFICATION_WARN("fail to db_util_close - [%d]", sql_return);
+		}
+	}
+
+	return err;
+}
+
+EXPORT_API int notification_system_setting_update_system_setting(notification_system_setting_h system_setting)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (system_setting == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	err = notification_ipc_update_system_setting(system_setting);
+	if (err != NOTIFICATION_ERROR_NONE) {
+		NOTIFICATION_ERR("notification_ipc_update_system_setting returns[%d]\n", err);
+		goto out;
+	}
+
+out:
+	return err;
+}
+
+EXPORT_API int notification_system_setting_free_system_setting(notification_system_setting_h system_setting)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (system_setting == NULL) {
+			NOTIFICATION_ERR("Invalid parameter\n");
+			err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+			goto out;
+		}
+
+	/* add codes to free all properties */
+
+	SAFE_FREE(system_setting);
+
+out:
+
+	return err;
+}
+
+EXPORT_API int notification_system_setting_get_do_not_disturb(notification_system_setting_h system_setting, bool *value)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (system_setting == NULL || value == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	*value = system_setting->do_not_disturb;
+
+out:
+
+	return err;
+}
+
+EXPORT_API int notification_system_setting_set_do_not_disturb(notification_system_setting_h system_setting, bool value)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (system_setting == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	system_setting->do_not_disturb = value;
+
+out:
+
+	return err;
+}
+
+EXPORT_API int notification_system_setting_get_visibility_class(notification_system_setting_h system_setting, int *value)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (system_setting == NULL || value == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	*value = system_setting->visibility_class;
+
+out:
+
+	return err;
+}
+
+EXPORT_API int notification_system_setting_set_visibility_class(notification_system_setting_h system_setting, int value)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (system_setting == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	system_setting->visibility_class = value;
+
+out:
+
+	return err;
+}
+
+
+EXPORT_API int notification_setting_db_update_system_setting(int do_not_disturb, int visibility_class)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+	int sqlret;
+	int field_index = 1;
+	sqlite3 *db = NULL;
+	sqlite3_stmt *db_statement = NULL;
+
+	sqlret = db_util_open(DBPATH, &db, 0);
+
+	if (sqlret != SQLITE_OK || db == NULL) {
+		NOTIFICATION_ERR("db_util_open failed [%s][%d][%s]", DBPATH, sqlret, sqlite3_errmsg(db));
+		err =  NOTIFICATION_ERROR_FROM_DB;
+		goto return_close_db;
+	}
+
+	sqlite3_exec(db, "BEGIN immediate;", NULL, NULL, NULL);
+
+	sqlret = sqlite3_prepare_v2(db, "UPDATE notification_system_setting SET do_not_disturb = ?, visibility_class = ?;", -1, &db_statement, NULL);
+
+	if (sqlret != SQLITE_OK) {
+		NOTIFICATION_ERR("sqlite3_prepare_v2 failed [%d][%s]", sqlret, sqlite3_errmsg(db));
+		err =  NOTIFICATION_ERROR_FROM_DB;
+		goto return_close_db;
+	}
+
+	sqlite3_bind_int(db_statement, field_index++, do_not_disturb);
+	sqlite3_bind_int(db_statement, field_index++, visibility_class);
+
+	sqlret = sqlite3_step(db_statement);
+
+	if (sqlret != SQLITE_OK && sqlret != SQLITE_DONE) {
+		NOTIFICATION_ERR("sqlite3_step failed [%d][%s]", sqlret, sqlite3_errmsg(db));
+		err =  NOTIFICATION_ERROR_FROM_DB;
+		goto return_close_db;
+	}
+
+	sqlret = sqlite3_changes(db);
+
+	if (sqlret == 0) {
+		NOTIFICATION_WARN("No changes on DB");
+	}
+
+return_close_db:
+	if (db_statement) {
+		sqlite3_finalize(db_statement);
+	}
+
+	if (db) {
+		if (err == NOTIFICATION_ERROR_NONE) {
+			sqlite3_exec(db, "END;", NULL, NULL, NULL);
+		}
+		else {
+			sqlite3_exec(db, "ROLLBACK;", NULL, NULL, NULL);
+		}
+		sqlret = db_util_close(db);
+	}
+
+	if (sqlret != SQLITE_OK) {
+		NOTIFICATION_WARN("fail to db_util_close - [%d]", sqlret);
+	}
+
+	return err;
+}
+
+/* OLD IMPLEMENTATION ----------------------------*/
 #define NOTIFICATION_SETTING_DB "notification_setting"
 #define NOTIFICATION_SETTING_DB_PATH "/opt/usr/dbspace/.notification_parser.db"
-
-typedef struct _notification_setting_h notification_setting_h;
 
 struct _notification_setting_h {
 	char *appid;
@@ -52,31 +1007,31 @@ struct prop_table {
 };
 
 static struct prop_table g_prop_table[] = {
-		{
-			.property = "OPT_NOTIFICATION",
-			.column = "notification",
-			.default_value = "ON",
-		},
-		{
-			.property = "OPT_SOUNDS",
-			.column = "sounds",
-			.default_value = "ON",
-		},
-		{
-			.property = "OPT_CONTENTS",
-			.column = "contents",
-			.default_value = "ON",
-		},
-		{
-			.property = "OPT_BADGE",
-			.column = "badge",
-			.default_value = "ON",
-		},
-		{
-			.property = NULL,
-			.column = NULL,
-			.default_value = NULL,
-		}
+	{
+		.property = "OPT_NOTIFICATION",
+		.column = "notification",
+		.default_value = "ON",
+	},
+	{
+		.property = "OPT_SOUNDS",
+		.column = "sounds",
+		.default_value = "ON",
+	},
+	{
+		.property = "OPT_CONTENTS",
+		.column = "contents",
+		.default_value = "ON",
+	},
+	{
+		.property = "OPT_BADGE",
+		.column = "badge",
+		.default_value = "ON",
+	},
+	{
+		.property = NULL,
+		.column = NULL,
+		.default_value = NULL,
+	}
 };
 
 static const char *_get_prop_column(const char *property)
@@ -124,8 +1079,8 @@ static int _is_record_exist(const char *pkgname, sqlite3 *db)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	sqlbuf = sqlite3_mprintf("SELECT count(*) FROM %s WHERE " \
-			 "appid = %Q",
-			 NOTIFICATION_SETTING_DB, pkgname);
+			"appid = %Q",
+			NOTIFICATION_SETTING_DB, pkgname);
 
 	if (!sqlbuf) {
 		NOTIFICATION_ERR("fail to alloc sql query");
@@ -151,7 +1106,7 @@ static int _is_record_exist(const char *pkgname, sqlite3 *db)
 	else
 		result = NOTIFICATION_ERROR_NOT_EXIST_ID;
 
-free_and_return:
+	free_and_return:
 	if (sqlbuf)
 		sqlite3_free(sqlbuf);
 
@@ -206,7 +1161,7 @@ EXPORT_API int notification_setting_db_set(const char *pkgname, const char *prop
 
 	result = notification_db_exec(db, sqlbuf, NULL);
 
-return_close_db:
+	return_close_db:
 	if (sqlbuf)
 		sqlite3_free(sqlbuf);
 
@@ -286,7 +1241,7 @@ EXPORT_API int notification_setting_db_get(const char *pkgname, const char *prop
 		}
 	}
 
-return_close_db:
+	return_close_db:
 	if (sqlbuf)
 		sqlite3_free(sqlbuf);
 
@@ -341,3 +1296,4 @@ EXPORT_API int notification_setting_property_get(const char *pkgname, const char
 
 	return NOTIFICATION_ERROR_NONE;
 }
+

@@ -71,7 +71,7 @@ static void (*posted_toast_message_cb) (void *data);
 #define NOTI_TEXT_RESULT_LEN 2048
 #define NOTI_PKGNAME_LEN	512
 
-static char *_notification_get_pkgname_by_pid(void)
+char *notification_get_pkgname_by_pid(void)
 {
 	char pkgname[NOTI_PKGNAME_LEN + 1] = { 0, };
 	int pid = 0, ret = AUL_R_OK;
@@ -546,11 +546,11 @@ EXPORT_API int notification_get_text(notification_h noti,
 	char buf_key[32] = { 0, };
 	const char *ret_val = NULL;
 	const char *get_str = NULL;
-	const char *get_check_type_str = NULL;
 	notification_text_type_e check_type = NOTIFICATION_TEXT_TYPE_NONE;
 	//int display_option_flag = 0;
 
 	char *temp_str = NULL;
+	char *translated_str = NULL;
 	char result_str[NOTI_TEXT_RESULT_LEN] = { 0, };
 	char buf_str[1024] = { 0, };
 	int num_args = 0;
@@ -708,10 +708,8 @@ EXPORT_API int notification_get_text(notification_h noti,
 
 					strncat(result_str, buf_str,
 							max_len);
-
 					num_args++;
 				}
-
 			}
 
 			/* Check variable IN pos */
@@ -781,9 +779,20 @@ EXPORT_API int notification_get_text(notification_h noti,
 						ret_val =
 						    bundle_get_val(b, buf_key);
 
-						snprintf(buf_str,
-							 sizeof(buf_str), "%s",
-							 ret_val);
+						if (ret_val != NULL && noti->domain != NULL	&& noti->dir != NULL) {
+							/* Get application string */
+							bindtextdomain(noti->domain, noti->dir);
+							translated_str = dgettext(noti->domain, ret_val);
+							NOTIFICATION_INFO("translated_str[%s]", translated_str);
+						} else if (ret_val != NULL) {
+							/* Get system string */
+							translated_str = dgettext("sys_string", ret_val);
+							NOTIFICATION_INFO("translated_str[%s]", translated_str);
+						} else {
+							translated_str = NULL;
+						}
+
+						strncpy(buf_str, translated_str, sizeof(buf_str));
 
 						int src_len = strlen(result_str);
 						int max_len = NOTI_TEXT_RESULT_LEN - src_len - 1;
@@ -986,6 +995,8 @@ EXPORT_API int notification_get_text(notification_h noti,
 	} else {
 		*text = NULL;
 	}
+
+	NOTIFICATION_INFO("text[%s]", *text);
 
 	return NOTIFICATION_ERROR_NONE;
 }
@@ -1356,7 +1367,7 @@ EXPORT_API int notification_set_launch_option(notification_h noti,
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 
-	if ((ret = app_control_to_bundle(app_control, &b)) == APP_CONTROL_ERROR_NONE) {
+	if ((ret = app_control_export_as_bundle(app_control, &b)) == APP_CONTROL_ERROR_NONE) {
 		return notification_set_execute_option(noti,
 				NOTIFICATION_EXECUTE_TYPE_SINGLE_LAUNCH,
 				NULL, NULL,
@@ -1410,6 +1421,95 @@ EXPORT_API int notification_get_launch_option(notification_h noti,
 	}
 
 	return NOTIFICATION_ERROR_NONE;
+}
+
+EXPORT_API int notification_set_event_handler(notification_h noti, notification_event_type_e event_type, app_control_h event_handler)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+	bundle *app_control_bundle = NULL;
+
+	if (noti == NULL) {
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+	}
+
+	if (event_type < NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_1
+		|| event_type > NOTIFICATION_EVENT_TYPE_CLICK_ON_THUMBNAIL) {
+		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	if ((err = app_control_export_as_bundle(event_handler, &app_control_bundle)) != APP_CONTROL_ERROR_NONE) {
+		NOTIFICATION_ERR("app_control_to_bundle failed [%d]", err);
+		goto out;
+	}
+
+	if (noti->b_event_handler[event_type] != NULL) {
+		bundle_free(noti->b_event_handler[event_type]);
+	}
+
+	noti->b_event_handler[event_type] = app_control_bundle;
+
+out:
+	return err;
+}
+
+EXPORT_API int notification_get_event_handler(notification_h noti, notification_event_type_e event_type, app_control_h *event_handler)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+	bundle *b = NULL;
+	app_control_h app_control_new = NULL;
+
+	if (noti == NULL) {
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
+		goto out;
+	}
+	if (event_handler == NULL) {
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
+		goto out;
+	}
+	if (event_type < NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_1
+		|| event_type > NOTIFICATION_EVENT_TYPE_CLICK_ON_THUMBNAIL) {
+		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	b = noti->b_event_handler[event_type];
+
+	if (b == NULL) {
+		NOTIFICATION_DBG("No event handler\n");
+		err = NOTIFICATION_ERROR_NOT_EXIST_ID;
+		goto out;
+	}
+
+	err = app_control_create(&app_control_new);
+	if (err != APP_CONTROL_ERROR_NONE || app_control_new == NULL) {
+		NOTIFICATION_ERR("app_control_create failed [%d]", err);
+		err = NOTIFICATION_ERROR_IO_ERROR;
+		goto out;
+	}
+
+	err = app_control_import_from_bundle(app_control_new, b);
+	if (err == APP_CONTROL_ERROR_NONE) {
+		*event_handler = app_control_new;
+	}
+	else {
+		app_control_destroy(app_control_new);
+		NOTIFICATION_ERR("Failed to import app control from bundle [%d]", err);
+		err = NOTIFICATION_ERROR_IO_ERROR;
+		goto out;
+	}
+
+out:
+	if (event_handler)
+		*event_handler = app_control_new;
+
+	return err;
 }
 
 EXPORT_API int notification_set_execute_option(notification_h noti,
@@ -1937,7 +2037,7 @@ EXPORT_API int notification_delete_all(notification_type_e type)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 
-	caller_pkgname = _notification_get_pkgname_by_pid();
+	caller_pkgname = notification_get_pkgname_by_pid();
 
 	ret = notification_ipc_request_delete_multiple(type, caller_pkgname);
 
@@ -1959,7 +2059,7 @@ EXPORT_API int notification_delete_all_by_type(const char *pkgname,
 	}
 
 	if (pkgname == NULL) {
-		caller_pkgname = _notification_get_pkgname_by_pid();
+		caller_pkgname = notification_get_pkgname_by_pid();
 	} else {
 		caller_pkgname = strdup(pkgname);
 	}
@@ -1985,7 +2085,7 @@ EXPORT_API int notification_delete_by_priv_id(const char *pkgname,
 	}
 
 	if (pkgname == NULL) {
-		caller_pkgname = _notification_get_pkgname_by_pid();
+		caller_pkgname = notification_get_pkgname_by_pid();
 	} else {
 		caller_pkgname = strdup(pkgname);
 	}
@@ -2032,7 +2132,7 @@ EXPORT_API int notification_update_progress(notification_h noti,
 	}
 
 	if (noti == NULL) {
-		caller_pkgname = _notification_get_pkgname_by_pid();
+		caller_pkgname = notification_get_pkgname_by_pid();
 	} else {
 		caller_pkgname = strdup(noti->caller_pkgname);
 	}
@@ -2075,7 +2175,7 @@ EXPORT_API int notification_update_size(notification_h noti,
 	}
 
 	if (noti == NULL) {
-		caller_pkgname = _notification_get_pkgname_by_pid();
+		caller_pkgname = notification_get_pkgname_by_pid();
 	} else {
 		caller_pkgname = strdup(noti->caller_pkgname);
 	}
@@ -2115,7 +2215,7 @@ EXPORT_API int notification_update_content(notification_h noti,
 	}
 
 	if (noti == NULL) {
-		caller_pkgname = _notification_get_pkgname_by_pid();
+		caller_pkgname = notification_get_pkgname_by_pid();
 	} else {
 		caller_pkgname = strdup(noti->caller_pkgname);
 	}
@@ -2154,13 +2254,13 @@ static notification_h _notification_create(notification_type_e type)
 	else if (type == NOTIFICATION_TYPE_ONGOING)
 		noti->layout = NOTIFICATION_LY_ONGOING_PROGRESS;
 
-	noti->caller_pkgname = _notification_get_pkgname_by_pid();
+	noti->caller_pkgname = notification_get_pkgname_by_pid();
 	noti->group_id = NOTIFICATION_GROUP_ID_NONE;
 	noti->priv_id = NOTIFICATION_PRIV_ID_NONE;
 	noti->sound_type = NOTIFICATION_SOUND_TYPE_NONE;
 	noti->vibration_type = NOTIFICATION_VIBRATION_TYPE_NONE;
 	noti->led_operation = NOTIFICATION_LED_OP_OFF;
-	noti->display_applist = NOTIFICATION_DISPLAY_APP_ALL;
+	noti->display_applist = NOTIFICATION_DISPLAY_APP_NOTIFICATION_TRAY | NOTIFICATION_DISPLAY_APP_TICKER | NOTIFICATION_DISPLAY_APP_INDICATOR;
 	/*!
 	 * \NOTE
 	 * Other fields are already initialized with ZERO.
@@ -2213,7 +2313,7 @@ EXPORT_API notification_h  notification_load_by_tag(const char *tag)
 		return NULL;
 	}
 
-	caller_pkgname = _notification_get_pkgname_by_pid();
+	caller_pkgname = notification_get_pkgname_by_pid();
 	if (!caller_pkgname) {
 		NOTIFICATION_ERR("Failed to get a package name");
 		set_last_result(NOTIFICATION_ERROR_OUT_OF_MEMORY);
@@ -2246,6 +2346,7 @@ EXPORT_API notification_h  notification_load_by_tag(const char *tag)
 
 EXPORT_API int notification_clone(notification_h noti, notification_h *clone)
 {
+	int i = 0;
 	notification_h new_noti = NULL;
 
 	if (noti == NULL || clone == NULL) {
@@ -2269,7 +2370,7 @@ EXPORT_API int notification_clone(notification_h noti, notification_h *clone)
 	if(noti->caller_pkgname != NULL) {
 		new_noti->caller_pkgname = strdup(noti->caller_pkgname);
 	} else {
-		new_noti->caller_pkgname = _notification_get_pkgname_by_pid();
+		new_noti->caller_pkgname = notification_get_pkgname_by_pid();
 	}
 	if(noti->launch_pkgname != NULL) {
 		new_noti->launch_pkgname = strdup(noti->launch_pkgname);
@@ -2307,6 +2408,14 @@ EXPORT_API int notification_clone(notification_h noti, notification_h *clone)
 		new_noti->b_service_multi_launch = bundle_dup(noti->b_service_multi_launch);
 	} else {
 		new_noti->b_service_multi_launch = NULL;
+	}
+
+	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
+		if(noti->b_event_handler[i] != NULL) {
+			new_noti->b_event_handler[i] = bundle_dup(noti->b_event_handler[i]);
+		} else {
+			new_noti->b_event_handler[i] = NULL;
+		}
 	}
 
 	new_noti->sound_type = noti->sound_type;
@@ -2382,6 +2491,7 @@ EXPORT_API int notification_clone(notification_h noti, notification_h *clone)
 
 EXPORT_API int notification_free(notification_h noti)
 {
+	int i = 0;
 	if (noti == NULL) {
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
@@ -2410,6 +2520,12 @@ EXPORT_API int notification_free(notification_h noti)
 	}
 	if (noti->b_service_multi_launch) {
 		bundle_free(noti->b_service_multi_launch);
+	}
+
+	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
+		if(noti->b_event_handler[i] != NULL) {
+			bundle_free(noti->b_event_handler[i]);
+		}
 	}
 
 	if (noti->sound_path) {
@@ -3038,7 +3154,7 @@ EXPORT_API int notification_delete_group_by_group_id(const char *pkgname,
 	char *caller_pkgname = NULL;
 
 	if (pkgname == NULL) {
-		caller_pkgname = _notification_get_pkgname_by_pid();
+		caller_pkgname = notification_get_pkgname_by_pid();
 	} else {
 		caller_pkgname = strdup(pkgname);
 	}
@@ -3065,7 +3181,7 @@ EXPORT_API int notification_delete_group_by_priv_id(const char *pkgname,
 	char *caller_pkgname = NULL;
 
 	if (pkgname == NULL) {
-		caller_pkgname = _notification_get_pkgname_by_pid();
+		caller_pkgname = notification_get_pkgname_by_pid();
 	} else {
 		caller_pkgname = strdup(pkgname);
 	}
@@ -3129,6 +3245,32 @@ EXPORT_API int notification_register_toast_message(void (*posted_toast_cb) (void
 void notification_call_posted_toast_cb(const char *message)
 {
 	if (posted_toast_message_cb != NULL) {
-		posted_toast_message_cb(message);
+		posted_toast_message_cb((void*)message);
 	}
+}
+
+EXPORT_API int notification_set_permission(notification_h handle, notification_permission_type_e permission_type, const char *app_id)
+{
+	return NOTIFICATION_ERROR_INVALID_OPERATION;
+}
+
+EXPORT_API int notification_get_permission(notification_h handle, notification_permission_type_e *permission_type, const char **app_id)
+{
+	return NOTIFICATION_ERROR_INVALID_OPERATION;
+}
+
+EXPORT_API int notification_set_ongoing_flag(notification_h noti, bool ongoing_flag)
+{
+	if (noti == NULL)
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
+
+	return NOTIFICATION_ERROR_NONE;
+}
+
+EXPORT_API int notification_get_ongoing_flag(notification_h noti, bool *ongoing_flag)
+{
+	if (noti == NULL)
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
+
+	return NOTIFICATION_ERROR_NONE;
 }

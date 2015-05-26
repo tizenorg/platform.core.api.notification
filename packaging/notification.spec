@@ -1,6 +1,7 @@
+%bcond_with wayland
 Name:       notification
 Summary:    notification library
-Version:    0.2.25
+Version:    0.2.34
 Release:    1
 Group:      TBD
 License:    Apache-2.0
@@ -63,7 +64,11 @@ export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
 %endif
 export LDFLAGS+="-Wl,--rpath=%{_prefix}/lib -Wl,--as-needed"
 LDFLAGS="$LDFLAGS"
-%cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix}
+%if %{with wayland}
+%cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix} -DHAVE_WAYLAND=On
+%else
+%cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix} -DHAVE_X11=On
+%endif
 make %{?jobs:-j%jobs}
 
 %install
@@ -112,6 +117,14 @@ then
 			b_service_responding TEXT,
 			b_service_single_launch TEXT,
 			b_service_multi_launch TEXT,
+			b_event_handler_click_on_button_1 TEXT,
+			b_event_handler_click_on_button_2 TEXT,
+			b_event_handler_click_on_button_3 TEXT,
+			b_event_handler_click_on_button_4 TEXT,
+			b_event_handler_click_on_button_5 TEXT,
+			b_event_handler_click_on_button_6 TEXT,
+			b_event_handler_click_on_icon TEXT,
+			b_event_handler_click_on_thumbnail TEXT,
 			sound_type INTEGER default 0,
 			sound_path TEXT,
 			vibration_type INTEGER default 0,
@@ -141,7 +154,7 @@ then
 			rowid INTEGER PRIMARY KEY AUTOINCREMENT,
 			UNIQUE (caller_pkgname, group_id)
 		);
-		create 	table if not exists ongoing_list ( 
+		create table if not exists ongoing_list ( 
 			caller_pkgname TEXT NOT NULL,
 			launch_pkgname TEXT,
 			icon_path TEXT,
@@ -161,9 +174,27 @@ then
 			flag INTEGER default 0,
 			progress_size DOUBLE default 0,
 			progress_percentage DOUBLE default 0,
-			rowid INTEGER PRIMARY KEY AUTOINCREMENT,	
-			UNIQUE (caller_pkgname, priv_id)  
+			rowid INTEGER PRIMARY KEY AUTOINCREMENT,
+			UNIQUE (caller_pkgname, priv_id)
 		); 
+		CREATE TABLE IF NOT EXISTS notification_setting ( 
+			priv_id INTEGER PRIMARY KEY AUTOINCREMENT,
+			package_name TEXT NOT NULL,
+			allow_to_notify INTEGER DEFAULT 1,
+			do_not_disturb_except INTEGER DEFAULT 0,
+			visibility_class INTEGER DEFAULT 0,
+			UNIQUE (priv_id, package_name)
+		); 
+		CREATE TABLE IF NOT EXISTS notification_system_setting ( 
+			priv_id INTERGER PRIMARY KEY,
+			do_not_disturb INTEGER DEFAULT 0,
+			visibility_class INTEGER DEFAULT 0,
+			UNIQUE (priv_id)
+		); 
+
+		INSERT INTO notification_system_setting (priv_id, do_not_disturb, visibility_class) VALUES (0, 0, 0);
+
+		CREATE UNIQUE INDEX package_name_idx1 ON notification_setting (package_name);
 	'
 fi
 
@@ -193,7 +224,12 @@ vconftool set -t string memory/private/libstatus/message "" -i -g 5000 -f  $SMAC
 %{_includedir}/notification/notification_error.h
 %{_includedir}/notification/notification_type.h
 %{_includedir}/notification/notification_list.h
+%{_includedir}/notification/notification_ongoing_flag.h
+%{_includedir}/notification/notification_text_domain.h
 %{_includedir}/notification/notification_status.h
+%{_includedir}/notification/notification_status_internal.h
+%{_includedir}/notification/notification_setting.h
+%{_includedir}/notification/notification_setting_internal.h
 %{_libdir}/pkgconfig/notification.pc
 
 %files service-devel

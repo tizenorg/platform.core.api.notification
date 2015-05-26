@@ -75,6 +75,22 @@ typedef enum  _notification_launch_option_type {
 } notification_launch_option_type;
 
 /**
+ * @brief Enumeration for event type on notification.
+ * @since_tizen 2.4
+ */
+typedef enum _notification_event_type {
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_1  = 0,  /** < Event type : Click on button 1 */
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_2  = 1,  /** < Event type : Click on button 2 */
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_3  = 2,  /** < Event type : Click on button 3 */
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_4  = 3,  /** < Event type : Click on button 4 */
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_5  = 4,  /** < Event type : Click on button 5 */
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_6  = 5,  /** < Event type : Click on button 6 */
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_ICON      = 6,  /** < Event type : Click on icon */
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_THUMBNAIL = 7,  /** < Event type : Click on thumbnail */
+	NOTIFICATION_EVENT_TYPE_MAX,
+} notification_event_type_e;
+
+/**
  * @brief Enumeration for notification sound type.
  * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
@@ -86,7 +102,6 @@ typedef enum _notification_sound_type {
 	NOTIFICATION_SOUND_TYPE_USER_DATA,
 					/**< User sound data */
 	NOTIFICATION_SOUND_TYPE_MAX,
-				/**< Max flag */
 } notification_sound_type_e;
 
 /**
@@ -99,7 +114,7 @@ typedef enum _notification_vibration_type {
 	NOTIFICATION_VIBRATION_TYPE_DEFAULT = 0,/**< Default vibrate pattern */
 	NOTIFICATION_VIBRATION_TYPE_USER_DATA,
 					/**< User vibration data */
-	NOTIFICATION_VIBRATION_TYPE_MAX,/**< Max flag */
+	NOTIFICATION_VIBRATION_TYPE_MAX,
 } notification_vibration_type_e;
 
 /**
@@ -116,15 +131,16 @@ typedef enum _notification_led_op {
 } notification_led_op_e;
 
 /**
- * @brief This will be deprecated.
- * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
+ * @deprecated Deprecated since 2.3.1
+ * @brief Enumeration for setting display type of count
+ * @since_tizen 2.3
  */
 typedef enum _notification_count_display_type {
-	NOTIFICATION_COUNT_DISPLAY_TYPE_NONE = -1,	/**< None */
+	NOTIFICATION_COUNT_DISPLAY_TYPE_NONE = -1,
 	NOTIFICATION_COUNT_DISPLAY_TYPE_LEFT = 0,	/**< The number is placed to left */
 	NOTIFICATION_COUNT_DISPLAY_TYPE_IN,	/**< The number is placed to center */
 	NOTIFICATION_COUNT_DISPLAY_TYPE_RIGHT,	/**< The number is placed to right */
-	NOTIFICATION_COUNT_DISPLAY_TYPE_MAX,	/**< Max flag */
+	NOTIFICATION_COUNT_DISPLAY_TYPE_MAX,
 } notification_count_display_type_e;
 
 /**
@@ -133,7 +149,6 @@ typedef enum _notification_count_display_type {
  */
 typedef enum _notification_text_type {
 	NOTIFICATION_TEXT_TYPE_NONE = -1,
-					/**< NONE */
 	NOTIFICATION_TEXT_TYPE_TITLE = 0,
 					/**< Title */
 	NOTIFICATION_TEXT_TYPE_CONTENT,
@@ -160,8 +175,19 @@ typedef enum _notification_text_type {
 					/**< Group content */
 	NOTIFICATION_TEXT_TYPE_GROUP_CONTENT_FOR_DISPLAY_OPTION_IS_OFF,
 								/**< Group content for content display option is off of the Settings */
+	NOTIFICATION_TEXT_TYPE_BUTTON_1,
+								/**< Text on button 1 */
+	NOTIFICATION_TEXT_TYPE_BUTTON_2,
+								/**< Text on button 2 */
+	NOTIFICATION_TEXT_TYPE_BUTTON_3,
+								/**< Text on button 3 */
+	NOTIFICATION_TEXT_TYPE_BUTTON_4,
+								/**< Text on button 4 */
+	NOTIFICATION_TEXT_TYPE_BUTTON_5,
+								/**< Text on button 5 */
+	NOTIFICATION_TEXT_TYPE_BUTTON_6,
+								/**< Text on button 6 */
 	NOTIFICATION_TEXT_TYPE_MAX,
-				/**< Max flag */
 } notification_text_type_e;
 
 /**
@@ -170,7 +196,6 @@ typedef enum _notification_text_type {
  */
 typedef enum _notification_image_type {
 	NOTIFICATION_IMAGE_TYPE_NONE = -1,
-					/**< NONE */
 	NOTIFICATION_IMAGE_TYPE_ICON = 0,
 					/**< Icon */
 	NOTIFICATION_IMAGE_TYPE_ICON_FOR_INDICATOR,
@@ -195,17 +220,20 @@ typedef enum _notification_image_type {
 						/**< Image for thumbnail list */
 	NOTIFICATION_IMAGE_TYPE_LIST_5,
 						/**< Image for thumbnail list */
+	NOTIFICATION_IMAGE_TYPE_BUTTON_1,
+						/**< Image for button 1 */
+	NOTIFICATION_IMAGE_TYPE_BUTTON_2,
+						/**< Image for button 2 */
+	NOTIFICATION_IMAGE_TYPE_BUTTON_3,
+						/**< Image for button 3 */
+	NOTIFICATION_IMAGE_TYPE_BUTTON_4,
+						/**< Image for button 4 */
+	NOTIFICATION_IMAGE_TYPE_BUTTON_5,
+						/**< Image for button 5 */
+	NOTIFICATION_IMAGE_TYPE_BUTTON_6,
+						/**< Image for button 6 */
 	NOTIFICATION_IMAGE_TYPE_MAX,
-				/**< Max flag */
 } notification_image_type_e;
-
-/*typedef enum _notification_button_type {
-	NOTIFICATION_BUTTON_TYPE_NONE = -1,
-	NOTIFICATION_BUTTON_TYPE_RUN = 0,
-	NOTIFICATION_BUTTON_TYPE_VIEW,
-	NOTIFICATION_BUTTON_TYPE_DISMISS,
-	NOTIFICATION_BUTTON_TYPE_MAX,
-}notification_button_type_e;*/
 
 /**
  * @brief Enumeration for application execution type.
@@ -269,11 +297,11 @@ enum _notification_property {
 	NOTIFICATION_PROP_DISABLE_AUTO_DELETE = 0x00000004,
 							/**< Disable auto delete when it selected */
 	NOTIFICATION_PROP_LAUNCH_UG = 0x00000008,
-						/**< Will be deprecated. Notification Tray should launch application using appsvc API */
+						/**< Notification Tray should launch application using appsvc API (Deprecated since 2.3.1) */
 	NOTIFICATION_PROP_DISABLE_TICKERNOTI = 0x00000010,
-							/**< Will be deprecated. Use notification_set_display_applist API */
+							/**< Use notification_set_display_applist API (Deprecated since 2.3.1) */
 	NOTIFICATION_PROP_PERMANENT_DISPLAY = 0x00000020,
-							/** < Will be deprecated. */
+							/**< The notification will not be removed (Deprecated since 2.3.1) */
 	NOTIFICATION_PROP_DISABLE_UPDATE_ON_INSERT = 0x00000040,/**< Disable update when it inserted. */
 	NOTIFICATION_PROP_DISABLE_UPDATE_ON_DELETE = 0x00000080,/**< Disable update when it deleted. */
 	NOTIFICATION_PROP_VOLATILE_DISPLAY = 0x00000100,/**< Deleted when device is rebooted eventhough NOTIFICATION_TYPE_NOTI type */
@@ -290,6 +318,7 @@ enum _notificaton_display_applist {
 	NOTIFICATION_DISPLAY_APP_LOCK = 0x00000004,
 						/**< Lock screen */
 	NOTIFICATION_DISPLAY_APP_INDICATOR = 0x00000008,/**< Indicator */
+	NOTIFICATION_DISPLAY_APP_HEADS_UP = 0x00000010,/**< Heads-up notification */
 	NOTIFICATION_DISPLAY_APP_ALL = 0xffffffff,
 						/**< All display application */
 };
@@ -304,7 +333,7 @@ typedef enum _notification_op_type {
 	NOTIFICATION_OP_UPDATE,	/**< Notification updated */
 	NOTIFICATION_OP_DELETE,	/**< Notification deleted */
 	NOTIFICATION_OP_DELETE_ALL,	/**< Notifications deleted */
-	NOTIFICATION_OP_REFRESH,	/**< Deprecated */
+	NOTIFICATION_OP_REFRESH,	/**< (Deprecated Since 2.3.1) */
 	NOTIFICATION_OP_SERVICE_READY,	/**< Notification service is ready  */
 } notification_op_type_e;
 
@@ -375,6 +404,15 @@ typedef struct _notification_op {
 	notification_h noti;	/**< Notification handler */
 } notification_op;
 
+/**
+ * @brief Enumeration for permission.
+ * @since_tizen 2.4
+ */
+typedef enum notification_permission_type {
+    NOTIFICATION_PERMISSION_TYPE_NONE = 0,
+    NOTIFICATION_PERMISSION_TYPE_DELETE = 1,
+    NOTIFICATION_PERMISSION_TYPE_UPDATE = 2,
+} notification_permission_type_e;
 /**
  * @}
  */

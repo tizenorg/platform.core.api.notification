@@ -45,8 +45,113 @@ extern "C" {
  */
 typedef struct _notification_list *notification_list_h;
 
+
 /**
- * @internal
+ * @brief Returns the notification list handle.
+ * @details If count is equal to @c -1, all notifications are returned.
+ * @since_tizen 2.3
+ * @privlevel public
+ * @privilege %http://tizen.org/privilege/notification
+ * @param[in]  type  The notification type
+ * @param[in]  count The returned notification data number
+ * @param[out] #NOTIFICATION_ERROR_NONE on success, other value on failure
+ * @return #NOTIFICATION_ERROR_NONE on success,
+ *         otherwise any other value on failure
+ * @retval #NOTIFICATION_ERROR_NONE         Success
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval #NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
+ * @see #notification_list_h
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	notification_list_h noti_list = NULL;
+	int noti_err = NOTIFICATION_ERROR_NONE;
+
+	noti_err = notification_get_list(NOTIFICATION_TYPE_NONE, -1, &noti_list);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_get_list(notification_type_e type,
+					   int count,
+					   notification_list_h * list);
+
+/**
+ * @brief Returns the notification detail list handle of grouping data.
+ * @details If count is equal to c -1, all notifications are returned.
+ * @since_tizen 2.3
+ * @privlevel public
+ * @privilege %http://tizen.org/privilege/notification
+ * @param[in]  pkgname  The caller application package name
+ * @param[in]  group_id The group ID
+ * @param[in]  priv_id  The private ID
+ * @param[in]  count    The returned notification data number
+ * @param[out] list     The notification list handle
+ * @return #NOTIFICATION_ERROR_NONE if success,
+ *         other value if failure
+ * @retval #NOTIFICATION_ERROR_NONE Success
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
+ * @see #notification_list_h
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	notification_list_h noti_list = NULL;
+	int noti_err = NOTIFICATION_ERROR_NONE;
+
+	noti_err = notification_get_detail_list(pkgname, group_id, priv_id, -1, &noti_list);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_get_detail_list(const char *pkgname,
+						  int group_id,
+						  int priv_id,
+						  int count,
+						  notification_list_h *list);
+
+/**
+ * @brief Frees a notification list.
+ * @since_tizen 2.3
+ * @privlevel public
+ * @privilege %http://tizen.org/privilege/notification
+ * @param[in] list The notification list handle
+ * @return #NOTIFICATION_ERROR_NONE on success,
+ *         otherwise any other value on failure
+ * @retval #NOTIFICATION_ERROR_NONE         Success
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
+ * @pre notification_get_grouping_list() or notification_get_detail_list().
+ * @see #notification_list_h
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	notification_list_h noti_list = NULL;
+	int noti_err = NOTIFICATION_ERROR_NONE;
+
+	...
+
+	noti_err = notification_free_list(noti_list);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_free_list(notification_list_h list);
+
+
+/**
  * @brief Gets the head pointer of the notification list.
  * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
@@ -77,9 +182,8 @@ typedef struct _notification_list *notification_list_h;
 notification_list_h notification_list_get_head(notification_list_h list);
 
 /**
- * @internal
  * @brief Gets the tail pointer to the notification list.
- * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
+ * @since_tizen 2.3
  * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
  * @param[in] list Notification list handle
  * @return Notification list handle on success, NULL on failure
@@ -108,7 +212,6 @@ notification_list_h notification_list_get_head(notification_list_h list);
 notification_list_h notification_list_get_tail(notification_list_h list);
 
 /**
- * @internal
  * @brief Gets the previous pointer of the current notification list.
  * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
@@ -139,7 +242,6 @@ notification_list_h notification_list_get_tail(notification_list_h list);
 notification_list_h notification_list_get_prev(notification_list_h list);
 
 /**
- * @internal
  * @brief Gets the next pointer of the current notification list.
  * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
@@ -170,7 +272,6 @@ notification_list_h notification_list_get_prev(notification_list_h list);
 notification_list_h notification_list_get_next(notification_list_h list);
 
 /**
- * @internal
  * @brief Gets the notification handle that the list has.
  * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
@@ -203,7 +304,6 @@ notification_list_h notification_list_get_next(notification_list_h list);
 notification_h notification_list_get_data(notification_list_h list);
 
 /**
- * @internal
  * @brief Appends notification data to the notification list.
  * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
@@ -239,7 +339,6 @@ notification_list_h notification_list_append(notification_list_h list,
 					     notification_h noti);
 
 /**
- * @internal
  * @brief Removes notification data from the notification list.
  * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
