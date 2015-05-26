@@ -792,7 +792,7 @@ EXPORT_API int notification_get_text(notification_h noti,
 							translated_str = NULL;
 						}
 
-						strncpy(buf_str, sizeof(buf_str), translated_str);
+						strncpy(buf_str, translated_str, sizeof(buf_str));
 
 						int src_len = strlen(result_str);
 						int max_len = NOTI_TEXT_RESULT_LEN - src_len - 1;
