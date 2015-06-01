@@ -37,13 +37,10 @@ SET(HEADERS-DEVEL
 	./include/notification_status_internal.h
 	./include/notification_setting.h
 	./include/notification_setting_internal.h
-   )
-
-
-SET(HEADERS-SERVICE-DEVEL
 	./include/notification_ipc.h
 	./include/notification_noti.h
-	./include/notification_setting_service.h)
+	./include/notification_setting_service.h
+   )
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include)
 
@@ -106,11 +103,4 @@ INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data/images/ DESTINATION ${IMGDIR}
 
 FOREACH(hfile ${HEADERS-DEVEL})
 	INSTALL(FILES ${CMAKE_SOURCE_DIR}/${hfile} DESTINATION include/${PROJECT_NAME})
-ENDFOREACH(hfile)
-
-CONFIGURE_FILE(${PROJECT_NAME}-service.pc.in ${PROJECT_NAME}-service.pc @ONLY)
-INSTALL(FILES ${CMAKE_BINARY_DIR}/${PROJECT_NAME}-service.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
-
-FOREACH(hfile ${HEADERS-SERVICE-DEVEL})
-	INSTALL(FILES ${CMAKE_SOURCE_DIR}/${hfile} DESTINATION include/${PROJECT_NAME}/service)
 ENDFOREACH(hfile)

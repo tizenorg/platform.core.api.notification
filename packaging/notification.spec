@@ -43,14 +43,6 @@ Requires:   %{name} = %{version}-%{release}
 %description devel
 Development files needed to build software that needs to system a system notification.
 
-%package service-devel
-Summary:    Notification library (service-devel)
-Group:      Development/Libraries
-Requires:   %{name} = %{version}-%{release}
-
-%description service-devel
-Development files needed to build notification service
-
 %build
 %if 0%{?tizen_build_binary_release_type_eng}
 export CFLAGS="$CFLAGS -DTIZEN_ENGINEER_MODE"
@@ -230,11 +222,7 @@ vconftool set -t string memory/private/libstatus/message "" -i -g 5000 -f  $SMAC
 %{_includedir}/notification/notification_status_internal.h
 %{_includedir}/notification/notification_setting.h
 %{_includedir}/notification/notification_setting_internal.h
+%{_includedir}/notification/notification_ipc.h
+%{_includedir}/notification/notification_noti.h
+%{_includedir}/notification/notification_setting_service.h
 %{_libdir}/pkgconfig/notification.pc
-
-%files service-devel
-%defattr(-,root,root,-)
-%{_includedir}/notification/service/notification_ipc.h
-%{_includedir}/notification/service/notification_noti.h
-%{_includedir}/notification/service/notification_setting_service.h
-%{_libdir}/pkgconfig/notification-service.pc
