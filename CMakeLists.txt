@@ -24,7 +24,8 @@ SET(SRCS
 	./src/notification_list.c
 	./src/notification_status.c
 	./src/notification_ipc.c
-	./src/notification_setting.c)
+	./src/notification_setting.c
+	./src/notification_old.c)
 SET(HEADERS-DEVEL
 	./include/notification.h
 	./include/notification_internal.h
