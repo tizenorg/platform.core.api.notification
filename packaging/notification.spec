@@ -194,12 +194,6 @@ chown :5000 /opt/dbspace/.notification.db
 chown :5000 /opt/dbspace/.notification.db-journal
 chmod 644 /opt/dbspace/.notification.db
 chmod 644 /opt/dbspace/.notification.db-journal
-if [ -f /usr/lib/rpm-plugins/msm.so ]
-then
-    chsmack -a 'notification::db' /opt/dbspace/.notification.db*
-fi
-SMACK_OPTION="-s system::vconf_misc"
-vconftool set -t string memory/private/libstatus/message "" -i -g 5000 -f  $SMACK_OPTION
 
 %postun -p /sbin/ldconfig
 
