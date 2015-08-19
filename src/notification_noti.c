@@ -27,12 +27,16 @@
 #include <Ecore.h>
 #include <Elementary.h>
 #include <Eina.h>
+#include <package_manager.h>
 
 #include <notification.h>
 #include <notification_db.h>
+#include <notification_list.h>
 #include <notification_noti.h>
 #include <notification_debug.h>
 #include <notification_private.h>
+#include <notification_setting.h>
+#include <notification_setting_internal.h>
 
 #define NOTI_BURST_DELETE_UNIT 10
 
@@ -710,6 +714,53 @@ err:
 	return ret;
 }
 
+static bool _is_allowed_to_notify(const char *caller_package_name)
+{
+	notification_setting_h setting = NULL;
+	int err;
+	char *package_id = NULL;
+	bool ret = true;
+
+	err = notification_setting_get_setting_by_package_name(caller_package_name, &setting);
+	if (err != NOTIFICATION_ERROR_NONE) {
+		/* Retry with package id */
+		err = package_manager_get_package_id_by_app_id (caller_package_name, &package_id);
+
+		if (err != PACKAGE_MANAGER_ERROR_NONE || package_id == NULL) {
+			NOTIFICATION_ERR("package_manager_get_package_id_by_app_id failed [%d]", err);
+			goto out;
+		}
+		else {
+			err = notification_setting_get_setting_by_package_name(package_id, &setting);
+			if (err != NOTIFICATION_ERROR_NONE) {
+				NOTIFICATION_ERR("notification_setting_get_setting_by_package_name failed [%d]", err);
+				goto out;
+			}
+		}
+	}
+
+	err = notification_setting_get_allow_to_notify(setting, &ret);
+	if (err != NOTIFICATION_ERROR_NONE) {
+		NOTIFICATION_ERR("notification_setting_get_allow_to_notify failed [%d]", err);
+		goto out;
+	}
+
+	if (ret != true) {
+		NOTIFICATION_DBG("[%s] is not allowed to notify", caller_package_name);
+	}
+
+out:
+	if (package_id) {
+		free(package_id);
+	}
+
+	if (setting) {
+		notification_setting_free_notification(setting);
+	}
+
+	return ret;
+}
+
 EXPORT_API int notification_noti_insert(notification_h noti)
 {
 	int ret = 0;
@@ -717,7 +768,17 @@ EXPORT_API int notification_noti_insert(notification_h noti)
 	sqlite3_stmt *stmt = NULL;
 	char *query = NULL;
 	char buf_key[32] = { 0, };
-	const char *title_key = NULL;
+	char *title_key = NULL;
+
+	if (noti == NULL) {
+		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
+	}
+
+	if (_is_allowed_to_notify((const char*)noti->caller_pkgname) == false) {
+		NOTIFICATION_DBG("Not allowed to notify");
+		return NOTIFICATION_ERROR_PERMISSION_DENIED;
+	}
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
@@ -750,14 +811,14 @@ EXPORT_API int notification_noti_insert(notification_h noti)
 		snprintf(buf_key, sizeof(buf_key), "%d",
 			 NOTIFICATION_TEXT_TYPE_TITLE);
 
-		title_key = bundle_get_val(noti->b_key, buf_key);
+		bundle_get_str(noti->b_key, buf_key, &title_key);
 	}
 
 	if (title_key == NULL && noti->b_text != NULL) {
 		snprintf(buf_key, sizeof(buf_key), "%d",
 			 NOTIFICATION_TEXT_TYPE_TITLE);
 
-		title_key = bundle_get_val(noti->b_text, buf_key);
+		bundle_get_str(noti->b_text, buf_key, &title_key);
 	}
 
 	if (title_key == NULL) {
@@ -970,6 +1031,7 @@ EXPORT_API int notification_noti_get_by_tag(notification_h noti, char *pkgname, 
 	} else {
 		ret = NOTIFICATION_ERROR_FROM_DB;
 	}
+
 err:
 
 	if (stmt) {
@@ -1118,7 +1180,7 @@ EXPORT_API int notification_noti_delete_all(notification_type_e type, const char
 				if (tmp) {
 					*list_deleted_rowid = tmp;
 				} else {
-					NOTIFICATION_ERR("Heap: %d\n", errno);
+					NOTIFICATION_ERR("Heap: %s\n", strerror(errno));
 					/*!
 					 * \TODO
 					 * How can I handle this?
@@ -1804,22 +1866,6 @@ EXPORT_API int notification_noti_check_tag(notification_h noti)
 		goto err;
 	}
 
-/*
-	query = sqlite3_mprintf("select priv_id from noti_list where caller_pkgname = '%s' and tag = '%s'",
-		 noti->caller_pkgname, noti->tag);
-	if (query == NULL) {
-		ret = NOTIFICATION_ERROR_OUT_OF_MEMORY;
-		goto err;
-	}
-
-	ret = sqlite3_prepare(db, query, strlen(query), &stmt, NULL);
-	if (ret != SQLITE_OK) {
-		NOTIFICATION_ERR("Get priv id DB err(%d) : %s", ret,
-				 sqlite3_errmsg(db));
-		ret = NOTIFICATION_ERROR_FROM_DB;
-		goto err;
-	}
-*/
 	ret = sqlite3_step(stmt);
 	if (ret == SQLITE_ROW) {
 		result = sqlite3_column_int(stmt, 0);

@@ -144,6 +144,19 @@ typedef enum _notification_count_display_type {
 } notification_count_display_type_e;
 
 /**
+ * @brief Enumeration for button
+ * @since_tizen 2.4
+ */
+typedef enum _notification_button_index {
+	NOTIFICATION_BUTTON_1 = 1, /**< button 1 */
+	NOTIFICATION_BUTTON_2 = 2, /**< button 2 */
+	NOTIFICATION_BUTTON_3 = 3, /**< button 3 */
+	NOTIFICATION_BUTTON_4 = 4, /**< button 4 */
+	NOTIFICATION_BUTTON_5 = 5, /**< button 5 */
+	NOTIFICATION_BUTTON_6 = 6, /**< button 6 */
+} notification_button_index_e;
+
+/**
  * @brief Enumeration for notification text type.
  * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
@@ -312,15 +325,12 @@ enum _notification_property {
  * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  */
 enum _notificaton_display_applist {
-	NOTIFICATION_DISPLAY_APP_NOTIFICATION_TRAY = 0x00000001,/**< Notification Tray(Quickpanel) */
-	NOTIFICATION_DISPLAY_APP_TICKER = 0x00000002,
-						/**< Ticker notification */
-	NOTIFICATION_DISPLAY_APP_LOCK = 0x00000004,
-						/**< Lock screen */
+	NOTIFICATION_DISPLAY_APP_NOTIFICATION_TRAY = 0x00000001, /**< Notification Tray(Quickpanel) */
+	NOTIFICATION_DISPLAY_APP_TICKER = 0x00000002, /**< Ticker notification */
+	NOTIFICATION_DISPLAY_APP_LOCK = 0x00000004, /**< Lock screen */
 	NOTIFICATION_DISPLAY_APP_INDICATOR = 0x00000008,/**< Indicator */
-	NOTIFICATION_DISPLAY_APP_HEADS_UP = 0x00000010,/**< Heads-up notification */
-	NOTIFICATION_DISPLAY_APP_ALL = 0xffffffff,
-						/**< All display application */
+	NOTIFICATION_DISPLAY_APP_ACTIVE = 0x00000010,/**< Active notification */
+	NOTIFICATION_DISPLAY_APP_ALL = 0x0000000f, /**< All display application except active notification*/
 };
 
 /**

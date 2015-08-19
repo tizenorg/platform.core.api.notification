@@ -17,8 +17,11 @@ BuildRequires: pkgconfig(aul)
 BuildRequires: pkgconfig(appsvc)
 BuildRequires: pkgconfig(dbus-glib-1)
 BuildRequires: pkgconfig(com-core)
+BuildRequires: pkgconfig(appcore-common)
 BuildRequires: pkgconfig(capi-appfw-application)
+BuildRequires: pkgconfig(capi-appfw-app-manager)
 BuildRequires: pkgconfig(capi-appfw-package-manager)
+BuildRequires: pkgconfig(pkgmgr-info)
 BuildRequires: pkgconfig(edbus)
 BuildRequires: pkgconfig(elementary)
 BuildRequires: pkgconfig(ecore)
@@ -76,14 +79,14 @@ rm -rf %{buildroot}
 %post
 /sbin/ldconfig
 
-if [ ! -d /opt/dbspace ]
+if [ ! -d /usr/dbspace ]
 then
-	mkdir /opt/dbspace
+	mkdir /usr/dbspace
 fi
 
-if [ ! -f /opt/dbspace/.notification.db ]
+if [ ! -f /usr/dbspace/.notification.db ]
 then
-	sqlite3 /opt/dbspace/.notification.db 'PRAGMA journal_mode = PERSIST;
+	sqlite3 /usr/dbspace/.notification.db 'PRAGMA journal_mode = PERSIST;
 		create 	table if not exists noti_list ( 
 			type INTEGER NOT NULL,
 			layout INTEGER NOT NULL default 0,
@@ -190,10 +193,10 @@ then
 	'
 fi
 
-chown :5000 /opt/dbspace/.notification.db
-chown :5000 /opt/dbspace/.notification.db-journal
-chmod 644 /opt/dbspace/.notification.db
-chmod 644 /opt/dbspace/.notification.db-journal
+chown :5000 /usr/dbspace/.notification.db
+chown :5000 /usr/dbspace/.notification.db-journal
+chmod 644 /usr/dbspace/.notification.db
+chmod 644 /usr/dbspace/.notification.db-journal
 
 %postun -p /sbin/ldconfig
 

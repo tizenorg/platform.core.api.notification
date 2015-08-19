@@ -23,6 +23,7 @@
 #define __NOTIFICATION_NOTI_H__
 
 #include <notification.h>
+#include <notification_list.h>
 
 #define TAG_TIME "TIME"
 #define TAG_TYPE_INVALID -1

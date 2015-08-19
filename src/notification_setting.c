@@ -24,16 +24,20 @@
 #include <stdlib.h>
 #include <db-util.h>
 #include <package_manager.h>
+#include <pkgmgr-info.h>
 #include <tizen_type.h>
 
 #include <notification.h>
 #include <notification_db.h>
+#include <notification_list.h>
 #include <notification_noti.h>
 #include <notification_debug.h>
 #include <notification_ipc.h>
 #include <notification_private.h>
 #include <notification_setting.h>
 #include <notification_setting_internal.h>
+
+#define NOTIFICATION_PRIVILEGE "http://tizen.org/privilege/notification"
 
 
 static int _get_table_field_data_int(char  **table, int *buf, int index)
@@ -221,7 +225,7 @@ EXPORT_API int notification_setting_get_setting_by_package_name(const char *pack
 	}
 
 	if (!row_count) {
-		NOTIFICATION_DBG ("No setting found...");
+		NOTIFICATION_DBG ("No setting found for [%s]", package_name);
 		err= NOTIFICATION_ERROR_NOT_EXIST_ID;
 		goto out;
 	}
@@ -264,6 +268,7 @@ out:
 
 EXPORT_API int notification_setting_get_setting(notification_setting_h *setting)
 {
+	int ret;
 	char *package_name = NULL;
 
 	package_name = notification_get_pkgname_by_pid();
@@ -271,7 +276,11 @@ EXPORT_API int notification_setting_get_setting(notification_setting_h *setting)
 	if (package_name == NULL)
 		return NOTIFICATION_ERROR_NOT_EXIST_ID;
 
-	return notification_setting_get_setting_by_package_name(package_name, setting);
+	ret = notification_setting_get_setting_by_package_name(package_name, setting);
+
+	free(package_name);
+
+	return ret;
 }
 
 EXPORT_API int notification_setting_get_package_name(notification_setting_h setting, char **value)
@@ -537,81 +546,7 @@ out:
 	return err;
 }
 
-static int _get_count_of_setting(sqlite3 *db, int *count)
-{
-	int sqlite3_ret = SQLITE_OK;
-	int err = NOTIFICATION_ERROR_NONE;
-	const char *sql_query = "SELECT COUNT(priv_id) FROM notification_setting";
-	char **result_table = NULL;
-
-	if (count == NULL) {
-		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
-		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
-		goto out;
-	}
-
-	sqlite3_ret = sqlite3_get_table(db, sql_query, &result_table, NULL, NULL, NULL);
-
-	if (sqlite3_ret != SQLITE_OK || result_table[1] == NULL) {
-		NOTIFICATION_ERR("sqlite3_get_table failed [%d][%s]", sqlite3_ret, sqlite3_errmsg(db));
-		err = NOTIFICATION_ERROR_FROM_DB;
-		goto out;
-	}
-
-	*count = atoi(result_table[1]);
-
-out:
-
-	if (result_table)
-		sqlite3_free_table(result_table);
-
-	return err;
-}
-
-static int _get_count_of_package(int *count)
-{
-	int err = NOTIFICATION_ERROR_NONE;
-	int pkgmgr_ret = PACKAGE_MANAGER_ERROR_NONE;
-	package_manager_filter_h package_filter = NULL;
-	int package_count = 0;
-
-	if (count == NULL) {
-		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
-		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
-		goto out;
-	}
-
-	if ((pkgmgr_ret = package_manager_filter_create (&package_filter)) != PACKAGE_MANAGER_ERROR_NONE) {
-		NOTIFICATION_ERR("package_manager_filter_create failed [%08X]", pkgmgr_ret);
-		err = NOTIFICATION_ERROR_FROM_DB;
-		goto out;
-	}
-
-	if ((pkgmgr_ret = package_manager_filter_add_bool(package_filter, "PMINFO_PKGINFO_PROP_PACKAGE_NODISPLAY_SETTING", false)) != PACKAGE_MANAGER_ERROR_NONE) {
-		NOTIFICATION_ERR("package_manager_filter_add_bool failed [%08X]", pkgmgr_ret);
-		err = NOTIFICATION_ERROR_FROM_DB;
-		goto out;
-	}
-
-	if ((pkgmgr_ret = package_manager_filter_count(package_filter, &package_count)) != PACKAGE_MANAGER_ERROR_NONE) {
-		NOTIFICATION_ERR("package_manager_filter_count failed [%08X]", pkgmgr_ret);
-		err = NOTIFICATION_ERROR_FROM_DB;
-		goto out;
-	}
-
-	*count = package_count;
-
-out:
-	if (package_filter) {
-		if ((pkgmgr_ret = package_manager_filter_destroy(package_filter)) != PACKAGE_MANAGER_ERROR_NONE) {
-			NOTIFICATION_WARN("package_manager_filter_destroy failed [%08X]", pkgmgr_ret);
-		}
-	}
-
-	return err;
-}
-
-static bool foreach_package_info_callback(package_info_h package_info, void *user_data)
+static int foreach_package_info_callback(const pkgmgrinfo_pkginfo_h package_info, void *user_data)
 {
 	sqlite3 *db = user_data;
 	sqlite3_stmt *db_statement = NULL;
@@ -621,7 +556,7 @@ static bool foreach_package_info_callback(package_info_h package_info, void *use
 	int field_index = 1;
 	int err = true;
 
-	if ((pkgmgr_ret = package_info_get_package(package_info, &package_name)) != PACKAGE_MANAGER_ERROR_NONE) {
+	if ((pkgmgr_ret = pkgmgrinfo_pkginfo_get_pkgname(package_info, &package_name)) != PACKAGE_MANAGER_ERROR_NONE) {
 		NOTIFICATION_ERR("package_info_get_package failed [%d]", pkgmgr_ret);
 		err = false;
 		goto out;
@@ -658,10 +593,6 @@ out:
 		sqlite3_finalize(db_statement);
 	}
 
-	if(package_name) {
-		free(package_name);
-	}
-
 	NOTIFICATION_INFO("foreach_package_info_callback returns[%d]", err);
 	return err;
 }
@@ -672,8 +603,8 @@ EXPORT_API int notification_setting_refresh_setting_table()
 	sqlite3 *db = NULL;
 	int sqlite3_ret = SQLITE_OK;
 	int pkgmgr_ret = PACKAGE_MANAGER_ERROR_NONE;
-	int setting_count = 0;
-	int package_count = 0;
+	pkgmgrinfo_pkginfo_filter_h filter;
+	uid_t current_uid;
 
 	sqlite3_ret = db_util_open(DBPATH, &db, 0);
 
@@ -683,31 +614,33 @@ EXPORT_API int notification_setting_refresh_setting_table()
 		goto out;
 	}
 
-	if ((err = _get_count_of_setting(db, &setting_count)) != NOTIFICATION_ERROR_NONE) {
-		NOTIFICATION_ERR("_get_count_of_setting failed [%08X]", err);
-		goto out;
-	}
-
-	if ((err = _get_count_of_package(&package_count)) != NOTIFICATION_ERROR_NONE) {
-		NOTIFICATION_ERR("_get_count_of_package failed [%08X]", err);
-		goto out;
-	}
-
-	NOTIFICATION_INFO("setting_count [%d], package_count [%d]", setting_count, package_count);
-
-	if (setting_count == package_count) {
-		NOTIFICATION_INFO("No need to refresh");
-		goto out;
-	}
-
 	sqlite3_exec(db, "BEGIN immediate;", NULL, NULL, NULL);
 
-	pkgmgr_ret = package_manager_foreach_package_info(foreach_package_info_callback, db);
-	if (pkgmgr_ret != PACKAGE_MANAGER_ERROR_NONE) {
-		NOTIFICATION_ERR("package_manager_filter_foreach_package_info failed [%d]", pkgmgr_ret);
+	pkgmgr_ret = pkgmgrinfo_pkginfo_filter_create(&filter);
+	if (pkgmgr_ret != PMINFO_R_OK) {
+		NOTIFICATION_ERR("pkgmgrinfo_pkginfo_filter_create failed [%d]", pkgmgr_ret);
 		err = NOTIFICATION_ERROR_FROM_DB;
 		goto out;
 	}
+
+	pkgmgr_ret = pkgmgrinfo_pkginfo_filter_add_string(filter, PMINFO_PKGINFO_PROP_PACKAGE_PRIVILEGE, NOTIFICATION_PRIVILEGE);
+	if (pkgmgr_ret != PMINFO_R_OK) {
+		NOTIFICATION_ERR("pkgmgrinfo_pkginfo_filter_add_string failed [%d]", pkgmgr_ret);
+		err = NOTIFICATION_ERROR_FROM_DB;
+		goto out;
+	}
+
+	current_uid = getuid();
+
+	pkgmgr_ret = pkgmgrinfo_pkginfo_usr_filter_foreach_pkginfo(filter, foreach_package_info_callback, db, current_uid);
+	if (pkgmgr_ret != PMINFO_R_OK) {
+		NOTIFICATION_ERR("pkgmgrinfo_pkginfo_usr_filter_foreach_pkginfo failed [%d]", pkgmgr_ret);
+		err = NOTIFICATION_ERROR_FROM_DB;
+		goto out;
+	}
+
+	pkgmgrinfo_pkginfo_filter_destroy(filter);
+
 
 out:
 

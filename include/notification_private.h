@@ -96,6 +96,8 @@ struct _notification {
 	char *temp_title;
 	char *temp_content;
 	char *tag;
+	bool ongoing_flag;
+	bool auto_remove;
 };
 
 struct notification_system_setting {

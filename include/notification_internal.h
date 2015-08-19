@@ -35,6 +35,8 @@ extern "C" {
  * @{
  */
 
+#define NOTIFICATION_DISPLAY_APP_HEADS_UP NOTIFICATION_DISPLAY_APP_ACTIVE /* To avoid build error */
+
 /**
  * @brief This function add deferred task. the registered task will be executed when notification service become ready
  * @param[in] deferred_task_cb The callback function

@@ -36,17 +36,14 @@ extern "C" {
  */
 
 /**
- * @brief Sends a string (message) to the notification status monitor.
+ * @brief Shows a toast popup window with given messaege
  * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  * @privlevel public
- * @privilege %http://tizen.org/privilege/notification
  * @param[in] message The messages to be posted
-
  * @return  #NOTIFICATION_ERROR_NONE on success,
  *          otherwise any other value on failure
  * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval #NOTIFICATION_ERROR_FROM_DBUS Error from DBus
- * @retval #NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
  * @see #notification_error_e
  */
 int notification_status_message_post(const char *message);

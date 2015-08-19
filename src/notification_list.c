@@ -25,6 +25,7 @@
 
 #include <notification.h>
 #include <notification_list.h>
+#include <notification_noti.h>
 #include <notification_debug.h>
 #include <notification_private.h>
 
@@ -224,4 +225,71 @@ EXPORT_API notification_list_h notification_list_remove(notification_list_h list
 	}
 
 	return NULL;
+}
+
+EXPORT_API int notification_get_list(notification_type_e type,
+						      int count,
+						      notification_list_h *list)
+{
+	notification_list_h get_list = NULL;
+	int ret = 0;
+
+	if (list == NULL) {
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
+	}
+
+	ret = notification_noti_get_grouping_list(type, count, &get_list);
+	if (ret != NOTIFICATION_ERROR_NONE) {
+		return ret;
+	}
+
+	*list = get_list;
+
+	return NOTIFICATION_ERROR_NONE;
+}
+
+EXPORT_API int notification_get_detail_list(const char *pkgname,
+							     int group_id,
+							     int priv_id,
+							     int count,
+							     notification_list_h *list)
+{
+	notification_list_h get_list = NULL;
+	int ret = 0;
+
+	if (list == NULL) {
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
+	}
+
+	ret =
+	    notification_noti_get_detail_list(pkgname, group_id, priv_id, count,
+					      &get_list);
+	if (ret != NOTIFICATION_ERROR_NONE) {
+		return ret;
+	}
+
+	*list = get_list;
+
+	return NOTIFICATION_ERROR_NONE;
+}
+
+EXPORT_API int notification_free_list(notification_list_h list)
+{
+	notification_list_h cur_list = NULL;
+	notification_h noti = NULL;
+
+	if (list == NULL) {
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
+	}
+
+	cur_list = notification_list_get_head(list);
+
+	while (cur_list != NULL) {
+		noti = notification_list_get_data(cur_list);
+		cur_list = notification_list_remove(cur_list, noti);
+
+		notification_free(noti);
+	}
+
+	return NOTIFICATION_ERROR_NONE;
 }

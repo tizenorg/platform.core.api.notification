@@ -28,7 +28,6 @@
 
 #include <notification_error.h>
 #include <notification_type.h>
-#include <notification_list.h>
 #include <notification_status.h>
 
 #ifdef __cplusplus
@@ -1317,80 +1316,6 @@ int notification_delete_all(notification_type_e type);
 int notification_post(notification_h noti);
 
 /**
- * @brief Sets permission to application for updating or deleting the notification
- * @since_tizen 2.4
- * @privlevel public
- * @privilege %http://tizen.org/privilege/notification
- * @param[in] noti Notification handle
- * @param[in] permission_type permission type
- * @param[in] app_id target application id
- * @return #NOTIFICATION_ERROR_NONE if success, other value if failure
- * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
- * @retval #NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
- * @see #notification_get_permission
- * @see #notification_permission_type_e
- * @see #notification_h
- * @par Sample code:
- * @code
-#include <notification.h>
-...
-{
-	notification_h noti = NULL;
-	int noti_err = NOTIFICATION_ERROR_NONE;
-
-	noti = notification_create(NOTIFICATION_TYPE_NOTI);
-	if(noti == NULL) {
-		return;
-	}
-	...
-
-	noti_err = notification_set_permission(noti, NOTIFICATION_PERMISSION_TYPE_DELETE, "org.tizen.xxx");
-	if(noti_err != NOTIFICATION_ERROR_NONE) {
-		notification_free(noti);
-		return;
-	}
-}
- * @endcode
- */
-int notification_set_permission(notification_h noti, notification_permission_type_e permission_type, const char *app_id);
-
-/**
- * @brief Gets permission of the notification
- * @remarks @a app_id must be freed with notification_free() function.
- * @since_tizen 2.4
- * @privlevel public
- * @privilege %http://tizen.org/privilege/notification
- * @param[in] noti Notification handle
- * @param[out] permission_type permission type
- * @param[out] app_id target application id
- * @return #NOTIFICATION_ERROR_NONE if success, other value if failure
- * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
- * @retval #NOTIFICATION_ERROR_PERMISSION_DENIED The application does not have the privilege to call this method
- * @see #notification_set_permission
- * @see #notification_permission_type_e
- * @see #notification_h
- * @par Sample code:
- * @code
-#include <notification.h>
-...
-{
-	int noti_err = NOTIFICATION_ERROR_NONE;
-	notification_permission_type_e permission_type;
-	const char *app_id = NULL;
-
-	...
-
-	noti_err = notification_get_permission(noti, &permission_type, &app_id);
-	if(noti_err != NOTIFICATION_ERROR_NONE) {
-		notification_free(noti);
-		return;
-	}
-}
- * @endcode
- */
-int notification_get_permission(notification_h noti, notification_permission_type_e *permission_type, const char **app_id);
-
-/**
  * @brief Gets the package name of the notification
  * @since_tizen 2.4
  * @param[in] noti Notification handle
@@ -1420,6 +1345,125 @@ int notification_get_permission(notification_h noti, notification_permission_typ
  */
 int notification_get_pkgname(notification_h noti, char **pkgname);
 
+/**
+ * @brief Adds a button on the notification
+ * @since_tizen 2.4
+ * @param[in] noti Notification handle
+ * @param[in] button_index Button index
+ * @return #NOTIFICATION_ERROR_NONE on success, otherwise a negative error value
+ * @retval NOTIFICATION_ERROR_NONE Success
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER Invalid input value
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	notification_h noti = NULL;
+	int noti_err = NOTIFICATION_ERROR_NONE;
+	char *pkgname = NULL;
+
+	...
+
+	noti_err  = notification_add_button(noti, NOTIFICATION_BUTTON_1);
+
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		notification_free(noti);
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_add_button(notification_h noti, notification_button_index_e button_index);
+
+/**
+ * @brief Removes a button on the notification
+ * @since_tizen 2.4
+ * @param[in] noti Notification handle
+ * @param[in] button_index Button index
+ * @return #NOTIFICATION_ERROR_NONE on success, otherwise a negative error value
+ * @retval NOTIFICATION_ERROR_NONE Success
+ * @retval NOTIFICATION_ERROR_INVALID_PARAMETER Invalid input value
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	notification_h noti = NULL;
+	int noti_err = NOTIFICATION_ERROR_NONE;
+	char *pkgname = NULL;
+
+	...
+
+	noti_err  = notification_remove_button(noti, NOTIFICATION_BUTTON_1);
+
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		notification_free(noti);
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_remove_button(notification_h noti, notification_button_index_e button_index);
+
+/**
+ * @brief Sets the 'auto remove' option of the active notification
+ * @details The 'auto remove' option let the active notification be removed in several seconds after it shows. Default value is true.
+ * @remarks When 'auto_remove' is set as false, the active notification will not be removed
+ as long as the user removes the active notification or the app which posted the active notification removes the active notification.
+ * @since_tizen 2.4
+ * @param[in] noti Notification handle
+ * @param[in] auto_remove Auto remove option
+ * @return #NOTIFICATION_ERROR_NONE On success, other value if failure
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @see #notification_h
+ * @see #notification_get_auto_remove
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	notification_h noti = NULL;
+	int noti_err = NOTIFICATION_ERROR_NONE;
+
+	...
+
+	noti_err = notification_set_auto_remove(noti, false);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_set_auto_remove(notification_h noti, bool auto_remove);
+
+/**
+ * @brief Gets the 'auto remove' option of the active notification
+ * @details The 'auto remove' option let the active notification be removed in several seconds after it shows. Default value is true.
+ * @since_tizen 2.4
+ * @param[in] noti Notification handle
+ * @param[out] auto_remove Auto remove option
+ * @return #NOTIFICATION_ERROR_NONE On success, other value on failure
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @see #notification_h
+ * @see #notification_get_auto_remove
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	int noti_err = NOTIFICATION_ERROR_NONE;
+	bool auto_remove;
+
+	...
+
+	noti_err = notification_get_auto_remove(noti, &auto_remove);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_get_auto_remove(notification_h noti, bool *auto_remove);
 
 /* For backward compatibility */
 /**

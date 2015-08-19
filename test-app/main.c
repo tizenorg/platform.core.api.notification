@@ -33,9 +33,11 @@
 
 /* notification header */
 #include <notification.h>
+#include <notification_internal.h>
 #include <notification_status.h>
 #include <notification_setting.h>
 #include <notification_setting_internal.h>
+#include <notification_text_domain.h>
 
 /*-----------------------------------------------------------------------------------------*/
 /* types */
@@ -151,6 +153,7 @@ void testapp_show_menu (testapp_menu_type_e menu)
 		testapp_print (" 5.  Delete all notification\n");
 		testapp_print (" 6.  Post a heads notification with a button\n");
 		testapp_print (" 7.  Post a notification with domain text\n");
+		testapp_print (" 8.  Load by tag\n");
 		testapp_print ("------------------------------------------\n");
 		break;
 	case TESTAPP_MENU_TYPE_SETTING_TEST_MENU:
@@ -233,8 +236,15 @@ static int testapp_test_post_notifications()
 
 	testapp_print("Input count : ");
 
-	if (0 >= scanf("%d", &repeat_count))
+	if (0 >= scanf("%d", &repeat_count)) {
 		testapp_print("Invalid input");
+		goto FINISH_OFF;
+	}
+
+	if (repeat_count > 30) {
+		testapp_print("Too many count");
+		goto FINISH_OFF;
+	}
 
 	for (i = 0; i < repeat_count; i++) {
 		if ((err = testapp_add_a_notification()) != NOTIFICATION_ERROR_NONE) {
@@ -243,7 +253,7 @@ static int testapp_test_post_notifications()
 		}
 	}
 
-	FINISH_OFF:
+FINISH_OFF:
 	return err;
 }
 
@@ -330,9 +340,9 @@ static int testapp_test_post_heads_up_notification_with_button()
 	noti_err = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_TITLE, "I'm Title", "TITLE", NOTIFICATION_VARIABLE_TYPE_NONE);
 	noti_err = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_CONTENT, "I'm Content", "CONTENT", NOTIFICATION_VARIABLE_TYPE_NONE);
 
-	noti_err = notification_set_display_applist(noti_handle, NOTIFICATION_DISPLAY_APP_HEADS_UP | NOTIFICATION_DISPLAY_APP_NOTIFICATION_TRAY);
+	noti_err = notification_set_display_applist(noti_handle, NOTIFICATION_DISPLAY_APP_ACTIVE | NOTIFICATION_DISPLAY_APP_NOTIFICATION_TRAY);
 
-	snprintf(tag, 100, "%d", result);
+	snprintf(tag, 100, "%d", (int)result);
 
 	noti_err = notification_set_tag(noti_handle, tag);
 
@@ -417,10 +427,6 @@ static int testapp_test_post_notification_with_domain_text()
 {
 	notification_h noti_handle = NULL;
 	int noti_err = NOTIFICATION_ERROR_NONE;
-	int app_control_err = APP_CONTROL_ERROR_NONE;
-	int priv_id = 0;
-	int group_id = 0;
-	char *app_id = NULL;
 	time_t result = time(NULL);
 	char tag[100] = { 0, };
 
@@ -451,7 +457,7 @@ static int testapp_test_post_notification_with_domain_text()
 		goto FINISH_OFF;
 	}
 
-	snprintf(tag, 100, "%d", result);
+	snprintf(tag, 100, "%d", (int)result);
 
 	noti_err = notification_set_tag(noti_handle, tag);
 
@@ -470,6 +476,25 @@ static int testapp_test_post_notification_with_domain_text()
 FINISH_OFF:
 
 
+	if (noti_handle)
+		notification_free(noti_handle);
+
+	return noti_err;
+}
+
+static int testapp_test_load_by_tag()
+{
+	notification_h noti_handle = NULL;
+	int noti_err = NOTIFICATION_ERROR_NONE;
+
+	noti_handle = notification_load_by_tag("hfe4fif#$sd$ew");
+
+	if (noti_handle == NULL) {
+		testapp_print("notification_load_by_tag failed");
+		goto FINISH_OFF;
+	}
+
+FINISH_OFF:
 	if (noti_handle)
 		notification_free(noti_handle);
 
@@ -509,6 +534,10 @@ static gboolean testapp_interpret_command_basic_test (int selected_number)
 		testapp_test_post_notification_with_domain_text();
 		break;
 
+	case 8:
+		testapp_test_load_by_tag();
+		break;
+
 	case 0:
 		go_to_loop = FALSE;
 		break;
@@ -546,9 +575,9 @@ static int testapp_test_get_setting_list()
 	int i = 0;
 	int count = 0;
 	char *package_name = NULL;
-	bool  allow_to_notify = false;
-	bool  do_not_disturb_except = false;
-	bool  visibility_class = false;
+	bool allow_to_notify = false;
+	bool do_not_disturb_except = false;
+	int visibility_class = false;
 	notification_setting_h setting_array = NULL;
 
 	notification_setting_get_setting_array(&setting_array, &count);
@@ -741,7 +770,7 @@ int main (int argc, char *argv[])
 
 	if ( testapp_initialize_testing() == FALSE ) {
 		testapp_print ("Initializing failed.\n");
-		exit(0);
+		return 1;
 	}
 
 	while (go_to_loop) {
@@ -754,7 +783,7 @@ int main (int argc, char *argv[])
 
 	testapp_finalize_testing();
 
-	exit(0);
+	return 0;
 }
 /* Main } ---------------------------------------------------------------------*/
 

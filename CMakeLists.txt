@@ -7,7 +7,7 @@ SET(LIBDIR ${LIB_INSTALL_DIR})
 SET(INCLUDEDIR "\${prefix}/include/${PROJECT_NAME}")
 SET(ICONDIR "${PREFIX}/share/${PROJECT_NAME}")
 SET(RESDIR "${PREFIX}/share/${PROJECT_NAME}")
-SET(DBDIR "/opt/dbspace")
+SET(DBDIR "/usr/dbspace")
 SET(IMGDIR "${RESDIR}/images")
 SET(DBFILE ".notification.db")
 SET(MAJOR_VER 0)
@@ -25,6 +25,7 @@ SET(SRCS
 	./src/notification_status.c
 	./src/notification_ipc.c
 	./src/notification_setting.c
+	./src/notification_internal.c
 	./src/notification_old.c)
 SET(HEADERS-DEVEL
 	./include/notification.h
@@ -58,8 +59,11 @@ pkg_check_modules(pkgs REQUIRED
 	dbus-1
 	dbus-glib-1
 	com-core
+	appcore-common
 	capi-appfw-application
+	capi-appfw-app-manager
 	capi-appfw-package-manager
+	pkgmgr-info
 	edbus
 	elementary
 	ecore

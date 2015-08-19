@@ -311,6 +311,7 @@ notification_op *notification_ipc_create_op(notification_op_type_e type, int num
 	op_list = (notification_op *)malloc(sizeof(notification_op) * num_op);
 
 	if (op_list == NULL) {
+		NOTIFICATION_ERR("malloc failed");
 		return NULL;
 	}
 
@@ -345,7 +346,7 @@ static inline char *_dup_string(const char *string)
 
 	ret = strdup(string);
 	if (!ret)
-		NOTIFICATION_ERR("Error: %d\n", errno);
+		NOTIFICATION_ERR("Error: %s\n", strerror(errno));
 
 	return ret;
 }
@@ -540,7 +541,7 @@ EXPORT_API struct packet *notification_ipc_make_packet_from_noti(notification_h 
 	char *b_key = NULL;
 	char *b_format_args = NULL;
 	struct packet *(*func_to_create_packet)(const char *command, const char *fmt, ...);
-	const char *title_key = NULL;
+	char *title_key = NULL;
 	char buf_key[32] = { 0, };
 
 	/* Decode bundle to insert DB */
@@ -596,14 +597,14 @@ EXPORT_API struct packet *notification_ipc_make_packet_from_noti(notification_h 
 		snprintf(buf_key, sizeof(buf_key), "%d",
 			 NOTIFICATION_TEXT_TYPE_TITLE);
 
-		title_key = bundle_get_val(noti->b_key, buf_key);
+		bundle_get_str(noti->b_key, buf_key, &title_key);
 	}
 
 	if (title_key == NULL && noti->b_text != NULL) {
 		snprintf(buf_key, sizeof(buf_key), "%d",
 			 NOTIFICATION_TEXT_TYPE_TITLE);
 
-		title_key = bundle_get_val(noti->b_text, buf_key);
+		bundle_get_str(noti->b_text, buf_key, &title_key);
 	}
 
 	if (title_key == NULL) {
@@ -729,7 +730,7 @@ EXPORT_API struct packet *notification_ipc_make_reply_packet_from_noti(notificat
 	char *b_text = NULL;
 	char *b_key = NULL;
 	char *b_format_args = NULL;
-	const char *title_key = NULL;
+	char *title_key = NULL;
 	char buf_key[32] = { 0, };
 
 	/* Decode bundle to insert DB */
@@ -785,14 +786,14 @@ EXPORT_API struct packet *notification_ipc_make_reply_packet_from_noti(notificat
 		snprintf(buf_key, sizeof(buf_key), "%d",
 			 NOTIFICATION_TEXT_TYPE_TITLE);
 
-		title_key = bundle_get_val(noti->b_key, buf_key);
+		bundle_get_str(noti->b_key, buf_key, &title_key);
 	}
 
 	if (title_key == NULL && noti->b_text != NULL) {
 		snprintf(buf_key, sizeof(buf_key), "%d",
 			 NOTIFICATION_TEXT_TYPE_TITLE);
 
-		title_key = bundle_get_val(noti->b_text, buf_key);
+		bundle_get_str(noti->b_text, buf_key, &title_key);
 	}
 
 	if (title_key == NULL) {
