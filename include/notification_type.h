@@ -423,6 +423,28 @@ typedef enum notification_permission_type {
     NOTIFICATION_PERMISSION_TYPE_DELETE = 1,
     NOTIFICATION_PERMISSION_TYPE_UPDATE = 2,
 } notification_permission_type_e;
+
+/**
+ * @brief Enumeration for notification categories.
+ * @since_tizen 3.0
+ */
+typedef enum notification_categore {
+	NOTIFICATION_CATEGORY_NONE = 0, /**< Not used, initial value for category*/
+	NOTIFICATION_CATEGORY_CALL_AND_COMMUNICATION = 1, /**< For call, mail, messenger */
+	NOTIFICATION_CATEGORY_SOCIAL_SERVICE = 2, /**< For SNS, blog, café */
+	NOTIFICATION_CATEGORY_TV = 3, /**< For Live TV Program or Channel Info.*/
+	NOTIFICATION_CATEGORY_MEDIA_AND_CONTENTS = 4, /**< For movie, music, photo, e-book, cloud drive */
+	NOTIFICATION_CATEGORY_ENTERTAINMENT = 5, /**< For game, sports, leisure */
+	NOTIFICATION_CATEGORY_PIMS = 6, /**< For calendar, schedule, memo */
+	NOTIFICATION_CATEGORY_LIFE = 7, /**< For news, magazine, weather, food, traffic, LBS */
+	NOTIFICATION_CATEGORY_HEALTH = 8, /**< For health, fitness, biometrics, medical */
+	NOTIFICATION_CATEGORY_SHOPPING = 9, /**< For shopping, payment, delivery */
+	NOTIFICATION_CATEGORY_FINANCE = 10, /**< For credit card, deposit, banking */
+	NOTIFICATION_CATEGORY_THINGS = 11, /**< For device, sensor */
+	NOTIFICATION_CATEGORY_SYSTEM_AND_UTILITIES = 12, /**< For setting Info., system update, system warning, system error */
+} notification_category_e;
+
+
 /**
  * @}
  */

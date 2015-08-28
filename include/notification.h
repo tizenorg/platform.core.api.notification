@@ -1482,10 +1482,64 @@ int notification_get_auto_remove(notification_h noti, bool *auto_remove);
  * @post
  * @see
  */
-int notification_wait_response(notification_h noti,
-						int timeout,
-						int *respi,
-						char **respc);
+int notification_wait_response(notification_h noti, int timeout, int *respi, char **respc);
+
+/**
+ * @brief Sets the category of the notification
+ * @since_tizen 3.0
+ * @param[in] noti Notification handle
+ * @param[in] category Category
+ * @return #NOTIFICATION_ERROR_NONE On success, other value if failure
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @see #notification_h
+ * @see #notification_get_category
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	notification_h noti = NULL;
+	int noti_err = NOTIFICATION_ERROR_NONE;
+
+	...
+
+	noti_err = notification_set_category(noti, NOTIFICATION_CATEGORY_CALL_AND_COMMUNICATION);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_set_category(notification_h noti, notification_category_e category);
+
+
+/**
+ * @brief Gets the category of the notification
+ * @since_tizen 3.0
+ * @param[in] noti Notification handle
+ * @param[out] category Category
+ * @return #NOTIFICATION_ERROR_NONE On success, other value on failure
+ * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
+ * @see #notification_h
+ * @see #notification_set_category
+ * @par Sample code:
+ * @code
+#include <notification.h>
+...
+{
+	int noti_err = NOTIFICATION_ERROR_NONE;
+	notification_category_e category;
+
+	...
+
+	noti_err = notification_get_category(noti, &category);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
+}
+ * @endcode
+ */
+int notification_get_category(notification_h noti, notification_category_e *category);
 
 /**
  * @}

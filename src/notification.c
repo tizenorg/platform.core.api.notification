@@ -2133,3 +2133,15 @@ EXPORT_API int notification_get_auto_remove(notification_h noti, bool *auto_remo
 
 	return NOTIFICATION_ERROR_NONE;
 }
+
+EXPORT_API int notification_set_category(notification_h noti, notification_category_e category)
+{
+	/* This API is under ACR */
+	return NOTIFICATION_ERROR_NONE;
+}
+
+EXPORT_API int notification_get_category(notification_h noti, notification_category_e *category)
+{
+	/* This API is under ACR */
+	return NOTIFICATION_ERROR_NONE;
+}
