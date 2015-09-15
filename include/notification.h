@@ -29,6 +29,7 @@
 #include <notification_error.h>
 #include <notification_type.h>
 #include <notification_status.h>
+#include <notification_list.h>
 
 #ifdef __cplusplus
 extern "C" {
