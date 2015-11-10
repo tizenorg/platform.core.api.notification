@@ -34,9 +34,11 @@
 /* notification header */
 #include <notification.h>
 #include <notification_internal.h>
+#include <notification_ongoing_flag.h>
 #include <notification_status.h>
 #include <notification_setting.h>
 #include <notification_setting_internal.h>
+#include <notification_list.h>
 #include <notification_text_domain.h>
 
 /*-----------------------------------------------------------------------------------------*/
@@ -154,6 +156,7 @@ void testapp_show_menu (testapp_menu_type_e menu)
 		testapp_print (" 6.  Post a heads notification with a button\n");
 		testapp_print (" 7.  Post a notification with domain text\n");
 		testapp_print (" 8.  Load by tag\n");
+		testapp_print (" 9.  Get list\n");
 		testapp_print ("------------------------------------------\n");
 		break;
 	case TESTAPP_MENU_TYPE_SETTING_TEST_MENU:
@@ -193,6 +196,9 @@ static int testapp_add_a_notification()
 	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_INFO_SUB_2, "I'm Info Sub 2", "INFO_SUB_2", NOTIFICATION_VARIABLE_TYPE_NONE);
 	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_INFO_3, "I'm Info 3", "INFO_3", NOTIFICATION_VARIABLE_TYPE_NONE);
 	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_INFO_SUB_3, "I'm Info Sub 3", "INFO_SUB_3", NOTIFICATION_VARIABLE_TYPE_NONE);
+
+	noti_err  = notification_set_ongoing_flag(noti_handle, true);
+	noti_err  = notification_set_auto_remove(noti_handle, false);
 
 	noti_err = notification_set_display_applist(noti_handle, NOTIFICATION_DISPLAY_APP_INDICATOR | NOTIFICATION_DISPLAY_APP_NOTIFICATION_TRAY | NOTIFICATION_DISPLAY_APP_TICKER);
 
@@ -262,15 +268,16 @@ static int testapp_test_post_notification_on_indicator()
 	notification_h noti_handle = NULL;
 	int noti_err = NOTIFICATION_ERROR_NONE;
 
-	noti_handle = notification_create(NOTIFICATION_TYPE_NOTI);
+	noti_handle = notification_create(NOTIFICATION_TYPE_ONGOING);
 
 	if (noti_handle == NULL) {
 		testapp_print("notification_create failed");
 		goto FINISH_OFF;
 	}
 
-	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_TITLE, "I'm Title", "TITLE", NOTIFICATION_VARIABLE_TYPE_NONE);
-	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_CONTENT, "I'm Content", "This is very loooooooooooooooooooooooooooooooooooooooooong message", NOTIFICATION_VARIABLE_TYPE_NONE);
+	noti_err  = notification_set_image(noti_handle, NOTIFICATION_IMAGE_TYPE_ICON_FOR_INDICATOR, "/usr/apps/org.tizen.indicator/res/icons/Shealth/B03_shealth.png");
+	// noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_TITLE, "I'm Title", "TITLE", NOTIFICATION_VARIABLE_TYPE_NONE);
+	// noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_CONTENT, "I'm Content", "This is very loooooooooooooooooooooooooooooooooooooooooong message", NOTIFICATION_VARIABLE_TYPE_NONE);
 
 	noti_err  = notification_set_display_applist(noti_handle, NOTIFICATION_DISPLAY_APP_TICKER | NOTIFICATION_DISPLAY_APP_INDICATOR);
 
@@ -501,6 +508,46 @@ FINISH_OFF:
 	return noti_err;
 }
 
+static int testapp_test_get_list()
+{
+	notification_h noti_handle = NULL;
+	notification_list_h noti_list_handle = NULL;
+	notification_list_h noti_list_cursor_handle = NULL;
+	int noti_err = NOTIFICATION_ERROR_NONE;
+	int priv_id;
+	int group_id;
+	int type;
+	bool ongoing_flag;
+	bool auto_remove;
+
+	noti_err = notification_get_detail_list("./notification-test-app", NOTIFICATION_PRIV_ID_NONE, NOTIFICATION_GROUP_ID_NONE, 10, &noti_list_handle);
+
+	if (noti_err != NOTIFICATION_ERROR_NONE) {
+		testapp_print("notification_get_detail_list failed[%d]\n", noti_err);
+		goto FINISH_OFF;
+	}
+
+	noti_list_cursor_handle = notification_list_get_head(noti_list_handle);
+
+	while (noti_list_cursor_handle) {
+		noti_handle = notification_list_get_data(noti_list_cursor_handle);
+		notification_get_id(noti_handle, &group_id, &priv_id);
+		notification_get_type(noti_handle, &type);
+		notification_get_ongoing_flag(noti_handle, &ongoing_flag);
+		notification_get_auto_remove(noti_handle, &auto_remove);
+
+		testapp_print("priv_id[%d] type[%d] ongoing_flag[%d] auto_remove[%d]\n", priv_id, type, ongoing_flag, auto_remove);
+		noti_list_cursor_handle = notification_list_get_next(noti_list_cursor_handle);
+	}
+
+
+FINISH_OFF:
+	if (noti_list_handle)
+		notification_free_list(noti_list_handle);
+
+	return noti_err;
+}
+
 static gboolean testapp_interpret_command_basic_test (int selected_number)
 {
 	gboolean go_to_loop = TRUE;
@@ -536,6 +583,10 @@ static gboolean testapp_interpret_command_basic_test (int selected_number)
 
 	case 8:
 		testapp_test_load_by_tag();
+		break;
+
+	case 9:
+		testapp_test_get_list();
 		break;
 
 	case 0:
@@ -613,6 +664,10 @@ static int testapp_test_update_setting()
 	else {
 		notification_setting_set_allow_to_notify(setting, 0);
 		notification_setting_update_setting(setting);
+	}
+
+	if (setting) {
+		notification_setting_free_notification(setting);
 	}
 
 	return err;

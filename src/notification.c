@@ -1693,7 +1693,7 @@ static notification_h _notification_create(notification_type_e type)
 	noti->vibration_type = NOTIFICATION_VIBRATION_TYPE_NONE;
 	noti->led_operation = NOTIFICATION_LED_OP_OFF;
 	noti->display_applist = NOTIFICATION_DISPLAY_APP_NOTIFICATION_TRAY | NOTIFICATION_DISPLAY_APP_TICKER | NOTIFICATION_DISPLAY_APP_INDICATOR;
-
+	noti->auto_remove = true;
 
 	err_app_manager = app_manager_get_app_id(getpid(), &app_id);
 	if (err_app_manager != APP_MANAGER_ERROR_NONE || app_id == NULL) {
@@ -1713,7 +1713,8 @@ static notification_h _notification_create(notification_type_e type)
 	err_app_manager = package_info_create(noti->caller_pkgname, &package_info);
 
 	if (err_app_manager != PACKAGE_MANAGER_ERROR_NONE || package_info == NULL) {
-		NOTIFICATION_WARN("package_info_create failed err[%d] package_info[%p]", err_app_manager, package_info);
+		NOTIFICATION_WARN("package_info_create failed err[%d] package_info[%p] caller_pkgname[%s]",
+				err_app_manager, package_info, noti->caller_pkgname);
 		goto out;
 	}
 
@@ -1934,6 +1935,9 @@ EXPORT_API int notification_clone(notification_h noti, notification_h *clone)
 
 	new_noti->progress_size = noti->progress_size;
 	new_noti->progress_percentage = noti->progress_percentage;
+
+	new_noti->ongoing_flag = noti->ongoing_flag;
+	new_noti->auto_remove = noti->auto_remove;
 
 	new_noti->app_icon_path = NULL;
 	new_noti->app_name = NULL;

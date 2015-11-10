@@ -533,7 +533,7 @@ static bool _is_package_in_setting_table(sqlite3 *db, const char *package_name)
 		goto out;
 	}
 
-	if (sqlite3_ret != SQLITE_OK) {
+	if (sqlite3_ret != SQLITE_OK && sqlite3_ret != SQLITE_ROW) {
 		NOTIFICATION_ERR("sqlite3_step failed [%d][%s]", sqlite3_ret, sqlite3_errmsg(db));
 		err = false;
 		goto out;
@@ -660,6 +660,147 @@ out:
 	NOTIFICATION_INFO("notification_setting_refresh_setting_table returns [%08X]", err);
 
 	return err;
+}
+
+typedef enum {
+	OPERATION_TYPE_INSERT_RECORD = 0,
+	OPERATION_TYPE_DELETE_RECORD = 1,
+} notification_setting_operation_type;
+
+static int _notification_setting_alter_package_list(notification_setting_operation_type operation_type, const char *package_name)
+{
+	sqlite3 *db = NULL;
+	sqlite3_stmt *db_statement = NULL;
+	int sqlite3_ret = SQLITE_OK;
+	int field_index = 1;
+	bool is_package_in_setting_table = false;
+	int err = NOTIFICATION_ERROR_NONE;
+
+	sqlite3_ret = db_util_open(DBPATH, &db, 0);
+
+	if (sqlite3_ret != SQLITE_OK || db == NULL) {
+		NOTIFICATION_ERR("db_util_open failed [%s][%d]", DBPATH, sqlite3_ret);
+		err = NOTIFICATION_ERROR_FROM_DB;
+		goto out;
+	}
+
+	sqlite3_exec(db, "BEGIN immediate;", NULL, NULL, NULL);
+
+	is_package_in_setting_table = _is_package_in_setting_table(db, package_name);
+
+	switch (operation_type) {
+	case OPERATION_TYPE_INSERT_RECORD :
+		if (is_package_in_setting_table == true) {
+			NOTIFICATION_INFO("[%s] is already exist", package_name);
+			goto out;
+		}
+		NOTIFICATION_INFO("[%s] will be inserted", package_name);
+		sqlite3_ret = sqlite3_prepare_v2(db, "INSERT INTO notification_setting (package_name) VALUES (?) ", -1, &db_statement, NULL);
+		break;
+
+	case OPERATION_TYPE_DELETE_RECORD :
+		if (is_package_in_setting_table == false) {
+			NOTIFICATION_INFO("[%s] is not exist", package_name);
+			goto out;
+		}
+		NOTIFICATION_INFO("[%s] will be removed", package_name);
+		sqlite3_ret = sqlite3_prepare_v2(db, "DELETE FROM notification_setting WHERE package_name = ? ", -1, &db_statement, NULL);
+		break;
+	default :
+		break;
+	}
+
+	if (sqlite3_ret != SQLITE_OK) {
+		NOTIFICATION_ERR("sqlite3_prepare_v2 failed [%d][%s]", sqlite3_ret, sqlite3_errmsg(db));
+		err = NOTIFICATION_ERROR_FROM_DB;
+		goto out;
+	}
+
+	sqlite3_bind_text(db_statement, field_index++, package_name, -1, SQLITE_TRANSIENT);
+
+	sqlite3_ret = sqlite3_step(db_statement);
+
+	if (sqlite3_ret != SQLITE_OK && sqlite3_ret != SQLITE_DONE) {
+		NOTIFICATION_ERR("sqlite3_step failed [%d][%s]", sqlite3_ret, sqlite3_errmsg(db));
+		err = NOTIFICATION_ERROR_FROM_DB;
+	}
+
+out:
+	if (db_statement) {
+		sqlite3_finalize(db_statement);
+	}
+
+	if (db) {
+		NOTIFICATION_INFO("err [%d]", err);
+		if (err == NOTIFICATION_ERROR_NONE) {
+			sqlite3_exec(db, "END;", NULL, NULL, NULL);
+		}
+		else {
+			sqlite3_exec(db, "ROLLBACK;", NULL, NULL, NULL);
+		}
+
+		if ((sqlite3_ret = db_util_close(db)) != SQLITE_OK) {
+			NOTIFICATION_WARN("fail to db_util_close - [%d]", sqlite3_ret);
+		}
+	}
+
+	return err;
+}
+
+bool privilege_info_cb(const char *privilege_name, void *user_data)
+{
+	bool *found = user_data;
+
+	if (privilege_name && strcmp(NOTIFICATION_PRIVILEGE, privilege_name) == 0) {
+		*found = true;
+		return false;
+	}
+
+	return true;
+}
+
+static bool _has_privilege(const char *package_id)
+{
+	bool found = false;
+	int error_from_package_info = PACKAGE_MANAGER_ERROR_NONE;
+	package_info_h package_info = NULL;
+
+	error_from_package_info = package_info_create(package_id, &package_info);
+	if (error_from_package_info != PACKAGE_MANAGER_ERROR_NONE) {
+		NOTIFICATION_ERR("package_info_create failed [%d]", error_from_package_info);
+		goto out;
+	}
+
+	error_from_package_info = package_info_foreach_privilege_info(package_info, privilege_info_cb, &found);
+
+	if (error_from_package_info != PACKAGE_MANAGER_ERROR_NONE) {
+		NOTIFICATION_ERR("package_info_foreach_privilege_info failed [%d]", error_from_package_info);
+		goto out;
+	}
+
+out:
+
+	if (package_info) {
+		package_info_destroy(package_info);
+	}
+
+	return found;
+}
+
+EXPORT_API int notification_setting_insert_package(const char *package_id)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (_has_privilege(package_id) == true) {
+		err = _notification_setting_alter_package_list(OPERATION_TYPE_INSERT_RECORD, package_id);
+	}
+
+	return err;
+}
+
+EXPORT_API int notification_setting_delete_package(const char *package_id)
+{
+	return _notification_setting_alter_package_list(OPERATION_TYPE_DELETE_RECORD, package_id);
 }
 
 /* system setting --------------------------------*/

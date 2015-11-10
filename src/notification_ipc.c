@@ -410,6 +410,8 @@ EXPORT_API int notification_ipc_make_noti_from_packet(notification_h noti, const
 	char *temp_title = NULL;
 	char *temp_content = NULL;
 	char *tag = NULL;
+	bool *ongoing_flag;
+	bool *auto_remove;
 
 	if (noti == NULL) {
 		NOTIFICATION_ERR("invalid data");
@@ -417,7 +419,7 @@ EXPORT_API int notification_ipc_make_noti_from_packet(notification_h noti, const
 	}
 
 	ret = packet_get(packet,
-			"iiiiisssssssssssssssssssssisisisiiiiiiiiddsssss",
+			"iiiiisssssssssssssssssssssisisisiiiiiiiiddsssssii",
 			&type,
 			&layout,
 			&group_id,
@@ -464,9 +466,11 @@ EXPORT_API int notification_ipc_make_noti_from_packet(notification_h noti, const
 			&app_name,
 			&temp_title,
 			&temp_content,
-			&tag);
+			&tag,
+			&ongoing_flag,
+			&auto_remove);
 
-	if (ret != 47) {
+	if (ret != 49) {
 		NOTIFICATION_ERR("failed to create a noti from packet");
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
@@ -520,6 +524,8 @@ EXPORT_API int notification_ipc_make_noti_from_packet(notification_h noti, const
 	noti->progress_size = progress_size;
 	noti->progress_percentage = progress_percentage;
 	noti->tag = _dup_string(tag);
+	noti->ongoing_flag = ongoing_flag;
+	noti->auto_remove = auto_remove;
 
 	return NOTIFICATION_ERROR_NONE;
 }
@@ -620,7 +626,7 @@ EXPORT_API struct packet *notification_ipc_make_packet_from_noti(notification_h 
 	}
 
 	result = func_to_create_packet(command,
-			"iiiiisssssssssssssssssssssisisisiiiiiiiiddsssss",
+			"iiiiisssssssssssssssssssssisisisiiiiiiiiddsssssii",
 			noti->type,
 			noti->layout,
 			noti->group_id,
@@ -667,7 +673,9 @@ EXPORT_API struct packet *notification_ipc_make_packet_from_noti(notification_h 
 			NOTIFICATION_CHECK_STR(noti->app_name),
 			NOTIFICATION_CHECK_STR(noti->temp_title),
 			NOTIFICATION_CHECK_STR(noti->temp_content),
-			NOTIFICATION_CHECK_STR(noti->tag));
+			NOTIFICATION_CHECK_STR(noti->tag),
+			noti->ongoing_flag,
+			noti->auto_remove);
 
 out:
 	/* Free decoded data */
@@ -801,7 +809,7 @@ EXPORT_API struct packet *notification_ipc_make_reply_packet_from_noti(notificat
 	}
 
 	result = packet_create_reply(packet,
-			"iiiiisssssssssssssssssssssisisisiiiiiiiiddsssss",
+			"iiiiisssssssssssssssssssssisisisiiiiiiiiddsssssii",
 			noti->type,
 			noti->layout,
 			noti->group_id,
@@ -848,7 +856,9 @@ EXPORT_API struct packet *notification_ipc_make_reply_packet_from_noti(notificat
 			NOTIFICATION_CHECK_STR(noti->app_name),
 			NOTIFICATION_CHECK_STR(noti->temp_title),
 			NOTIFICATION_CHECK_STR(noti->temp_content),
-			NOTIFICATION_CHECK_STR(noti->tag));
+			NOTIFICATION_CHECK_STR(noti->tag),
+			noti->ongoing_flag,
+			noti->auto_remove);
 
 	/* Free decoded data */
 	if (args) {

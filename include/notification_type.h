@@ -44,6 +44,8 @@ extern "C" {
  * @{
  */
 
+#define NOTIFICATION_DO_NOT_SHOW_TIME_STAMP -1  /**< Do not show time stamp on the notificaion. Could be passed as a argument of notification_set_time() */
+
 /**
  * @brief Enumeration for notification layout type.
  * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
@@ -58,7 +60,8 @@ typedef enum _notification_ly_type {
 	NOTIFICATION_LY_NOTI_THUMBNAIL,
         /**< Layout for notification. Used to display images*/
 	NOTIFICATION_LY_ONGOING_EVENT,
-        /**< Layout for ongoing notification. Used to display text message*/
+        /**< Layout for ongoing notification. Used to display text message.
+         * notifications with NOTIFICATION_LY_ONGOING_EVENT can not be protected from removing by user since tizen 2.4 */
 	NOTIFICATION_LY_ONGOING_PROGRESS,
         /**< Layout for ongoing notification. Used to display progress*/
 	NOTIFICATION_LY_MAX,

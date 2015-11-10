@@ -1,7 +1,7 @@
 %bcond_with wayland
 Name:       notification
-Summary:    notification library
-Version:    0.2.34
+Summary:    Notification library
+Version:    0.2.41
 Release:    1
 Group:      TBD
 License:    Apache-2.0
@@ -26,11 +26,12 @@ BuildRequires: pkgconfig(edbus)
 BuildRequires: pkgconfig(elementary)
 BuildRequires: pkgconfig(ecore)
 BuildRequires: pkgconfig(eina)
+BuildRequires: pkgconfig(libtzplatform-config)
 
 BuildRequires: cmake
 Requires(post): /sbin/ldconfig
-Requires(post): /usr/bin/sqlite3
-requires(postun): /sbin/ldconfig
+Requires(post): %{TZ_SYS_BIN}/sqlite3
+Requires(postun): /sbin/ldconfig
 
 %description
 Client/Server library for sending notifications.
@@ -70,8 +71,8 @@ make %{?jobs:-j%jobs}
 rm -rf %{buildroot}
 %make_install
 
-mkdir -p %{buildroot}/usr/share/license
-cp -f LICENSE %{buildroot}/usr/share/license/%{name}
+mkdir -p %{buildroot}%{TZ_SYS_SHARE}/license
+cp -f LICENSE %{buildroot}%{TZ_SYS_SHARE}/license/%{name}
 
 %clean
 rm -rf %{buildroot}
@@ -79,14 +80,14 @@ rm -rf %{buildroot}
 %post
 /sbin/ldconfig
 
-if [ ! -d /usr/dbspace ]
+if [ ! -d %{TZ_SYS_DB} ]
 then
-	mkdir /usr/dbspace
+	mkdir %{TZ_SYS_DB}
 fi
 
-if [ ! -f /usr/dbspace/.notification.db ]
+if [ ! -f %{TZ_SYS_DB}/.notification.db ]
 then
-	sqlite3 /usr/dbspace/.notification.db 'PRAGMA journal_mode = PERSIST;
+	sqlite3 %{TZ_SYS_DB}/.notification.db 'PRAGMA journal_mode = PERSIST;
 		create 	table if not exists noti_list ( 
 			type INTEGER NOT NULL,
 			layout INTEGER NOT NULL default 0,
@@ -133,7 +134,9 @@ then
 			display_applist INTEGER,
 			progress_size DOUBLE default 0,
 			progress_percentage DOUBLE default 0,
-			rowid INTEGER PRIMARY KEY AUTOINCREMENT,	
+			rowid INTEGER PRIMARY KEY AUTOINCREMENT,
+			ongoing_flag INTEGER default 0,
+			auto_remove INTEGER default 1,
 			UNIQUE (caller_pkgname, priv_id)  
 		); 
 		create table if not exists noti_group_data (
@@ -191,12 +194,14 @@ then
 
 		CREATE UNIQUE INDEX package_name_idx1 ON notification_setting (package_name);
 	'
+else
+	echo %{TZ_SYS_DB}/.notification.db ": DB file is already exists"
 fi
 
-chown :5000 /usr/dbspace/.notification.db
-chown :5000 /usr/dbspace/.notification.db-journal
-chmod 644 /usr/dbspace/.notification.db
-chmod 644 /usr/dbspace/.notification.db-journal
+chown :5000 %{TZ_SYS_DB}/.notification.db
+chown :5000 %{TZ_SYS_DB}/.notification.db-journal
+chmod 644 %{TZ_SYS_DB}/.notification.db
+chmod 644 %{TZ_SYS_DB}/.notification.db-journal
 
 %postun -p /sbin/ldconfig
 
@@ -204,7 +209,7 @@ chmod 644 /usr/dbspace/.notification.db-journal
 %manifest notification.manifest
 %defattr(-,root,root,-)
 %{_libdir}/libnotification.so*
-/usr/share/license/%{name}
+%{TZ_SYS_SHARE}/license/%{name}
 
 %files devel
 %defattr(-,root,root,-)

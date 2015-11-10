@@ -24,30 +24,17 @@
 
 #include <bundle.h>
 #include <sqlite3.h>
+#include <tzplatform_config.h>
 
-#ifndef DBDIR
-#error "DBDIR not defined"
-#endif
-
-#ifndef DBFILE
-#error "DBFILE not defined"
-#endif
-
-#define DBPATH DBDIR"/"DBFILE
-
+#define DBPATH tzplatform_mkpath(TZ_SYS_DB, ".notification.db")
 #define NOTIFICATION_QUERY_MAX 4096
-
 #define NOTIFICATION_EMPTY_STR ""
 #define NOTIFICATION_CHECK_STR(p) ((p)?(p):NOTIFICATION_EMPTY_STR)
 
 sqlite3 *notification_db_open(const char *dbfile);
-
 int notification_db_close(sqlite3 ** db);
-
 int notification_db_exec(sqlite3 * db, const char *query, int *num_changes);
-
 char *notification_db_column_text(sqlite3_stmt * stmt, int col);
-
 bundle *notification_db_column_bundle(sqlite3_stmt * stmt, int col);
 
 #endif				/* __NOTIFICATION_DB_H__ */

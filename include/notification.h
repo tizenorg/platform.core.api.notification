@@ -120,13 +120,14 @@ int notification_get_image(notification_h noti,
  * @details If input_time is @c 0, time information is taken from the current time.
  * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  * @param[in] noti       The notification handle
- * @param[in] input_time The input time
+ * @param[in] input_time The input time. If you want the time stamp is not be shown, set this as NOTIFICATION_DO_NOT_SHOW_TIME_STAMP
  * @return #NOTIFICATION_ERROR_NONE on success,
  *         otherwise any other value on failure
  * @retval #NOTIFICATION_ERROR_NONE         Success
  * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
  * @pre Notification handle should be created by notification_create().
  * @see notification_create()
+ * @see NOTIFICATION_DO_NOT_SHOW_TIME_STAMP
  * @par Sample code:
  * @code
 #include <notification.h>
@@ -1070,7 +1071,7 @@ int notification_delete(notification_h noti);
  * @brief Creates internal structure data and returns a notification handle.
  * @details Available type is #NOTIFICATION_TYPE_NOTI and #NOTIFICATION_TYPE_ONGOING.
  * #NOTIFICATION_TYPE_NOTI is remaining notification data even if device is restarted.
- * #NOTIFICATION_TYPE_ONGOING can display progressive feather, but notification data is removed after device is restarted.
+ * #NOTIFICATION_TYPE_ONGOING can display progress on a notification with #NOTIFICATION_LY_ONGOING_PROGRESS layout.
  * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
  * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
  * @param[in] type The notification type

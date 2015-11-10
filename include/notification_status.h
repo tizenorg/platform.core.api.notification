@@ -36,9 +36,8 @@ extern "C" {
  */
 
 /**
- * @brief Shows a toast popup window with given messaege
+ * @brief Shows a toast popup window with given message
  * @since_tizen @if WEARABLE 2.3.1 @elseif MOBILE 2.3 @endif
- * @privlevel public
  * @param[in] message The messages to be posted
  * @return  #NOTIFICATION_ERROR_NONE on success,
  *          otherwise any other value on failure
