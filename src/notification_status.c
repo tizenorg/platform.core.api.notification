@@ -58,8 +58,7 @@ static void __notification_status_message_dbus_callback(void *data, DBusMessage 
 	DBusError err;
 	char *message = NULL;
 
-	if(data==NULL||msg==NULL)
-	{
+	if (data == NULL || msg == NULL) {
 		NOTIFICATION_ERR("message is NULL");
 		return;
 	}
@@ -68,8 +67,7 @@ static void __notification_status_message_dbus_callback(void *data, DBusMessage 
 	ret = dbus_message_get_args(msg, &err,
 			DBUS_TYPE_STRING, &message,
 			DBUS_TYPE_INVALID);
-	if(ret == 0)
-	{
+	if (ret == 0)	{
 		NOTIFICATION_ERR("dbus_message_get_args error");
 		return;
 	}
@@ -82,7 +80,7 @@ static void __notification_status_message_dbus_callback(void *data, DBusMessage 
 	if (!md.callback)
 		return;
 
-	if (strlen(message) <= 0){
+	if (strlen(message) <= 0) {
 		NOTIFICATION_ERR("message has only NULL");
 		return;
 	}
@@ -110,8 +108,7 @@ int notification_status_monitor_message_cb_set(notification_status_message_cb ca
 			INTERFACE_NAME, MEMBER_NAME,
 			__notification_status_message_dbus_callback,
 			user_data);
-	if (dbus_handler_size == NULL)
-	{
+	if (dbus_handler_size == NULL) {
 		NOTIFICATION_ERR("fail to add size signal");
 		return NOTIFICATION_ERROR_FROM_DBUS;
 	}

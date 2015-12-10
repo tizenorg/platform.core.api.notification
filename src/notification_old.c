@@ -57,7 +57,7 @@ EXPORT_API int notification_wait_response(notification_h noti,
 	    If its bundle does not already contain a "tid" hint (which
 	    complex applications such as xwalk may overwrite), we will
 	    try to find the TID and set it in the bundle ourselves. */
-	notification_get_execute_option (noti, NOTIFICATION_EXECUTE_TYPE_RESPONDING,
+	notification_get_execute_option(noti, NOTIFICATION_EXECUTE_TYPE_RESPONDING,
 	NULL, &b);
 
 	if (b == NULL)
@@ -69,7 +69,7 @@ EXPORT_API int notification_wait_response(notification_h noti,
 		asprintf((char **)&tid_c, "%d", tid);
 		bc = bundle_dup(b);
 		bundle_add(bc, "tid", tid_c);
-		notification_set_execute_option (noti, NOTIFICATION_EXECUTE_TYPE_RESPONDING,
+		notification_set_execute_option(noti, NOTIFICATION_EXECUTE_TYPE_RESPONDING,
 						 NULL, NULL, bc);
 		bundle_free(bc);
 		notification_update(noti);

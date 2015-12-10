@@ -103,7 +103,8 @@ static inline char *_string_get(char *string)
 /*!
  * functions to check state of master
  */
-static inline void _set_master_started_cb(vconf_callback_fn cb) {
+static inline void _set_master_started_cb(vconf_callback_fn cb)
+{
 	int ret = -1;
 
 	ret = vconf_notify_key_changed(VCONFKEY_MASTER_STARTED,
@@ -114,7 +115,8 @@ static inline void _set_master_started_cb(vconf_callback_fn cb) {
 	}
 }
 
-static inline void _unset_master_started_cb(vconf_callback_fn cb) {
+static inline void _unset_master_started_cb(vconf_callback_fn cb)
+{
 	int ret = -1;
 
 	ret = vconf_ignore_key_changed(VCONFKEY_MASTER_STARTED,
@@ -235,7 +237,8 @@ notification_ipc_del_deffered_task(
 	return NOTIFICATION_ERROR_INVALID_PARAMETER;
 }
 
-static void _do_deffered_task(void) {
+static void _do_deffered_task(void)
+{
 	task_list *list_do = NULL;
 	task_list *list_temp = NULL;
 
@@ -1030,7 +1033,7 @@ static struct packet *_handler_delete_multiple(pid_t pid, int handle, const stru
 
 	int i = 0;
 	for (i = 0 ; i < 10 ; i++) {
-		NOTIFICATION_INFO("packet data[%d]:%d",i, buf[i]);
+		NOTIFICATION_INFO("packet data[%d]:%d", i, buf[i]);
 	}
 
 	if (ret == 11) {
@@ -1221,8 +1224,7 @@ int notification_ipc_request_insert(notification_h noti, int *priv_id)
 		NOTIFICATION_ERR("failed to receive answer(insert)");
 		if (notification_ipc_is_master_ready() == 1) {
 			return NOTIFICATION_ERROR_PERMISSION_DENIED;
-		}
-		else {
+		} else {
 			return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 		}
 	}
@@ -1258,8 +1260,7 @@ int notification_ipc_request_delete_single(notification_type_e type, char *pkgna
 		NOTIFICATION_ERR("failed to receive answer(delete)");
 		if (notification_ipc_is_master_ready() == 1) {
 			return NOTIFICATION_ERROR_PERMISSION_DENIED;
-		}
-		else {
+		} else {
 			return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 		}
 	}
@@ -1292,8 +1293,7 @@ int notification_ipc_request_delete_multiple(notification_type_e type, char *pkg
 		NOTIFICATION_ERR("failed to receive answer(delete multiple)");
 		if (notification_ipc_is_master_ready() == 1) {
 			return NOTIFICATION_ERROR_PERMISSION_DENIED;
-		}
-		else {
+		} else {
 			return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 		}
 	}
@@ -1325,8 +1325,7 @@ int notification_ipc_request_update(notification_h noti)
 		NOTIFICATION_ERR("failed to receive answer(update)");
 		if (notification_ipc_is_master_ready() == 1) {
 			return NOTIFICATION_ERROR_PERMISSION_DENIED;
-		}
-		else {
+		} else {
 			return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 		}
 	}
@@ -1395,8 +1394,7 @@ int notification_ipc_request_update_async(notification_h noti,
 			NOTIFICATION_DBG("Failed to init client: %d", s_info.server_cl_fd);
 		if (notification_ipc_is_master_ready() == 1) {
 			ret = NOTIFICATION_ERROR_PERMISSION_DENIED;
-		}
-		else {
+		} else {
 			ret =  NOTIFICATION_ERROR_SERVICE_NOT_READY;
 		}
 			goto fail;
@@ -1462,8 +1460,7 @@ int notification_ipc_request_refresh(void)
 		NOTIFICATION_ERR("failed to receive answer(refresh)");
 		if (notification_ipc_is_master_ready() == 1) {
 			return NOTIFICATION_ERROR_PERMISSION_DENIED;
-		}
-		else {
+		} else {
 			return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 		}
 	}
@@ -1496,8 +1493,7 @@ int notification_ipc_update_setting(notification_setting_h setting)
 		NOTIFICATION_ERR("failed to receive answer(delete)");
 		if (notification_ipc_is_master_ready() == 1) {
 			return NOTIFICATION_ERROR_PERMISSION_DENIED;
-		}
-		else {
+		} else {
 			return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 		}
 	}
@@ -1532,8 +1528,7 @@ int notification_ipc_update_system_setting(notification_system_setting_h system_
 		if (notification_ipc_is_master_ready() == 1) {
 			status = NOTIFICATION_ERROR_PERMISSION_DENIED;
 			goto out;
-		}
-		else {
+		} else {
 			status = NOTIFICATION_ERROR_SERVICE_NOT_READY;
 			goto out;
 		}
@@ -1570,8 +1565,7 @@ int notification_ipc_noti_setting_property_set(const char *pkgname, const char *
 		NOTIFICATION_ERR("failed to receive answer(delete)");
 		if (notification_ipc_is_master_ready() == 1) {
 			return NOTIFICATION_ERROR_PERMISSION_DENIED;
-		}
-		else {
+		} else {
 			return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 		}
 	}
@@ -1606,8 +1600,7 @@ int notification_ipc_noti_setting_property_get(const char *pkgname, const char *
 		NOTIFICATION_ERR("failed to receive answer(delete)");
 		if (notification_ipc_is_master_ready() == 1) {
 			return NOTIFICATION_ERROR_PERMISSION_DENIED;
-		}
-		else {
+		} else {
 			return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 		}
 	}
@@ -1638,8 +1631,7 @@ int notification_ipc_request_load_noti_by_tag(notification_h noti, const char *p
 		NOTIFICATION_ERR("failed to receive answer(load noti by tag)");
 		if (notification_ipc_is_master_ready() == 1) {
 			return NOTIFICATION_ERROR_PERMISSION_DENIED;
-		}
-		else {
+		} else {
 			return NOTIFICATION_ERROR_SERVICE_NOT_READY;
 		}
 	}

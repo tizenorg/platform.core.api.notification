@@ -144,7 +144,7 @@ int notification_ongoing_update_content(const char *caller_pkgname,
 		return NOTIFICATION_ERROR_FROM_DBUS;
 	}
 
-	if(content == NULL) {
+	if (content == NULL) {
 		ret = dbus_message_append_args(signal,
 						   DBUS_TYPE_STRING, &caller_pkgname,
 						   DBUS_TYPE_INT32, &priv_id,

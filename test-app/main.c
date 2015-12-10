@@ -51,43 +51,43 @@ typedef enum testapp_menu_type {
 
 /*-----------------------------------------------------------------------------------------*/
 /* function prototypes */
-static void testapp_system_signal_handler (int signal_number);
-void testapp_show_prompt (testapp_menu_type_e menu);
+static void testapp_system_signal_handler(int signal_number);
+void testapp_show_prompt(testapp_menu_type_e menu);
 
 /*-----------------------------------------------------------------------------------------*/
 /* implementation */
-void testapp_print (char *fmt, ...)
+void testapp_print(char *fmt, ...)
 {
 	va_list args = {0};
 	va_start(args, fmt);
-	vfprintf (stdout, fmt, args);
-	va_end (args);
-	fflush (stdout);
+	vfprintf(stdout, fmt, args);
+	va_end(args);
+	fflush(stdout);
 }
 
-static gboolean testapp_initialize_testing ()
+static gboolean testapp_initialize_testing()
 {
 	struct timeval tv_1, tv_2;
 	int interval;
 
 	/* register signal handler */
-	if ( signal (SIGINT, testapp_system_signal_handler) == SIG_ERR ) {
-		testapp_print ("register signal handler fail\n");
+	if (signal(SIGINT, testapp_system_signal_handler) == SIG_ERR) {
+		testapp_print("register signal handler fail\n");
 		return FALSE;
 	}
 
-	if ( signal (SIGQUIT, testapp_system_signal_handler) == SIG_ERR ) {
-		testapp_print ("register signal handler fail\n");
+	if (signal(SIGQUIT, testapp_system_signal_handler) == SIG_ERR) {
+		testapp_print("register signal handler fail\n");
 		return FALSE;
 	}
 
-	if ( signal (SIGTSTP, testapp_system_signal_handler) == SIG_ERR ) {
-		testapp_print ("register signal handler fail\n");
+	if (signal(SIGTSTP, testapp_system_signal_handler) == SIG_ERR) {
+		testapp_print("register signal handler fail\n");
 		return FALSE;
 	}
 
-	if ( signal (SIGTERM, testapp_system_signal_handler) == SIG_ERR ) {
-		testapp_print ("register signal handler fail\n");
+	if (signal(SIGTERM, testapp_system_signal_handler) == SIG_ERR) {
+		testapp_print("register signal handler fail\n");
 		return FALSE;
 	}
 
@@ -98,22 +98,22 @@ static gboolean testapp_initialize_testing ()
 
 	gettimeofday(&tv_2, NULL);
 	interval = tv_2.tv_usec - tv_1.tv_usec;
-	testapp_print("\t Initializing Proceed time %d us\n",interval);
+	testapp_print("\t Initializing Proceed time %d us\n", interval);
 
 
 	return TRUE;
 }
 
-static gboolean testapp_finalize_testing ()
+static gboolean testapp_finalize_testing()
 {
 	/* TODO : finalizing notification */
 
 	return TRUE;
 }
 
-static void testapp_system_signal_handler (int signal_number)
+static void testapp_system_signal_handler(int signal_number)
 {
-	testapp_print ("signal:%d\n", signal_number);
+	testapp_print("signal:%d\n", signal_number);
 	switch (signal_number) {
 	case SIGQUIT:
 	case SIGINT:
@@ -123,7 +123,7 @@ static void testapp_system_signal_handler (int signal_number)
 		break;
 
 	default:
-		testapp_print ("unhandled signal:%d\n", signal_number);
+		testapp_print("unhandled signal:%d\n", signal_number);
 		break;
 	}
 	exit(0);
@@ -132,42 +132,42 @@ static void testapp_system_signal_handler (int signal_number)
 
 
 
-void testapp_show_menu (testapp_menu_type_e menu)
+void testapp_show_menu(testapp_menu_type_e menu)
 {
 	switch (menu) {
 	case TESTAPP_MENU_TYPE_MAIN_MENU:
-		testapp_print ("==========================================\n");
-		testapp_print ("    Notification test application \n");
-		testapp_print ("==========================================\n");
-		testapp_print ("1. Basic Test\n");
-		testapp_print ("2. Setting Test\n");
-		testapp_print ("0. Exit \n");
-		testapp_print ("------------------------------------------\n");
+		testapp_print("==========================================\n");
+		testapp_print("    Notification test application \n");
+		testapp_print("==========================================\n");
+		testapp_print("1. Basic Test\n");
+		testapp_print("2. Setting Test\n");
+		testapp_print("0. Exit \n");
+		testapp_print("------------------------------------------\n");
 		break;
 	case TESTAPP_MENU_TYPE_BASIC_TEST_MENU:
-		testapp_print ("==========================================\n");
-		testapp_print ("    Basic test menu \n");
-		testapp_print ("==========================================\n");
-		testapp_print (" 1.  Post a simple notification\n");
-		testapp_print (" 2.  Post simple notifications repeatedly\n");
-		testapp_print (" 3.  Post a notification on indicator\n");
-		testapp_print (" 4.  Post status status message\n");
-		testapp_print (" 5.  Delete all notification\n");
-		testapp_print (" 6.  Post a heads notification with a button\n");
-		testapp_print (" 7.  Post a notification with domain text\n");
-		testapp_print (" 8.  Load by tag\n");
-		testapp_print (" 9.  Get list\n");
-		testapp_print ("------------------------------------------\n");
+		testapp_print("==========================================\n");
+		testapp_print("    Basic test menu \n");
+		testapp_print("==========================================\n");
+		testapp_print(" 1.  Post a simple notification\n");
+		testapp_print(" 2.  Post simple notifications repeatedly\n");
+		testapp_print(" 3.  Post a notification on indicator\n");
+		testapp_print(" 4.  Post status status message\n");
+		testapp_print(" 5.  Delete all notification\n");
+		testapp_print(" 6.  Post a heads notification with a button\n");
+		testapp_print(" 7.  Post a notification with domain text\n");
+		testapp_print(" 8.  Load by tag\n");
+		testapp_print(" 9.  Get list\n");
+		testapp_print("------------------------------------------\n");
 		break;
 	case TESTAPP_MENU_TYPE_SETTING_TEST_MENU:
-		testapp_print ("==========================================\n");
-		testapp_print ("    Setting test menu \n");
-		testapp_print ("==========================================\n");
-		testapp_print (" 1.  Get setting list\n");
-		testapp_print (" 2.  Update setting\n");
-		testapp_print (" 3.  Update system setting\n");
-		testapp_print (" 4.  Refresh setting table\n");
-		testapp_print ("------------------------------------------\n");
+		testapp_print("==========================================\n");
+		testapp_print("    Setting test menu \n");
+		testapp_print("==========================================\n");
+		testapp_print(" 1.  Get setting list\n");
+		testapp_print(" 2.  Update setting\n");
+		testapp_print(" 3.  Update system setting\n");
+		testapp_print(" 4.  Refresh setting table\n");
+		testapp_print("------------------------------------------\n");
 		break;
 	default:
 		break;
@@ -281,7 +281,7 @@ static int testapp_test_post_notification_on_indicator()
 
 	noti_err  = notification_set_display_applist(noti_handle, NOTIFICATION_DISPLAY_APP_TICKER | NOTIFICATION_DISPLAY_APP_INDICATOR);
 
-	if(noti_err != NOTIFICATION_ERROR_NONE) {
+	if (noti_err != NOTIFICATION_ERROR_NONE) {
 		testapp_print("notification_set_display_applist failed[%d]", noti_err);
 		goto FINISH_OFF;
 	}
@@ -307,7 +307,7 @@ static int testapp_test_post_status_message()
 
 	noti_err = notification_status_message_post("This is only a test");
 
-	if(noti_err != NOTIFICATION_ERROR_NONE) {
+	if (noti_err != NOTIFICATION_ERROR_NONE) {
 		testapp_print("notification_status_message_post failed[%d]", noti_err);
 	}
 
@@ -359,13 +359,13 @@ static int testapp_test_post_heads_up_notification_with_button()
 	}
 
 	app_control_err = app_control_create(&app_control);
-	if (app_control_err != APP_CONTROL_ERROR_NONE ) {
+	if (app_control_err != APP_CONTROL_ERROR_NONE) {
 		testapp_print("app_control_create failed[%d]\n", app_control_err);
 		goto FINISH_OFF;
 	}
 
 	app_control_err = app_control_set_app_id(app_control, "org.tizen.quickpanel");
-	if (app_control_err != APP_CONTROL_ERROR_NONE ) {
+	if (app_control_err != APP_CONTROL_ERROR_NONE) {
 		testapp_print("app_control_set_app_id failed[%d]\n", app_control_err);
 		goto FINISH_OFF;
 	}
@@ -407,7 +407,7 @@ static int testapp_test_post_heads_up_notification_with_button()
 
 	noti_err = notification_get_event_handler(noti_handle, NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_1, &app_control);
 
-	if (noti_err != NOTIFICATION_ERROR_NONE ||app_control == NULL) {
+	if (noti_err != NOTIFICATION_ERROR_NONE || app_control == NULL) {
 		testapp_print("notification_get_event_handler failed[%d]", noti_err);
 		goto FINISH_OFF;
 	}
@@ -548,7 +548,7 @@ FINISH_OFF:
 	return noti_err;
 }
 
-static gboolean testapp_interpret_command_basic_test (int selected_number)
+static gboolean testapp_interpret_command_basic_test(int selected_number)
 {
 	gboolean go_to_loop = TRUE;
 
@@ -601,14 +601,14 @@ static gboolean testapp_interpret_command_basic_test (int selected_number)
 
 }
 
-void testapp_notification_main ()
+void testapp_notification_main()
 {
 	gboolean go_to_loop = TRUE;
 	int menu_number = 0;
 
 	while (go_to_loop) {
-		testapp_show_menu (TESTAPP_MENU_TYPE_BASIC_TEST_MENU);
-		testapp_show_prompt (TESTAPP_MENU_TYPE_BASIC_TEST_MENU);
+		testapp_show_menu(TESTAPP_MENU_TYPE_BASIC_TEST_MENU);
+		testapp_show_prompt(TESTAPP_MENU_TYPE_BASIC_TEST_MENU);
 
 		if (0 >= scanf("%d", &menu_number))
 			testapp_print("Invalid input");
@@ -642,7 +642,7 @@ static int testapp_test_get_setting_list()
 		notification_setting_get_visibility_class(setting_array + i, &visibility_class);
 
 		testapp_print("[%d] : package_name[%s], allow_to_notify[%d], do_not_disturb_except[%d], visibility_class[%d]\n"
-				,i, package_name, allow_to_notify, do_not_disturb_except, visibility_class);
+				, i, package_name, allow_to_notify, do_not_disturb_except, visibility_class);
 		free(package_name);
 	}
 
@@ -660,8 +660,7 @@ static int testapp_test_update_setting()
 
 	if (err != NOTIFICATION_ERROR_NONE || setting == NULL) {
 		testapp_print("notification_setting_get_setting_by_package_name failed [%d]", err);
-	}
-	else {
+	} else {
 		notification_setting_set_allow_to_notify(setting, 0);
 		notification_setting_update_setting(setting);
 	}
@@ -726,7 +725,7 @@ out:
 	return err;
 }
 
-static gboolean testapp_interpret_command_setting_test (int selected_number)
+static gboolean testapp_interpret_command_setting_test(int selected_number)
 {
 	gboolean go_to_loop = TRUE;
 
@@ -765,8 +764,8 @@ void testapp_setting_main()
 	int menu_number = 0;
 
 	while (go_to_loop) {
-		testapp_show_menu (TESTAPP_MENU_TYPE_SETTING_TEST_MENU);
-		testapp_show_prompt (TESTAPP_MENU_TYPE_SETTING_TEST_MENU);
+		testapp_show_menu(TESTAPP_MENU_TYPE_SETTING_TEST_MENU);
+		testapp_show_prompt(TESTAPP_MENU_TYPE_SETTING_TEST_MENU);
 
 		if (0 >= scanf("%d", &menu_number))
 			testapp_print("Invalid input");
@@ -777,7 +776,7 @@ void testapp_setting_main()
 /* Setting Test } ---------------------------------------------------------------*/
 
 /* Main { ---------------------------------------------------------------------*/
-static gboolean testapp_interpret_command (int menu_number)
+static gboolean testapp_interpret_command(int menu_number)
 {
 	gboolean go_to_loop = TRUE;
 
@@ -801,39 +800,39 @@ static gboolean testapp_interpret_command (int menu_number)
 	return go_to_loop;
 }
 
-void testapp_show_prompt (testapp_menu_type_e menu)
+void testapp_show_prompt(testapp_menu_type_e menu)
 {
 	switch (menu) {
 	case TESTAPP_MENU_TYPE_MAIN_MENU:
-		testapp_print ("[MAIN]# ");
+		testapp_print("[MAIN]# ");
 		break;
 
 	case TESTAPP_MENU_TYPE_BASIC_TEST_MENU:
-		testapp_print ("[BASIC_TEST]# ");
+		testapp_print("[BASIC_TEST]# ");
 		break;
 
 	case TESTAPP_MENU_TYPE_SETTING_TEST_MENU:
-		testapp_print ("[SETTING_TEST]# ");
+		testapp_print("[SETTING_TEST]# ");
 		break;
 	}
 }
 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 	gboolean go_to_loop = TRUE;
 	int menu_number = 0;
 
-	if ( testapp_initialize_testing() == FALSE ) {
-		testapp_print ("Initializing failed.\n");
+	if (testapp_initialize_testing() == FALSE) {
+		testapp_print("Initializing failed.\n");
 		return 1;
 	}
 
 	while (go_to_loop) {
-		testapp_show_menu (TESTAPP_MENU_TYPE_MAIN_MENU);
-		testapp_show_prompt (TESTAPP_MENU_TYPE_MAIN_MENU);
-		if (0 >= scanf ("%d", &menu_number))
+		testapp_show_menu(TESTAPP_MENU_TYPE_MAIN_MENU);
+		testapp_show_prompt(TESTAPP_MENU_TYPE_MAIN_MENU);
+		if (0 >= scanf("%d", &menu_number))
 			testapp_print("Invalid input");
-		go_to_loop = testapp_interpret_command (menu_number);
+		go_to_loop = testapp_interpret_command(menu_number);
 	}
 
 	testapp_finalize_testing();

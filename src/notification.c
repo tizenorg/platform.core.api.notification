@@ -650,8 +650,7 @@ EXPORT_API int notification_get_text(notification_h noti,
 							ret_var_type = atoi(ret_val);
 						}
 						if (ret_var_type ==
-						    NOTIFICATION_VARIABLE_TYPE_COUNT)
-						{
+						    NOTIFICATION_VARIABLE_TYPE_COUNT) {
 							/* Get notification count */
 							notification_noti_get_count
 							    (noti->type,
@@ -756,8 +755,7 @@ EXPORT_API int notification_get_text(notification_h noti,
 								ret_var_type = atoi(ret_val);
 							}
 							if (ret_var_type ==
-							    NOTIFICATION_VARIABLE_TYPE_COUNT)
-							{
+							    NOTIFICATION_VARIABLE_TYPE_COUNT) {
 								/* Get notification count */
 								notification_noti_get_count
 								    (noti->type,
@@ -1381,8 +1379,7 @@ EXPORT_API int notification_get_event_handler(notification_h noti, notification_
 	err = app_control_import_from_bundle(app_control_new, b);
 	if (err == APP_CONTROL_ERROR_NONE) {
 		*event_handler = app_control_new;
-	}
-	else {
+	} else {
 		app_control_destroy(app_control_new);
 		app_control_new = NULL;
 		NOTIFICATION_ERR("Failed to import app control from bundle [%d]", err);
@@ -1825,51 +1822,51 @@ EXPORT_API int notification_clone(notification_h noti, notification_h *clone)
 	new_noti->internal_group_id = noti->internal_group_id;
 	new_noti->priv_id = noti->priv_id;
 
-	if(noti->caller_pkgname != NULL) {
+	if (noti->caller_pkgname != NULL) {
 		new_noti->caller_pkgname = strdup(noti->caller_pkgname);
 	} else {
 		new_noti->caller_pkgname = notification_get_pkgname_by_pid();
 	}
-	if(noti->launch_pkgname != NULL) {
+	if (noti->launch_pkgname != NULL) {
 		new_noti->launch_pkgname = strdup(noti->launch_pkgname);
 	} else {
 		new_noti->launch_pkgname = NULL;
 	}
 
-	if(noti->args != NULL) {
+	if (noti->args != NULL) {
 		new_noti->args = bundle_dup(noti->args);
 	} else {
 		new_noti->args = NULL;
 	}
-	if(noti->group_args != NULL) {
+	if (noti->group_args != NULL) {
 		new_noti->group_args = bundle_dup(noti->group_args);
 	} else {
 		new_noti->group_args = NULL;
 	}
 
-	if(noti->b_execute_option != NULL) {
+	if (noti->b_execute_option != NULL) {
 		new_noti->b_execute_option = bundle_dup(noti->b_execute_option);
 	} else {
 		new_noti->b_execute_option = NULL;
 	}
-	if(noti->b_service_responding != NULL) {
+	if (noti->b_service_responding != NULL) {
 		new_noti->b_service_responding = bundle_dup(noti->b_service_responding);
 	} else {
 		new_noti->b_service_responding = NULL;
 	}
-	if(noti->b_service_single_launch != NULL) {
+	if (noti->b_service_single_launch != NULL) {
 		new_noti->b_service_single_launch = bundle_dup(noti->b_service_single_launch);
 	} else {
 		new_noti->b_service_single_launch = NULL;
 	}
-	if(noti->b_service_multi_launch != NULL) {
+	if (noti->b_service_multi_launch != NULL) {
 		new_noti->b_service_multi_launch = bundle_dup(noti->b_service_multi_launch);
 	} else {
 		new_noti->b_service_multi_launch = NULL;
 	}
 
 	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
-		if(noti->b_event_handler[i] != NULL) {
+		if (noti->b_event_handler[i] != NULL) {
 			new_noti->b_event_handler[i] = bundle_dup(noti->b_event_handler[i]);
 		} else {
 			new_noti->b_event_handler[i] = NULL;
@@ -1877,13 +1874,13 @@ EXPORT_API int notification_clone(notification_h noti, notification_h *clone)
 	}
 
 	new_noti->sound_type = noti->sound_type;
-	if(noti->sound_path != NULL) {
+	if (noti->sound_path != NULL) {
 		new_noti->sound_path = strdup(noti->sound_path);
 	} else {
 		new_noti->sound_path = NULL;
 	}
 	new_noti->vibration_type = noti->vibration_type;
-	if(noti->vibration_path != NULL) {
+	if (noti->vibration_path != NULL) {
 		new_noti->vibration_path = strdup(noti->vibration_path);
 	} else {
 		new_noti->vibration_path = NULL;
@@ -1893,35 +1890,35 @@ EXPORT_API int notification_clone(notification_h noti, notification_h *clone)
 	new_noti->led_on_ms = noti->led_on_ms;
 	new_noti->led_off_ms = noti->led_off_ms;
 
-	if(noti->domain != NULL) {
+	if (noti->domain != NULL) {
 		new_noti->domain = strdup(noti->domain);
 	} else {
 		new_noti->domain = NULL;
 	}
-	if(noti->dir != NULL) {
+	if (noti->dir != NULL) {
 		new_noti->dir = strdup(noti->dir);
 	} else {
 		new_noti->dir = NULL;
 	}
 
-	if(noti->b_text != NULL) {
+	if (noti->b_text != NULL) {
 		new_noti->b_text = bundle_dup(noti->b_text);
 	} else {
 		new_noti->b_text = NULL;
 	}
-	if(noti->b_key != NULL) {
+	if (noti->b_key != NULL) {
 		new_noti->b_key = bundle_dup(noti->b_key);
 	} else {
 		new_noti->b_key = NULL;
 	}
-	if(noti->b_format_args != NULL) {
+	if (noti->b_format_args != NULL) {
 		new_noti->b_format_args = bundle_dup(noti->b_format_args);
 	} else {
 		new_noti->b_format_args = NULL;
 	}
 	new_noti->num_format_args = noti->num_format_args;
 
-	if(noti->b_image_path != NULL) {
+	if (noti->b_image_path != NULL) {
 		new_noti->b_image_path = bundle_dup(noti->b_image_path);
 	} else {
 		new_noti->b_image_path = NULL;
@@ -1984,7 +1981,7 @@ EXPORT_API int notification_free(notification_h noti)
 	}
 
 	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
-		if(noti->b_event_handler[i] != NULL) {
+		if (noti->b_event_handler[i] != NULL) {
 			bundle_free(noti->b_event_handler[i]);
 		}
 	}

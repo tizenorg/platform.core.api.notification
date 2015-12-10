@@ -41,7 +41,8 @@
 
 #define NOTI_BURST_DELETE_UNIT 10
 
-static void __free_and_set(void **target_ptr, void *new_ptr) {
+static void __free_and_set(void **target_ptr, void *new_ptr)
+{
 	if (target_ptr != NULL) {
 		if (*target_ptr != NULL) {
 			free(*target_ptr);
@@ -559,7 +560,8 @@ static int _update_query_create(notification_h noti, char **query)
 	return NOTIFICATION_ERROR_NONE;
 }
 
-static void _notification_noti_populate_from_stmt(sqlite3_stmt * stmt, notification_h noti) {
+static void _notification_noti_populate_from_stmt(sqlite3_stmt * stmt, notification_h noti)
+{
 	int col = 0;
 	int i = 0;
 
@@ -675,7 +677,7 @@ int notification_noti_get_tag_type(const char *tagged_str)
 	if (tagged_str == NULL)
 		return TAG_TYPE_INVALID;
 
-	if (strlen(tagged_str)== 0)
+	if (strlen(tagged_str) == 0)
 		return TAG_TYPE_INVALID;
 
 	char *b_f_s = strstr(tagged_str, "<");
@@ -687,7 +689,7 @@ int notification_noti_get_tag_type(const char *tagged_str)
 	char *start = b_f_s + 1;
 	int len_tag = b_f_e - b_f_s - 1;
 
-	if (strncmp(start,TAG_TIME,len_tag) == 0) {
+	if (strncmp(start, TAG_TIME, len_tag) == 0) {
 		return TAG_TYPE_TIME;
 	}
 
@@ -776,13 +778,12 @@ static bool _is_allowed_to_notify(const char *caller_package_name)
 	err = notification_setting_get_setting_by_package_name(caller_package_name, &setting);
 	if (err != NOTIFICATION_ERROR_NONE) {
 		/* Retry with package id */
-		err = _get_package_id_by_app_id (caller_package_name, &package_id);
+		err = _get_package_id_by_app_id(caller_package_name, &package_id);
 
 		if (err != NOTIFICATION_ERROR_NONE || package_id == NULL) {
 			NOTIFICATION_ERR("_get_package_id_by_app_id failed [%d]", err);
 			goto out;
-		}
-		else {
+		} else {
 			err = notification_setting_get_setting_by_package_name(package_id, &setting);
 			if (err != NOTIFICATION_ERROR_NONE) {
 				NOTIFICATION_ERR("notification_setting_get_setting_by_package_name failed [%d]", err);
@@ -847,13 +848,12 @@ static int _handle_do_not_disturb_option(notification_h noti)
 
 		if (err != NOTIFICATION_ERROR_NONE) {
 			/* Retry with package id */
-			err = _get_package_id_by_app_id (noti->caller_pkgname, &package_id);
+			err = _get_package_id_by_app_id(noti->caller_pkgname, &package_id);
 
 			if (err != NOTIFICATION_ERROR_NONE || package_id == NULL) {
 				NOTIFICATION_ERR("_get_package_id_by_app_id failed [%d]", err);
 				goto out;
-			}
-			else {
+			} else {
 				err = notification_setting_get_setting_by_package_name(package_id, &setting);
 				if (err != NOTIFICATION_ERROR_NONE) {
 					NOTIFICATION_ERR("notification_setting_get_setting_by_package_name failed [%d]", err);
@@ -978,7 +978,7 @@ EXPORT_API int notification_noti_insert(notification_h noti)
 		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
 		goto err;
 	}
-	ret = _notification_noti_bind_query_double(stmt, "$progress_size",noti->progress_size);
+	ret = _notification_noti_bind_query_double(stmt, "$progress_size", noti->progress_size);
 	if (ret != NOTIFICATION_ERROR_NONE) {
 		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
 		if (stmt) {
@@ -986,7 +986,7 @@ EXPORT_API int notification_noti_insert(notification_h noti)
 		}
 		return ret;
 	}
-	ret = _notification_noti_bind_query_double(stmt, "$progress_percentage",noti->progress_percentage);
+	ret = _notification_noti_bind_query_double(stmt, "$progress_percentage", noti->progress_percentage);
 	if (ret != NOTIFICATION_ERROR_NONE) {
 		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
 		if (stmt) {
@@ -1055,7 +1055,7 @@ int notification_noti_get_by_priv_id(notification_h noti, char *pkgname, int pri
 
 	if (pkgname != NULL) {
 		query = sqlite3_mprintf("%s where caller_pkgname = '%s' and priv_id = %d",
-				base_query ,pkgname, priv_id);
+				base_query, pkgname, priv_id);
 	} else {
 		query = sqlite3_mprintf("%s where priv_id = %d", base_query,  priv_id);
 	}
@@ -1237,12 +1237,12 @@ EXPORT_API int notification_noti_update(notification_h noti)
 		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
 		goto err;
 	}
-	ret = _notification_noti_bind_query_double(stmt, "$progress_size",noti->progress_size);
+	ret = _notification_noti_bind_query_double(stmt, "$progress_size", noti->progress_size);
 	if (ret != NOTIFICATION_ERROR_NONE) {
 		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
 		goto err;
 	}
-	ret = _notification_noti_bind_query_double(stmt, "$progress_percentage",noti->progress_percentage);
+	ret = _notification_noti_bind_query_double(stmt, "$progress_percentage", noti->progress_percentage);
 	if (ret != NOTIFICATION_ERROR_NONE) {
 		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
 		goto err;
@@ -1323,7 +1323,7 @@ EXPORT_API int notification_noti_delete_all(notification_type_e type, const char
 			goto err;
 		}
 
-		while(sqlite3_step(stmt) == SQLITE_ROW) {
+		while (sqlite3_step(stmt) == SQLITE_ROW) {
 			if (data_cnt % 8 == 0) {
 				int *tmp;
 
@@ -1364,9 +1364,9 @@ EXPORT_API int notification_noti_delete_all(notification_type_e type, const char
 					}
 				}
 				snprintf(buf, sizeof(buf) - 1, "%s%d", (i % NOTI_BURST_DELETE_UNIT == 0) ? "" : ",", *((*list_deleted_rowid) + i));
-				strncat(query_where, buf,sizeof(query_where) - strlen(query_where) - 1);
+				strncat(query_where, buf, sizeof(query_where) - strlen(query_where) - 1);
 			}
-			if ((i <= NOTI_BURST_DELETE_UNIT) || ((i % NOTI_BURST_DELETE_UNIT) > 0) ) {
+			if ((i <= NOTI_BURST_DELETE_UNIT) || ((i % NOTI_BURST_DELETE_UNIT) > 0)) {
 				snprintf(query, sizeof(query) - 1, "%s where priv_id in (%s)", query_base, query_where);
 				ret_tmp = notification_db_exec(db, query, NULL);
 				if (ret == NOTIFICATION_ERROR_NONE) {
@@ -1450,7 +1450,7 @@ int notification_noti_delete_group_by_group_id(const char *pkgname,
 			goto err;
 		}
 
-		while(sqlite3_step(stmt) == SQLITE_ROW) {
+		while (sqlite3_step(stmt) == SQLITE_ROW) {
 			if (data_cnt % 8 == 0) {
 				int *tmp;
 				tmp = (int *)realloc(*list_deleted_rowid, sizeof(int) * (data_cnt + 8 + 1));
@@ -1485,9 +1485,9 @@ int notification_noti_delete_group_by_group_id(const char *pkgname,
 					}
 				}
 				snprintf(buf, sizeof(buf) - 1, "%s%d", (i % NOTI_BURST_DELETE_UNIT == 0) ? "" : ",", *((*list_deleted_rowid) + i));
-				strncat(query_where, buf,sizeof(query_where) - strlen(query_where) - 1);
+				strncat(query_where, buf, sizeof(query_where) - strlen(query_where) - 1);
 			}
-			if ((i <= NOTI_BURST_DELETE_UNIT) || ((i % NOTI_BURST_DELETE_UNIT) > 0) ) {
+			if ((i <= NOTI_BURST_DELETE_UNIT) || ((i % NOTI_BURST_DELETE_UNIT) > 0)) {
 				snprintf(query, sizeof(query) - 1, "%s where priv_id in (%s)", query_base, query_where);
 				ret_tmp = notification_db_exec(db, query, NULL);
 				if (ret == NOTIFICATION_ERROR_NONE) {

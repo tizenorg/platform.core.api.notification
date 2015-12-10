@@ -71,7 +71,7 @@ static int _get_table_field_data_string(char **table, char **buf, int ucs2, int 
 		*buf = NULL;
 	else {
 		sLen = strlen(pTemp);
-		if(sLen) {
+		if (sLen) {
 			*buf = (char *) malloc(sLen + 1);
 			if (*buf == NULL) {
 				NOTIFICATION_ERR("malloc is failed");
@@ -79,8 +79,7 @@ static int _get_table_field_data_string(char **table, char **buf, int ucs2, int 
 			}
 			memset(*buf, 0, sLen + 1);
 			strncpy(*buf, pTemp, sLen);
-		}
-		else
+		} else
 			*buf = NULL;
 	}
 
@@ -103,7 +102,7 @@ EXPORT_API int notification_setting_get_setting_array(notification_setting_h *se
 	int column_count = 0;
 	int i = 0;
 	int col_index = 0;
-	notification_setting_h result_setting_array= NULL;
+	notification_setting_h result_setting_array = NULL;
 
 	if (setting_array == NULL || count == NULL) {
 		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
@@ -138,12 +137,12 @@ EXPORT_API int notification_setting_get_setting_array(notification_setting_h *se
 	}
 
 	if (!row_count) {
-		NOTIFICATION_DBG ("No setting found...");
-		err= NOTIFICATION_ERROR_NOT_EXIST_ID;
+		NOTIFICATION_DBG("No setting found...");
+		err = NOTIFICATION_ERROR_NOT_EXIST_ID;
 		goto out;
 	}
 
-	NOTIFICATION_DBG ("row_count [%d] column_count [%d]", row_count, column_count);
+	NOTIFICATION_DBG("row_count [%d] column_count [%d]", row_count, column_count);
 	if (!(result_setting_array = (struct notification_setting*)malloc(sizeof(struct notification_setting) * row_count))) {
 		NOTIFICATION_ERR("malloc failed...");
 		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
@@ -190,7 +189,7 @@ EXPORT_API int notification_setting_get_setting_by_package_name(const char *pack
 	int column_count = 0;
 	int i = 0;
 	int col_index = 0;
-	notification_setting_h result_setting_array= NULL;
+	notification_setting_h result_setting_array = NULL;
 
 	if (package_name == NULL || setting == NULL) {
 		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
@@ -225,12 +224,12 @@ EXPORT_API int notification_setting_get_setting_by_package_name(const char *pack
 	}
 
 	if (!row_count) {
-		NOTIFICATION_DBG ("No setting found for [%s]", package_name);
-		err= NOTIFICATION_ERROR_NOT_EXIST_ID;
+		NOTIFICATION_DBG("No setting found for [%s]", package_name);
+		err = NOTIFICATION_ERROR_NOT_EXIST_ID;
 		goto out;
 	}
 
-	NOTIFICATION_DBG ("row_count [%d] column_count [%d]", row_count, column_count);
+	NOTIFICATION_DBG("row_count [%d] column_count [%d]", row_count, column_count);
 
 	row_count = 1;
 
@@ -647,8 +646,7 @@ out:
 	if (db) {
 		if (err == NOTIFICATION_ERROR_NONE) {
 			sqlite3_exec(db, "END;", NULL, NULL, NULL);
-		}
-		else {
+		} else {
 			sqlite3_exec(db, "ROLLBACK;", NULL, NULL, NULL);
 		}
 
@@ -689,7 +687,7 @@ static int _notification_setting_alter_package_list(notification_setting_operati
 	is_package_in_setting_table = _is_package_in_setting_table(db, package_name);
 
 	switch (operation_type) {
-	case OPERATION_TYPE_INSERT_RECORD :
+	case OPERATION_TYPE_INSERT_RECORD:
 		if (is_package_in_setting_table == true) {
 			NOTIFICATION_INFO("[%s] is already exist", package_name);
 			goto out;
@@ -698,7 +696,7 @@ static int _notification_setting_alter_package_list(notification_setting_operati
 		sqlite3_ret = sqlite3_prepare_v2(db, "INSERT INTO notification_setting (package_name) VALUES (?) ", -1, &db_statement, NULL);
 		break;
 
-	case OPERATION_TYPE_DELETE_RECORD :
+	case OPERATION_TYPE_DELETE_RECORD:
 		if (is_package_in_setting_table == false) {
 			NOTIFICATION_INFO("[%s] is not exist", package_name);
 			goto out;
@@ -706,7 +704,7 @@ static int _notification_setting_alter_package_list(notification_setting_operati
 		NOTIFICATION_INFO("[%s] will be removed", package_name);
 		sqlite3_ret = sqlite3_prepare_v2(db, "DELETE FROM notification_setting WHERE package_name = ? ", -1, &db_statement, NULL);
 		break;
-	default :
+	default:
 		break;
 	}
 
@@ -734,8 +732,7 @@ out:
 		NOTIFICATION_INFO("err [%d]", err);
 		if (err == NOTIFICATION_ERROR_NONE) {
 			sqlite3_exec(db, "END;", NULL, NULL, NULL);
-		}
-		else {
+		} else {
 			sqlite3_exec(db, "ROLLBACK;", NULL, NULL, NULL);
 		}
 
@@ -815,7 +812,7 @@ EXPORT_API int notification_system_setting_load_system_setting(notification_syst
 	int row_count = 0;
 	int column_count = 0;
 	int col_index = 0;
-	notification_system_setting_h result_system_setting= NULL;
+	notification_system_setting_h result_system_setting = NULL;
 
 	if (system_setting == NULL) {
 		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
@@ -849,12 +846,12 @@ EXPORT_API int notification_system_setting_load_system_setting(notification_syst
 	}
 
 	if (!row_count) {
-		NOTIFICATION_DBG ("No setting found...");
-		err= NOTIFICATION_ERROR_NOT_EXIST_ID;
+		NOTIFICATION_DBG("No setting found...");
+		err = NOTIFICATION_ERROR_NOT_EXIST_ID;
 		goto out;
 	}
 
-	NOTIFICATION_DBG ("row_count [%d] column_count [%d]", row_count, column_count);
+	NOTIFICATION_DBG("row_count [%d] column_count [%d]", row_count, column_count);
 
 	row_count = 1;
 
@@ -1047,8 +1044,7 @@ return_close_db:
 	if (db) {
 		if (err == NOTIFICATION_ERROR_NONE) {
 			sqlite3_exec(db, "END;", NULL, NULL, NULL);
-		}
-		else {
+		} else {
 			sqlite3_exec(db, "ROLLBACK;", NULL, NULL, NULL);
 		}
 		sqlret = db_util_close(db);

@@ -35,7 +35,8 @@
 #define NOTIFICATION_DB_ACCESS_WRITE 1
 
 #if 0
-int notification_permission_check_by_pid(const char *noti_pkgname, int pid, int access) {
+int notification_permission_check_by_pid(const char *noti_pkgname, int pid, int access)
+{
 	int ret = 0;
 	char pkgname[512 + 1] = { 0, };
 	bool preload = false;
@@ -55,7 +56,7 @@ int notification_permission_check_by_pid(const char *noti_pkgname, int pid, int 
 		}
 
 		package_manager_compare_package_cert_info(noti_pkgname, &compare_result);
-		if (compare_result == PACKAGE_MANAGER_COMPARE_MATCH ) {
+		if (compare_result == PACKAGE_MANAGER_COMPARE_MATCH) {
 			return NOTIFICATION_ERROR_NONE;
 		}
 	}

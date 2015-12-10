@@ -35,14 +35,13 @@
 sqlite3 * notification_db_open(const char *dbfile)
 {
 	int ret = 0;
-	sqlite3 *db =0;
+	sqlite3 *db = 0;
 
 	ret = db_util_open(dbfile, &db, 0);
 	if (ret != SQLITE_OK) {
 		if (ret == SQLITE_PERM) {
 			set_last_result(NOTIFICATION_ERROR_PERMISSION_DENIED);
-		}
-		else {
+		} else {
 			set_last_result(NOTIFICATION_ERROR_FROM_DB);
 		}
 		return NULL;
