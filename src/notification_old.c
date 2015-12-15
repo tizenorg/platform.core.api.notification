@@ -30,6 +30,7 @@
 #include <sys/syscall.h>
 #include <sys/time.h>
 #include <sys/un.h>
+#include <bundle_internal.h>
 
 #include <notification.h>
 #include <notification_internal.h>
