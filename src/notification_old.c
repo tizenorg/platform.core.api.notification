@@ -119,6 +119,7 @@ EXPORT_API int notification_wait_response(notification_h noti,
 			*respc = NULL;
 	}
 
+	close(msg_fd);
 	close(sock_fd);
 	unlink(sock_path);
 	free(sock_path);
