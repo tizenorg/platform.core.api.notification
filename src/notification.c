@@ -530,6 +530,8 @@ EXPORT_API int notification_get_text(notification_h noti,
 	notification_variable_type_e ret_var_type = 0;
 	int ret_variable_int = 0;
 	double ret_variable_double = 0.0;
+	int src_len = 0;
+	int max_len = 0;
 
 	/* Check noti is valid data */
 	if (noti == NULL || text == NULL) {
@@ -619,8 +621,8 @@ EXPORT_API int notification_get_text(notification_h noti,
 					snprintf(buf_str, sizeof(buf_str),
 						 "%d ", ret_variable_int);
 
-					int src_len = strlen(result_str);
-					int max_len = NOTI_TEXT_RESULT_LEN - src_len - 1;
+					src_len = strlen(result_str);
+					max_len = NOTI_TEXT_RESULT_LEN - src_len - 1;
 
 					strncat(result_str, buf_str,
 							max_len);
@@ -675,8 +677,8 @@ EXPORT_API int notification_get_text(notification_h noti,
 							 sizeof(buf_str), "%d",
 							 ret_variable_int);
 
-						int src_len = strlen(result_str);
-						int max_len = NOTI_TEXT_RESULT_LEN - src_len - 1;
+						src_len = strlen(result_str);
+						max_len = NOTI_TEXT_RESULT_LEN - src_len - 1;
 
 						strncat(result_str, buf_str,
 								max_len);
@@ -705,16 +707,13 @@ EXPORT_API int notification_get_text(notification_h noti,
 							translated_str = NULL;
 						}
 
-						strncpy(buf_str, translated_str, sizeof(buf_str) - 1);
-
-						int src_len = strlen(result_str);
-						int max_len = NOTI_TEXT_RESULT_LEN - src_len - 1;
-
-						strncat(result_str, buf_str,
-								max_len);
-
+						if (translated_str != NULL) {
+							strncpy(buf_str, translated_str, sizeof(buf_str) - 1);
+							src_len = strlen(result_str);
+							max_len = NOTI_TEXT_RESULT_LEN - src_len - 1;
+							strncat(result_str, buf_str, max_len);
+						}
 						temp_str++;
-
 						num_args++;
 					} else if (*(temp_str + 1) == 'f') {
 						/* Get var Value */
@@ -732,14 +731,11 @@ EXPORT_API int notification_get_text(notification_h noti,
 							 "%.2f",
 							 ret_variable_double);
 
-						int src_len = strlen(result_str);
-						int max_len = NOTI_TEXT_RESULT_LEN - src_len - 1;
-
-						strncat(result_str, buf_str,
-								max_len);
+						src_len = strlen(result_str);
+						max_len = NOTI_TEXT_RESULT_LEN - src_len - 1;
+						strncat(result_str, buf_str, max_len);
 
 						temp_str++;
-
 						num_args++;
 					} else if (*(temp_str + 1) >= '1' && *(temp_str + 1) <= '9') {
 						if (*(temp_str + 3) == 'd') {
@@ -781,11 +777,10 @@ EXPORT_API int notification_get_text(notification_h noti,
 								 sizeof(buf_str), "%d",
 								 ret_variable_int);
 
-							int src_len = strlen(result_str);
-							int max_len = NOTI_TEXT_RESULT_LEN - src_len - 1;
+							src_len = strlen(result_str);
+							max_len = NOTI_TEXT_RESULT_LEN - src_len - 1;
 
-							strncat(result_str, buf_str,
-									max_len);
+							strncat(result_str, buf_str, max_len);
 
 							temp_str += 3;
 						} else if (*(temp_str + 3) == 's') {
@@ -800,11 +795,10 @@ EXPORT_API int notification_get_text(notification_h noti,
 								 sizeof(buf_str), "%s",
 								 ret_val);
 
-							int src_len = strlen(result_str);
-							int max_len = NOTI_TEXT_RESULT_LEN - src_len - 1;
+							src_len = strlen(result_str);
+							max_len = NOTI_TEXT_RESULT_LEN - src_len - 1;
 
-							strncat(result_str, buf_str,
-									max_len);
+							strncat(result_str, buf_str, max_len);
 
 							temp_str += 3;
 						} else if (*(temp_str + 3) == 'f') {
@@ -823,11 +817,10 @@ EXPORT_API int notification_get_text(notification_h noti,
 								 "%.2f",
 								 ret_variable_double);
 
-							int src_len = strlen(result_str);
-							int max_len = NOTI_TEXT_RESULT_LEN - src_len - 1;
+							src_len = strlen(result_str);
+							max_len = NOTI_TEXT_RESULT_LEN - src_len - 1;
 
-							strncat(result_str, buf_str,
-									max_len);
+							strncat(result_str, buf_str, max_len);
 
 							temp_str += 3;
 						}
@@ -868,11 +861,10 @@ EXPORT_API int notification_get_text(notification_h noti,
 							 sizeof(buf_str), " %d",
 							 ret_variable_int);
 
-						int src_len = strlen(result_str);
-						int max_len = NOTI_TEXT_RESULT_LEN - src_len - 1;
+						src_len = strlen(result_str);
+						max_len = NOTI_TEXT_RESULT_LEN - src_len - 1;
 
-						strncat(result_str, buf_str,
-								max_len);
+						strncat(result_str, buf_str, max_len);
 
 						num_args++;
 					}
