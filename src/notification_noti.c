@@ -44,9 +44,9 @@
 static void __free_and_set(void **target_ptr, void *new_ptr)
 {
 	if (target_ptr != NULL) {
-		if (*target_ptr != NULL) {
+		if (*target_ptr != NULL)
 			free(*target_ptr);
-		}
+
 		*target_ptr = new_ptr;
 	}
 }
@@ -120,23 +120,20 @@ static int _notification_noti_check_priv_id(notification_h noti, sqlite3 * db)
 	}
 
 	ret = sqlite3_step(stmt);
-	if (ret == SQLITE_ROW) {
+	if (ret == SQLITE_ROW)
 		result = sqlite3_column_int(stmt, 0);
-	} else {
+	else
 		result = 0;
-	}
 
 	sqlite3_finalize(stmt);
 
 	/* If result > 0, there is priv_id in DB */
-	if (result > 0) {
+	if (result > 0)
 		ret = NOTIFICATION_ERROR_ALREADY_EXIST_ID;
-	}
 
 err:
-	if (query) {
+	if (query)
 		sqlite3_free(query);
-	}
 
 	return ret;
 }
@@ -165,24 +162,20 @@ static int _notification_noti_get_internal_group_id_by_priv_id(const char *pkgna
 	}
 
 	ret = sqlite3_step(stmt);
-	if (ret == SQLITE_ROW) {
+	if (ret == SQLITE_ROW)
 		result = sqlite3_column_int(stmt, 0);
-	} else {
+	else
 		result = 0;
-	}
 
 err:
-	if (stmt) {
+	if (stmt)
 		sqlite3_finalize(stmt);
-	}
 
-	if (query) {
+	if (query)
 		sqlite3_free(query);
-	}
 
-	if (ret != NOTIFICATION_ERROR_NONE) {
+	if (ret != NOTIFICATION_ERROR_NONE)
 		NOTIFICATION_ERR("failed to internal group ID:%d", ret);
-	}
 
 	return result;
 }
@@ -204,118 +197,112 @@ static int _insertion_query_create(notification_h noti, char **query)
 	char *b_format_args = NULL;
 	int flag_simmode = 0;
 
-	if (query == NULL) {
+	if (query == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Decode bundle to insert DB */
-	if (noti->args) {
+	if (noti->args)
 		bundle_encode(noti->args, (bundle_raw **) & args, &b_encode_len);
-	}
-	if (noti->group_args) {
+
+	if (noti->group_args)
 		bundle_encode(noti->group_args, (bundle_raw **) & group_args,
 			      &b_encode_len);
-	}
 
-	if (noti->b_execute_option) {
+	if (noti->b_execute_option)
 		bundle_encode(noti->b_execute_option,
 			      (bundle_raw **) & b_execute_option, &b_encode_len);
-	}
-	if (noti->b_service_responding) {
+
+	if (noti->b_service_responding)
 		bundle_encode(noti->b_service_responding,
 			      (bundle_raw **) & b_service_responding, &b_encode_len);
-	}
-	if (noti->b_service_single_launch) {
+
+	if (noti->b_service_single_launch)
 		bundle_encode(noti->b_service_single_launch,
 			      (bundle_raw **) & b_service_single_launch, &b_encode_len);
-	}
-	if (noti->b_service_multi_launch) {
+
+	if (noti->b_service_multi_launch)
 		bundle_encode(noti->b_service_multi_launch,
 			      (bundle_raw **) & b_service_multi_launch, &b_encode_len);
-	}
+
 
 	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
-		if (noti->b_event_handler[i]) {
+		if (noti->b_event_handler[i])
 			bundle_encode(noti->b_event_handler[i],
 					(bundle_raw **) & b_event_handler[i], &b_encode_len);
-		}
 	}
 
-	if (noti->b_text) {
+	if (noti->b_text)
 		bundle_encode(noti->b_text, (bundle_raw **) & b_text, &b_encode_len);
-	}
-	if (noti->b_key) {
+
+	if (noti->b_key)
 		bundle_encode(noti->b_key, (bundle_raw **) & b_key, &b_encode_len);
-	}
-	if (noti->b_format_args) {
+
+	if (noti->b_format_args)
 		bundle_encode(noti->b_format_args,
 			      (bundle_raw **) & b_format_args, &b_encode_len);
-	}
 
-	if (noti->b_image_path) {
+	if (noti->b_image_path)
 		bundle_encode(noti->b_image_path,
 			      (bundle_raw **) & b_image_path, &b_encode_len);
-	}
 
 	/* Check only simmode property is enable */
-	if (noti->flags_for_property & NOTIFICATION_PROP_DISPLAY_ONLY_SIMMODE) {
+	if (noti->flags_for_property & NOTIFICATION_PROP_DISPLAY_ONLY_SIMMODE)
 		flag_simmode = 1;
-	}
 
 	/* Make query */
 	*query = sqlite3_mprintf("INSERT INTO noti_list ("
-		 "type, "
-		 "layout, "
-		 "caller_pkgname, launch_pkgname, "
-		 "image_path, "
-		 "group_id, internal_group_id, priv_id, "
-		 "title_key, "
-		 "b_text, b_key, tag, b_format_args, num_format_args, "
-		 "text_domain, text_dir, "
-		 "time, insert_time, "
-		 "args, group_args, "
-		 "b_execute_option, "
-		 "b_service_responding, b_service_single_launch, b_service_multi_launch, "
-		 "b_event_handler_click_on_button_1, b_event_handler_click_on_button_2, b_event_handler_click_on_button_3, "
-		 "b_event_handler_click_on_button_4, b_event_handler_click_on_button_5, b_event_handler_click_on_button_6, "
-		 "b_event_handler_click_on_icon, b_event_handler_click_on_thumbnail, "
-		 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb, led_on_ms, led_off_ms, "
-		 "flags_for_property, flag_simmode, display_applist, "
-		 "progress_size, progress_percentage, ongoing_flag, auto_remove) values ("
-		 "%d, "
-		 "%d, "
-		 "'%s', '%s', "
-		 "'%s', "
-		 "%d, %d, %d, "
-		 "$title_key, "
-		 "'%s', '%s', $tag, '%s', %d, "
-		 "'%s', '%s', "
-		 "%d, %d, "
-		 "'%s', '%s', "
-		 "'%s', "
-		 "'%s', '%s', '%s', "
-		 "'%s', '%s', '%s', "
-		 "'%s', '%s', '%s', "
-		 "'%s', '%s', "
-		 "%d, '%s', %d, '%s', %d, %d, %d, %d,"
-		 "%d, %d, %d, "
-		 "$progress_size, $progress_percentage, %d, %d)",
-		 noti->type,
-		 noti->layout,
-		 NOTIFICATION_CHECK_STR(noti->caller_pkgname),
-		 NOTIFICATION_CHECK_STR(noti->launch_pkgname),
-		 NOTIFICATION_CHECK_STR(b_image_path), noti->group_id,
-		 noti->internal_group_id, noti->priv_id,
-		 NOTIFICATION_CHECK_STR(b_text), NOTIFICATION_CHECK_STR(b_key),
-		 NOTIFICATION_CHECK_STR(b_format_args), noti->num_format_args,
-		 NOTIFICATION_CHECK_STR(noti->domain),
-		 NOTIFICATION_CHECK_STR(noti->dir), (int)noti->time,
-		 (int)noti->insert_time, NOTIFICATION_CHECK_STR(args),
-		 NOTIFICATION_CHECK_STR(group_args),
-		 NOTIFICATION_CHECK_STR(b_execute_option),
-		 NOTIFICATION_CHECK_STR(b_service_responding),
-		 NOTIFICATION_CHECK_STR(b_service_single_launch),
-		 NOTIFICATION_CHECK_STR(b_service_multi_launch),
+		"type, "
+		"layout, "
+		"caller_pkgname, launch_pkgname, "
+		"image_path, "
+		"group_id, internal_group_id, priv_id, "
+		"title_key, "
+		"b_text, b_key, tag, b_format_args, num_format_args, "
+		"text_domain, text_dir, "
+		"time, insert_time, "
+		"args, group_args, "
+		"b_execute_option, "
+		"b_service_responding, b_service_single_launch, b_service_multi_launch, "
+		"b_event_handler_click_on_button_1, b_event_handler_click_on_button_2, b_event_handler_click_on_button_3, "
+		"b_event_handler_click_on_button_4, b_event_handler_click_on_button_5, b_event_handler_click_on_button_6, "
+		"b_event_handler_click_on_icon, b_event_handler_click_on_thumbnail, "
+		"sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb, led_on_ms, led_off_ms, "
+		"flags_for_property, flag_simmode, display_applist, "
+		"progress_size, progress_percentage, ongoing_flag, auto_remove) values ("
+		"%d, "
+		"%d, "
+		"'%s', '%s', "
+		"'%s', "
+		"%d, %d, %d, "
+		"$title_key, "
+		"'%s', '%s', $tag, '%s', %d, "
+		"'%s', '%s', "
+		"%d, %d, "
+		"'%s', '%s', "
+		"'%s', "
+		"'%s', '%s', '%s', "
+		"'%s', '%s', '%s', "
+		"'%s', '%s', '%s', "
+		"'%s', '%s', "
+		"%d, '%s', %d, '%s', %d, %d, %d, %d,"
+		"%d, %d, %d, "
+		"$progress_size, $progress_percentage, %d, %d)",
+		noti->type,
+		noti->layout,
+		NOTIFICATION_CHECK_STR(noti->caller_pkgname),
+		NOTIFICATION_CHECK_STR(noti->launch_pkgname),
+		NOTIFICATION_CHECK_STR(b_image_path), noti->group_id,
+		noti->internal_group_id, noti->priv_id,
+		NOTIFICATION_CHECK_STR(b_text), NOTIFICATION_CHECK_STR(b_key),
+		NOTIFICATION_CHECK_STR(b_format_args), noti->num_format_args,
+		NOTIFICATION_CHECK_STR(noti->domain),
+		NOTIFICATION_CHECK_STR(noti->dir), (int)noti->time,
+		(int)noti->insert_time, NOTIFICATION_CHECK_STR(args),
+		NOTIFICATION_CHECK_STR(group_args),
+		NOTIFICATION_CHECK_STR(b_execute_option),
+		NOTIFICATION_CHECK_STR(b_service_responding),
+		NOTIFICATION_CHECK_STR(b_service_single_launch),
+		NOTIFICATION_CHECK_STR(b_service_multi_launch),
 		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_1]),
 		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_2]),
 		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_3]),
@@ -324,55 +311,50 @@ static int _insertion_query_create(notification_h noti, char **query)
 		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_6]),
 		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_ICON]),
 		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_THUMBNAIL]),
-		 noti->sound_type, NOTIFICATION_CHECK_STR(noti->sound_path),
-		 noti->vibration_type,
-		 NOTIFICATION_CHECK_STR(noti->vibration_path),
-		 noti->led_operation,
-		 noti->led_argb,
-		 noti->led_on_ms,
-		 noti->led_off_ms,
-		 noti->flags_for_property, flag_simmode, noti->display_applist,
-		 noti->ongoing_flag,
-		 noti->auto_remove);
+		noti->sound_type, NOTIFICATION_CHECK_STR(noti->sound_path),
+		noti->vibration_type,
+		NOTIFICATION_CHECK_STR(noti->vibration_path),
+		noti->led_operation,
+		noti->led_argb,
+		noti->led_on_ms,
+		noti->led_off_ms,
+		noti->flags_for_property, flag_simmode, noti->display_applist,
+		noti->ongoing_flag,
+		noti->auto_remove);
 
 	/* Free decoded data */
-	if (args) {
+	if (args)
 		free(args);
-	}
-	if (group_args) {
+
+	if (group_args)
 		free(group_args);
-	}
 
-	if (b_execute_option) {
+	if (b_execute_option)
 		free(b_execute_option);
-	}
-	if (b_service_responding) {
+
+	if (b_service_responding)
 		free(b_service_responding);
-	}
-	if (b_service_single_launch) {
+
+	if (b_service_single_launch)
 		free(b_service_single_launch);
-	}
-	if (b_service_multi_launch) {
+
+	if (b_service_multi_launch)
 		free(b_service_multi_launch);
-	}
 
-	if (b_text) {
+	if (b_text)
 		free(b_text);
-	}
-	if (b_key) {
+
+	if (b_key)
 		free(b_key);
-	}
-	if (b_format_args) {
+
+	if (b_format_args)
 		free(b_format_args);
-	}
 
-	if (b_image_path) {
+	if (b_image_path)
 		free(b_image_path);
-	}
 
-	if (*query == NULL) {
+	if (*query == NULL)
 		return NOTIFICATION_ERROR_OUT_OF_MEMORY;
-	}
 
 	return NOTIFICATION_ERROR_NONE;
 }
@@ -395,110 +377,103 @@ static int _update_query_create(notification_h noti, char **query)
 	char *b_format_args = NULL;
 	int flag_simmode = 0;
 
-	if (query == NULL) {
+	if (query == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Decode bundle to update DB */
-	if (noti->args) {
+	if (noti->args)
 		bundle_encode(noti->args, (bundle_raw **) & args, &b_encode_len);
-	}
-	if (noti->group_args) {
+
+	if (noti->group_args)
 		bundle_encode(noti->group_args, (bundle_raw **) & group_args,
 			      &b_encode_len);
-	}
 
-	if (noti->b_execute_option) {
+	if (noti->b_execute_option)
 		bundle_encode(noti->b_execute_option,
 			      (bundle_raw **) & b_execute_option, &b_encode_len);
-	}
-	if (noti->b_service_responding) {
+
+	if (noti->b_service_responding)
 		bundle_encode(noti->b_service_responding,
 			      (bundle_raw **) & b_service_responding, &b_encode_len);
-	}
-	if (noti->b_service_single_launch) {
+
+	if (noti->b_service_single_launch)
 		bundle_encode(noti->b_service_single_launch,
 			      (bundle_raw **) & b_service_single_launch, &b_encode_len);
-	}
-	if (noti->b_service_multi_launch) {
+
+	if (noti->b_service_multi_launch)
 		bundle_encode(noti->b_service_multi_launch,
 			      (bundle_raw **) & b_service_multi_launch, &b_encode_len);
-	}
 
 	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
-		if (noti->b_event_handler[i]) {
+		if (noti->b_event_handler[i])
 			bundle_encode(noti->b_event_handler[i],
 					(bundle_raw **) & b_event_handler[i], &b_encode_len);
-		}
 	}
 
-	if (noti->b_text) {
+	if (noti->b_text)
 		bundle_encode(noti->b_text, (bundle_raw **) & b_text, &b_encode_len);
-	}
-	if (noti->b_key) {
+
+	if (noti->b_key)
 		bundle_encode(noti->b_key, (bundle_raw **) & b_key, &b_encode_len);
-	}
-	if (noti->b_format_args) {
+
+	if (noti->b_format_args)
 		bundle_encode(noti->b_format_args,
 			      (bundle_raw **) & b_format_args, &b_encode_len);
-	}
 
-	if (noti->b_image_path) {
+	if (noti->b_image_path)
 		bundle_encode(noti->b_image_path,
 			      (bundle_raw **) & b_image_path, &b_encode_len);
-	}
 
 	/* Check only simmode property is enable */
-	if (noti->flags_for_property & NOTIFICATION_PROP_DISPLAY_ONLY_SIMMODE) {
+	if (noti->flags_for_property & NOTIFICATION_PROP_DISPLAY_ONLY_SIMMODE)
 		flag_simmode = 1;
-	}
 
 	/* Make query */
 	*query = sqlite3_mprintf("UPDATE noti_list SET "
-		 "type = %d, "
-		 "layout = %d, "
-		 "launch_pkgname = '%s', "
-		 "image_path = '%s', "
-		 "b_text = '%s', b_key = '%s', tag = $tag, "
-		 "b_format_args = '%s', num_format_args = %d, "
-		 "text_domain = '%s', text_dir = '%s', "
-		 "time = %d, insert_time = %d, "
-		 "args = '%s', group_args = '%s', "
-		 "b_execute_option = '%s', "
-		 "b_service_responding = '%s', "
-		 "b_service_single_launch = '%s', "
-		 "b_service_multi_launch = '%s', "
-		 "b_event_handler_click_on_button_1 = '%s', "
-		 "b_event_handler_click_on_button_2= '%s', "
-		 "b_event_handler_click_on_button_3= '%s', "
-		 "b_event_handler_click_on_button_4= '%s', "
-		 "b_event_handler_click_on_button_5= '%s', "
-		 "b_event_handler_click_on_button_6= '%s', "
-		 "b_event_handler_click_on_icon= '%s', "
-		 "b_event_handler_click_on_thumbnail= '%s', "
-		 "sound_type = %d, sound_path = '%s', "
-		 "vibration_type = %d, vibration_path = '%s', "
-		 "led_operation = %d, led_argb = %d, "
-		 "led_on_ms = %d, led_off_ms = %d, "
-		 "flags_for_property = %d, flag_simmode = %d, "
-		 "display_applist = %d, "
-		 "progress_size = $progress_size, progress_percentage = $progress_percentage, "
-		 "ongoing_flag = %d, auto_remove = %d "
-		 "where priv_id = %d ",
-		 noti->type,
-		 noti->layout,
-		 NOTIFICATION_CHECK_STR(noti->launch_pkgname),
-		 NOTIFICATION_CHECK_STR(b_image_path),
-		 NOTIFICATION_CHECK_STR(b_text), NOTIFICATION_CHECK_STR(b_key),
-		 NOTIFICATION_CHECK_STR(b_format_args), noti->num_format_args,
-		 NOTIFICATION_CHECK_STR(noti->domain),
-		 NOTIFICATION_CHECK_STR(noti->dir),
-		 (int)noti->time, (int)noti->insert_time,
-		 NOTIFICATION_CHECK_STR(args), NOTIFICATION_CHECK_STR(group_args),
-		 NOTIFICATION_CHECK_STR(b_execute_option),
-		 NOTIFICATION_CHECK_STR(b_service_responding),
-		 NOTIFICATION_CHECK_STR(b_service_single_launch),
-		 NOTIFICATION_CHECK_STR(b_service_multi_launch),
+		"type = %d, "
+		"layout = %d, "
+		"launch_pkgname = '%s', "
+		"image_path = '%s', "
+		"b_text = '%s', b_key = '%s', tag = $tag, "
+		"b_format_args = '%s', num_format_args = %d, "
+		"text_domain = '%s', text_dir = '%s', "
+		"time = %d, insert_time = %d, "
+		"args = '%s', group_args = '%s', "
+		"b_execute_option = '%s', "
+		"b_service_responding = '%s', "
+		"b_service_single_launch = '%s', "
+		"b_service_multi_launch = '%s', "
+		"b_event_handler_click_on_button_1 = '%s', "
+		"b_event_handler_click_on_button_2= '%s', "
+		"b_event_handler_click_on_button_3= '%s', "
+		"b_event_handler_click_on_button_4= '%s', "
+		"b_event_handler_click_on_button_5= '%s', "
+		"b_event_handler_click_on_button_6= '%s', "
+		"b_event_handler_click_on_icon= '%s', "
+		"b_event_handler_click_on_thumbnail= '%s', "
+		"sound_type = %d, sound_path = '%s', "
+		"vibration_type = %d, vibration_path = '%s', "
+		"led_operation = %d, led_argb = %d, "
+		"led_on_ms = %d, led_off_ms = %d, "
+		"flags_for_property = %d, flag_simmode = %d, "
+		"display_applist = %d, "
+		"progress_size = $progress_size, progress_percentage = $progress_percentage, "
+		"ongoing_flag = %d, auto_remove = %d "
+		"where priv_id = %d ",
+		noti->type,
+		noti->layout,
+		NOTIFICATION_CHECK_STR(noti->launch_pkgname),
+		NOTIFICATION_CHECK_STR(b_image_path),
+		NOTIFICATION_CHECK_STR(b_text), NOTIFICATION_CHECK_STR(b_key),
+		NOTIFICATION_CHECK_STR(b_format_args), noti->num_format_args,
+		NOTIFICATION_CHECK_STR(noti->domain),
+		NOTIFICATION_CHECK_STR(noti->dir),
+		(int)noti->time, (int)noti->insert_time,
+		NOTIFICATION_CHECK_STR(args), NOTIFICATION_CHECK_STR(group_args),
+		NOTIFICATION_CHECK_STR(b_execute_option),
+		NOTIFICATION_CHECK_STR(b_service_responding),
+		NOTIFICATION_CHECK_STR(b_service_single_launch),
+		NOTIFICATION_CHECK_STR(b_service_multi_launch),
 		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_1]),
 		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_2]),
 		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_3]),
@@ -507,55 +482,50 @@ static int _update_query_create(notification_h noti, char **query)
 		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_6]),
 		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_ICON]),
 		NOTIFICATION_CHECK_STR(b_event_handler[NOTIFICATION_EVENT_TYPE_CLICK_ON_THUMBNAIL]),
-		 noti->sound_type, NOTIFICATION_CHECK_STR(noti->sound_path),
-		 noti->vibration_type,
-		 NOTIFICATION_CHECK_STR(noti->vibration_path),
-		 noti->led_operation,
-		 noti->led_argb,
-		 noti->led_on_ms,
-		 noti->led_off_ms,
-		 noti->flags_for_property, flag_simmode, noti->display_applist,
-		 noti->ongoing_flag, noti->auto_remove,
-		 noti->priv_id);
+		noti->sound_type, NOTIFICATION_CHECK_STR(noti->sound_path),
+		noti->vibration_type,
+		NOTIFICATION_CHECK_STR(noti->vibration_path),
+		noti->led_operation,
+		noti->led_argb,
+		noti->led_on_ms,
+		noti->led_off_ms,
+		noti->flags_for_property, flag_simmode, noti->display_applist,
+		noti->ongoing_flag, noti->auto_remove,
+		noti->priv_id);
 
 	/* Free decoded data */
-	if (args) {
+	if (args)
 		free(args);
-	}
-	if (group_args) {
+
+	if (group_args)
 		free(group_args);
-	}
 
-	if (b_execute_option) {
+	if (b_execute_option)
 		free(b_execute_option);
-	}
-	if (b_service_responding) {
+
+	if (b_service_responding)
 		free(b_service_responding);
-	}
-	if (b_service_single_launch) {
+
+	if (b_service_single_launch)
 		free(b_service_single_launch);
-	}
-	if (b_service_multi_launch) {
+
+	if (b_service_multi_launch)
 		free(b_service_multi_launch);
-	}
 
-	if (b_text) {
+	if (b_text)
 		free(b_text);
-	}
-	if (b_key) {
+
+	if (b_key)
 		free(b_key);
-	}
-	if (b_format_args) {
+
+	if (b_format_args)
 		free(b_format_args);
-	}
 
-	if (b_image_path) {
+	if (b_image_path)
 		free(b_image_path);
-	}
 
-	if (*query == NULL) {
+	if (*query == NULL)
 		return NOTIFICATION_ERROR_OUT_OF_MEMORY;
-	}
 
 	return NOTIFICATION_ERROR_NONE;
 }
@@ -565,9 +535,9 @@ static void _notification_noti_populate_from_stmt(sqlite3_stmt * stmt, notificat
 	int col = 0;
 	int i = 0;
 
-	if (stmt == NULL || noti == NULL) {
+	if (stmt == NULL || noti == NULL)
 		return ;
-	}
+
 
 	noti->type = sqlite3_column_int(stmt, col++);
 	noti->layout = sqlite3_column_int(stmt, col++);
@@ -598,9 +568,9 @@ static void _notification_noti_populate_from_stmt(sqlite3_stmt * stmt, notificat
 	noti->b_service_multi_launch =
 	    notification_db_column_bundle(stmt, col++);
 
-	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
+	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++)
 		noti->b_event_handler[i] = notification_db_column_bundle(stmt, col++);
-	}
+
 
 	noti->sound_type = sqlite3_column_int(stmt, col++);
 	__free_and_set((void **)&(noti->sound_path), notification_db_column_text(stmt, col++));
@@ -630,9 +600,8 @@ static notification_h _notification_noti_get_item(sqlite3_stmt * stmt)
 	notification_h noti = NULL;
 
 	noti = (notification_h) calloc(1, sizeof(struct _notification));
-	if (noti == NULL) {
+	if (noti == NULL)
 		return NULL;
-	}
 
 	_notification_noti_populate_from_stmt(stmt, noti);
 
@@ -689,9 +658,8 @@ int notification_noti_get_tag_type(const char *tagged_str)
 	char *start = b_f_s + 1;
 	int len_tag = b_f_e - b_f_s - 1;
 
-	if (strncmp(start, TAG_TIME, len_tag) == 0) {
+	if (strncmp(start, TAG_TIME, len_tag) == 0)
 		return TAG_TYPE_TIME;
-	}
 
 	return TAG_TYPE_INVALID;
 }
@@ -717,9 +685,8 @@ static int _notification_noti_update_priv_id(sqlite3 * db, int rowid)
 	ret = notification_db_exec(db, query, NULL);
 
 err:
-	if (query) {
+	if (query)
 		sqlite3_free(query);
-	}
 
 	return ret;
 }
@@ -798,18 +765,15 @@ static bool _is_allowed_to_notify(const char *caller_package_name)
 		goto out;
 	}
 
-	if (ret != true) {
+	if (ret != true)
 		NOTIFICATION_DBG("[%s] is not allowed to notify", caller_package_name);
-	}
 
 out:
-	if (package_id) {
+	if (package_id)
 		free(package_id);
-	}
 
-	if (setting) {
+	if (setting)
 		notification_setting_free_notification(setting);
-	}
 
 	return ret;
 }
@@ -888,13 +852,11 @@ static int _handle_do_not_disturb_option(notification_h noti)
 out:
 	SAFE_FREE(package_id);
 
-	if (system_setting) {
+	if (system_setting)
 		notification_system_setting_free_system_setting(system_setting);
-	}
 
-	if (setting) {
+	if (setting)
 		notification_setting_free_notification(setting);
-	}
 
 	return err;
 }
@@ -918,15 +880,14 @@ EXPORT_API int notification_noti_insert(notification_h noti)
 		return NOTIFICATION_ERROR_PERMISSION_DENIED;
 	}
 
-	if (_handle_do_not_disturb_option(noti) != NOTIFICATION_ERROR_NONE) {
+	if (_handle_do_not_disturb_option(noti) != NOTIFICATION_ERROR_NONE)
 		NOTIFICATION_WARN("_handle_do_not_disturb_option failed");
-	}
+
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
-	if (!db) {
+	if (!db)
 		return get_last_result();
-	}
 
 	/* Initialize private ID */
 	noti->priv_id = NOTIFICATION_PRIV_ID_NONE;
@@ -935,9 +896,9 @@ EXPORT_API int notification_noti_insert(notification_h noti)
 
 	/* make query */
 	ret = _insertion_query_create(noti, &query);
-	if (ret != NOTIFICATION_ERROR_NONE) {
+	if (ret != NOTIFICATION_ERROR_NONE)
 		goto err;
-	}
+
 
 	ret = sqlite3_prepare_v2(db, query, -1, &stmt, NULL);
 	if (ret != SQLITE_OK) {
@@ -963,9 +924,9 @@ EXPORT_API int notification_noti_insert(notification_h noti)
 		bundle_get_str(noti->b_text, buf_key, &title_key);
 	}
 
-	if (title_key == NULL) {
+	if (title_key == NULL)
 		title_key = noti->caller_pkgname;
-	}
+
 
 	/* Bind query */
 	ret = _notification_noti_bind_query_text(stmt, "$tag", noti->tag);
@@ -981,44 +942,42 @@ EXPORT_API int notification_noti_insert(notification_h noti)
 	ret = _notification_noti_bind_query_double(stmt, "$progress_size", noti->progress_size);
 	if (ret != NOTIFICATION_ERROR_NONE) {
 		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
-		if (stmt) {
+		if (stmt)
 			sqlite3_finalize(stmt);
-		}
+
 		return ret;
 	}
 	ret = _notification_noti_bind_query_double(stmt, "$progress_percentage", noti->progress_percentage);
 	if (ret != NOTIFICATION_ERROR_NONE) {
 		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
-		if (stmt) {
+		if (stmt)
 			sqlite3_finalize(stmt);
-		}
+
 		return ret;
 	}
 
 	ret = sqlite3_step(stmt);
 	if (ret == SQLITE_OK || ret == SQLITE_DONE) {
 		noti->priv_id = (int)sqlite3_last_insert_rowid(db);
-		if (_notification_noti_update_priv_id(db, noti->priv_id) == 0) {
+
+		if (_notification_noti_update_priv_id(db, noti->priv_id) == 0)
 			ret = NOTIFICATION_ERROR_NONE;
-		} else {
+		else
 			ret = NOTIFICATION_ERROR_FROM_DB;
-		}
+
 	} else {
 		ret = NOTIFICATION_ERROR_FROM_DB;
 	}
 err:
-	if (stmt) {
+	if (stmt)
 		sqlite3_finalize(stmt);
-	}
 
 	/* Close DB */
-	if (db) {
+	if (db)
 		notification_db_close(&db);
-	}
 
-	if (query) {
+	if (query)
 		sqlite3_free(query);
-	}
 
 	return ret;
 }
@@ -1037,9 +996,8 @@ int notification_noti_get_by_priv_id(notification_h noti, char *pkgname, int pri
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
-	if (!db) {
+	if (!db)
 		return get_last_result();
-	}
 
 	char *base_query = "select "
 			 "type, layout, caller_pkgname, launch_pkgname, image_path, group_id, priv_id, "
@@ -1053,12 +1011,12 @@ int notification_noti_get_by_priv_id(notification_h noti, char *pkgname, int pri
 			 "flags_for_property, display_applist, progress_size, progress_percentage, ongoing_flag, auto_remove "
 			 "from noti_list ";
 
-	if (pkgname != NULL) {
+	if (pkgname != NULL)
 		query = sqlite3_mprintf("%s where caller_pkgname = '%s' and priv_id = %d",
 				base_query, pkgname, priv_id);
-	} else {
+	else
 		query = sqlite3_mprintf("%s where priv_id = %d", base_query,  priv_id);
-	}
+
 	if (query == NULL) {
 		ret = NOTIFICATION_ERROR_OUT_OF_MEMORY;
 		goto err;
@@ -1080,19 +1038,17 @@ int notification_noti_get_by_priv_id(notification_h noti, char *pkgname, int pri
 	} else {
 		ret = NOTIFICATION_ERROR_FROM_DB;
 	}
-err:
-	if (query) {
-		sqlite3_free(query);
-	}
 
-	if (stmt) {
+err:
+	if (query)
+		sqlite3_free(query);
+
+	if (stmt)
 		sqlite3_finalize(stmt);
-	}
 
 	/* Close DB */
-	if (db != NULL) {
+	if (db != NULL)
 		notification_db_close(&db);
-	}
 
 	return ret;
 }
@@ -1110,9 +1066,8 @@ EXPORT_API int notification_noti_get_by_tag(notification_h noti, char *pkgname, 
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
-	if (!db) {
+	if (!db)
 		return get_last_result();
-	}
 
 	if (pkgname != NULL) {
 		ret = sqlite3_prepare_v2(db, "select "
@@ -1141,7 +1096,7 @@ EXPORT_API int notification_noti_get_by_tag(notification_h noti, char *pkgname, 
 		if (ret != SQLITE_OK) {
 			NOTIFICATION_ERR("Error: %s\n", sqlite3_errmsg(db));
 			goto err;
-		} 
+		}
 	} else {
 		ret = sqlite3_prepare_v2(db, "select "
 			 "type, layout, caller_pkgname, launch_pkgname, image_path, group_id, priv_id, "
@@ -1176,14 +1131,12 @@ EXPORT_API int notification_noti_get_by_tag(notification_h noti, char *pkgname, 
 
 err:
 
-	if (stmt) {
+	if (stmt)
 		sqlite3_finalize(stmt);
-	}
 
 	/* Close DB */
-	if (db != NULL) {
+	if (db != NULL)
 		notification_db_close(&db);
-	}
 
 	return ret;
 }
@@ -1197,18 +1150,17 @@ EXPORT_API int notification_noti_update(notification_h noti)
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
-	if (!db) {
+	if (!db)
 		return get_last_result();
-	}
 
 	if (_is_allowed_to_notify((const char*)noti->caller_pkgname) == false) {
 		NOTIFICATION_DBG("[%s] is not allowed to notify", noti->caller_pkgname);
 		return NOTIFICATION_ERROR_PERMISSION_DENIED;
 	}
 
-	if (_handle_do_not_disturb_option(noti) != NOTIFICATION_ERROR_NONE) {
+	if (_handle_do_not_disturb_option(noti) != NOTIFICATION_ERROR_NONE)
 		NOTIFICATION_WARN("_handle_do_not_disturb_option failed");
-	}
+
 
 	/* Check private ID is exist */
 	ret = _notification_noti_check_priv_id(noti, db);
@@ -1219,9 +1171,8 @@ EXPORT_API int notification_noti_update(notification_h noti)
 
 	/* make update query */
 	ret = _update_query_create(noti, &query);
-	if (ret != NOTIFICATION_ERROR_NONE) {
+	if (ret != NOTIFICATION_ERROR_NONE)
 		goto err;
-	}
 
 	ret = sqlite3_prepare_v2(db, query, -1, &stmt, NULL);
 	if (ret != SQLITE_OK) {
@@ -1249,24 +1200,21 @@ EXPORT_API int notification_noti_update(notification_h noti)
 	}
 
 	ret = sqlite3_step(stmt);
-	if (ret == SQLITE_OK || ret == SQLITE_DONE) {
+	if (ret == SQLITE_OK || ret == SQLITE_DONE)
 		ret = NOTIFICATION_ERROR_NONE;
-	} else {
+	else
 		ret = NOTIFICATION_ERROR_FROM_DB;
-	}
+
 err:
-	if (stmt) {
+	if (stmt)
 		sqlite3_finalize(stmt);
-	}
 
 	/* Close DB */
-	if (db) {
+	if (db)
 		notification_db_close(&db);
-	}
 
-	if (query) {
+	if (query)
 		sqlite3_free(query);
-	}
 
 	return ret;
 }
@@ -1285,29 +1233,28 @@ EXPORT_API int notification_noti_delete_all(notification_type_e type, const char
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
-	if (!db) {
+	if (!db)
 		return get_last_result();
-	}
 
 	if (pkgname == NULL) {
-		if (type != NOTIFICATION_TYPE_NONE) {
+		if (type != NOTIFICATION_TYPE_NONE)
 			snprintf(query_where, sizeof(query_where),
 				 "where type = %d ", type);
-		}
+
 	} else {
-		if (type == NOTIFICATION_TYPE_NONE) {
+		if (type == NOTIFICATION_TYPE_NONE)
 			snprintf(query_where, sizeof(query_where),
 				 "where caller_pkgname = '%s' ", pkgname);
-		} else {
+		else
 			snprintf(query_where, sizeof(query_where),
 				 "where caller_pkgname = '%s' and type = %d ",
 				 pkgname, type);
-		}
+
 	}
 
-	if (num_deleted != NULL) {
+	if (num_deleted != NULL)
 		*num_deleted = 0;
-	}
+
 	if (list_deleted_rowid != NULL) {
 		*list_deleted_rowid = NULL;
 		snprintf(query, sizeof(query),
@@ -1359,9 +1306,9 @@ EXPORT_API int notification_noti_delete_all(notification_type_e type, const char
 					snprintf(query, sizeof(query) - 1, "%s where priv_id in (%s)", query_base, query_where);
 					ret_tmp = notification_db_exec(db, query, NULL);
 					query_where[0] = '\0';
-					if (ret == NOTIFICATION_ERROR_NONE) {
+					if (ret == NOTIFICATION_ERROR_NONE)
 						ret = ret_tmp;
-					}
+
 				}
 				snprintf(buf, sizeof(buf) - 1, "%s%d", (i % NOTI_BURST_DELETE_UNIT == 0) ? "" : ",", *((*list_deleted_rowid) + i));
 				strncat(query_where, buf, sizeof(query_where) - strlen(query_where) - 1);
@@ -1369,18 +1316,17 @@ EXPORT_API int notification_noti_delete_all(notification_type_e type, const char
 			if ((i <= NOTI_BURST_DELETE_UNIT) || ((i % NOTI_BURST_DELETE_UNIT) > 0)) {
 				snprintf(query, sizeof(query) - 1, "%s where priv_id in (%s)", query_base, query_where);
 				ret_tmp = notification_db_exec(db, query, NULL);
-				if (ret == NOTIFICATION_ERROR_NONE) {
+				if (ret == NOTIFICATION_ERROR_NONE)
 					ret = ret_tmp;
-				}
 			}
 		} else {
 			free(*list_deleted_rowid);
 			*list_deleted_rowid = NULL;
 		}
 
-		if (num_deleted != NULL) {
+		if (num_deleted != NULL)
 			*num_deleted = data_cnt;
-		}
+
 	} else {
 		/* Make main query */
 		snprintf(query_base, sizeof(query_base), "delete from noti_list ");
@@ -1388,19 +1334,18 @@ EXPORT_API int notification_noti_delete_all(notification_type_e type, const char
 
 		ret = notification_db_exec(db, query, NULL);
 
-		if (num_deleted != NULL) {
+		if (num_deleted != NULL)
 			*num_deleted = sqlite3_changes(db);
-		}
+
 	}
 
 err:
-	if (stmt) {
+	if (stmt)
 		sqlite3_finalize(stmt);
-	}
+
 	/* Close DB */
-	if (db) {
+	if (db)
 		notification_db_close(&db);
-	}
 
 	return ret;
 }
@@ -1419,22 +1364,20 @@ int notification_noti_delete_group_by_group_id(const char *pkgname,
 	char query_where[NOTIFICATION_QUERY_MAX] = { 0, };
 
 	/* Check pkgname is valid */
-	if (pkgname == NULL) {
+	if (pkgname == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	snprintf(query_where, sizeof(query_where),
 			"where caller_pkgname = '%s' and group_id = %d", pkgname, group_id);
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
-	if (!db) {
+	if (!db)
 		return get_last_result();
-	}
 
-	if (num_deleted != NULL) {
+	if (num_deleted != NULL)
 		*num_deleted = 0;
-	}
+
 	if (list_deleted_rowid != NULL) {
 		*list_deleted_rowid = NULL;
 		snprintf(query, sizeof(query),
@@ -1480,9 +1423,8 @@ int notification_noti_delete_group_by_group_id(const char *pkgname,
 					snprintf(query, sizeof(query) - 1, "%s where priv_id in (%s)", query_base, query_where);
 					ret_tmp = notification_db_exec(db, query, NULL);
 					query_where[0] = '\0';
-					if (ret == NOTIFICATION_ERROR_NONE) {
+					if (ret == NOTIFICATION_ERROR_NONE)
 						ret = ret_tmp;
-					}
 				}
 				snprintf(buf, sizeof(buf) - 1, "%s%d", (i % NOTI_BURST_DELETE_UNIT == 0) ? "" : ",", *((*list_deleted_rowid) + i));
 				strncat(query_where, buf, sizeof(query_where) - strlen(query_where) - 1);
@@ -1490,18 +1432,17 @@ int notification_noti_delete_group_by_group_id(const char *pkgname,
 			if ((i <= NOTI_BURST_DELETE_UNIT) || ((i % NOTI_BURST_DELETE_UNIT) > 0)) {
 				snprintf(query, sizeof(query) - 1, "%s where priv_id in (%s)", query_base, query_where);
 				ret_tmp = notification_db_exec(db, query, NULL);
-				if (ret == NOTIFICATION_ERROR_NONE) {
+				if (ret == NOTIFICATION_ERROR_NONE)
 					ret = ret_tmp;
-				}
 			}
 		} else {
 			free(*list_deleted_rowid);
 			*list_deleted_rowid = NULL;
 		}
 
-		if (num_deleted != NULL) {
+		if (num_deleted != NULL)
 			*num_deleted = data_cnt;
-		}
+
 	} else {
 		/* Make query */
 		snprintf(query, sizeof(query), "delete from noti_list %s", query_where);
@@ -1511,13 +1452,12 @@ int notification_noti_delete_group_by_group_id(const char *pkgname,
 	}
 
 err:
-	if (stmt) {
+	if (stmt)
 		sqlite3_finalize(stmt);
-	}
+
 	/* Close DB */
-	if (db) {
+	if (db)
 		notification_db_close(&db);
-	}
 
 	return ret;
 }
@@ -1530,15 +1470,13 @@ int notification_noti_delete_group_by_priv_id(const char *pkgname, int priv_id)
 	int ret;
 
 	/* Check pkgname is valid */
-	if (pkgname == NULL) {
+	if (pkgname == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
-	if (!db) {
+	if (!db)
 		return get_last_result();
-	}
 
 	/* Get internal group id using priv id */
 	internal_group_id =
@@ -1566,15 +1504,13 @@ EXPORT_API int notification_noti_delete_by_priv_id(const char *pkgname, int priv
 	int ret;
 
 	/* Check pkgname is valid */
-	if (pkgname == NULL) {
+	if (pkgname == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
-	if (!db) {
+	if (!db)
 		return get_last_result();
-	}
 
 	/* Make query */
 	snprintf(query, sizeof(query), "delete from noti_list "
@@ -1585,9 +1521,8 @@ EXPORT_API int notification_noti_delete_by_priv_id(const char *pkgname, int priv
 	ret = notification_db_exec(db, query, NULL);
 
 	/* Close DB */
-	if (db) {
+	if (db)
 		notification_db_close(&db);
-	}
 
 	return ret;
 }
@@ -1599,15 +1534,13 @@ EXPORT_API int notification_noti_delete_by_priv_id_get_changes(const char *pkgna
 	int ret;
 
 	/* Check pkgname is valid */
-	if (pkgname == NULL) {
+	if (pkgname == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
-	if (!db) {
+	if (!db)
 		return get_last_result();
-	}
 
 	/* Make query */
 	snprintf(query, sizeof(query), "delete from noti_list "
@@ -1617,14 +1550,12 @@ EXPORT_API int notification_noti_delete_by_priv_id_get_changes(const char *pkgna
 	/* execute DB */
 	ret = notification_db_exec(db, query, num_changes);
 
-	if (num_changes != NULL) {
+	if (num_changes != NULL)
 		NOTIFICATION_DBG("deleted num:%d", *num_changes);
-	}
 
 	/* Close DB */
-	if (db) {
+	if (db)
 		notification_db_close(&db);
-	}
 
 	return ret;
 }
@@ -1649,9 +1580,8 @@ int notification_noti_get_count(notification_type_e type,
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
-	if (!db) {
+	if (!db)
 		return get_last_result();
-	}
 
 	/* Check current sim status */
 	ret_vconf = vconf_get_int(VCONFKEY_TELEPHONY_SIM_SLOT, &status);
@@ -1742,21 +1672,19 @@ int notification_noti_get_count(notification_type_e type,
 	}
 
 	ret = sqlite3_step(stmt);
-	if (ret == SQLITE_ROW) {
+	if (ret == SQLITE_ROW)
 		get_count = sqlite3_column_int(stmt, 0);
-	}
 
 	ret = NOTIFICATION_ERROR_NONE;
 
 err:
-	if (stmt) {
+	if (stmt)
 		sqlite3_finalize(stmt);
-	}
+
 
 	/* Close DB */
-	if (db) {
+	if (db)
 		notification_db_close(&db);
-	}
 
 	*count = get_count;
 
@@ -1782,9 +1710,8 @@ int notification_noti_get_grouping_list(notification_type_e type,
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
-	if (!db) {
+	if (!db)
 		return get_last_result();
-	}
 
 	/* Check current sim status */
 	ret = vconf_get_int(VCONFKEY_TELEPHONY_SIM_SLOT, &status);
@@ -1803,18 +1730,16 @@ int notification_noti_get_grouping_list(notification_type_e type,
 		 "from noti_list ");
 
 	if (status == VCONFKEY_TELEPHONY_SIM_INSERTED) {
-		if (type != NOTIFICATION_TYPE_NONE) {
+		if (type != NOTIFICATION_TYPE_NONE)
 			snprintf(query_where, sizeof(query_where),
 				 "where type = %d ", type);
-		}
 	} else {
-		if (type != NOTIFICATION_TYPE_NONE) {
+		if (type != NOTIFICATION_TYPE_NONE)
 			snprintf(query_where, sizeof(query_where),
 				 "where type = %d and flag_simmode = 0 ", type);
-		} else {
+		else
 			snprintf(query_where, sizeof(query_where),
 				 "where flag_simmode = 0 ");
-		}
 	}
 
 	snprintf(query, sizeof(query),
@@ -1852,18 +1777,15 @@ int notification_noti_get_grouping_list(notification_type_e type,
 	ret = NOTIFICATION_ERROR_NONE;
 
 err:
-	if (stmt) {
+	if (stmt)
 		sqlite3_finalize(stmt);
-	}
 
 	/* Close DB */
-	if (db) {
+	if (db)
 		notification_db_close(&db);
-	}
 
-	if (get_list != NULL) {
+	if (get_list != NULL)
 		*list = notification_list_get_head(get_list);
-	}
 
 	return ret;
 }
@@ -1888,9 +1810,8 @@ int notification_noti_get_detail_list(const char *pkgname,
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
-	if (!db) {
+	if (!db)
 		return get_last_result();
-	}
 
 	/* Check current sim status */
 	ret = vconf_get_int(VCONFKEY_TELEPHONY_SIM_SLOT, &status);
@@ -1909,27 +1830,26 @@ int notification_noti_get_detail_list(const char *pkgname,
 		 "from noti_list ");
 
 	if (priv_id == NOTIFICATION_PRIV_ID_NONE && group_id == NOTIFICATION_GROUP_ID_NONE) {
-		if (status == VCONFKEY_TELEPHONY_SIM_INSERTED) {
+		if (status == VCONFKEY_TELEPHONY_SIM_INSERTED)
 			snprintf(query_where, sizeof(query_where),
 				 "where  caller_pkgname = '%s' ", pkgname);
-		} else {
+		else
 			snprintf(query_where, sizeof(query_where),
 				 "where  caller_pkgname = '%s' and flag_simmode = 0 ", pkgname);
-		}
+
 	} else {
 		internal_group_id =
 		    _notification_noti_get_internal_group_id_by_priv_id(pkgname,
 									priv_id, db);
 
-		if (status == VCONFKEY_TELEPHONY_SIM_INSERTED) {
+		if (status == VCONFKEY_TELEPHONY_SIM_INSERTED)
 			snprintf(query_where, sizeof(query_where),
 				 "where  caller_pkgname = '%s' and internal_group_id = %d ",
 				 pkgname, internal_group_id);
-		} else {
+		else
 			snprintf(query_where, sizeof(query_where),
 				 "where  caller_pkgname = '%s' and internal_group_id = %d and flag_simmode = 0 ",
 				 pkgname, internal_group_id);
-		}
 	}
 
 	snprintf(query, sizeof(query),
@@ -1966,18 +1886,15 @@ int notification_noti_get_detail_list(const char *pkgname,
 	ret = NOTIFICATION_ERROR_NONE;
 
 err:
-	if (stmt) {
+	if (stmt)
 		sqlite3_finalize(stmt);
-	}
 
 	/* Close DB */
-	if (db) {
+	if (db)
 		notification_db_close(&db);
-	}
 
-	if (get_list != NULL) {
+	if (get_list != NULL)
 		*list = notification_list_get_head(get_list);
-	}
 
 	return ret;
 }
@@ -1989,15 +1906,13 @@ EXPORT_API int notification_noti_check_tag(notification_h noti)
 	sqlite3 *db;
 	sqlite3_stmt *stmt = NULL;
 
-	if (noti->tag == NULL) {
+	if (noti->tag == NULL)
 		return NOTIFICATION_ERROR_NOT_EXIST_ID;
-	}
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
-	if (!db) {
+	if (!db)
 		return get_last_result();
-	}
 
 	ret = sqlite3_prepare_v2(db, "SELECT priv_id FROM noti_list WHERE caller_pkgname = ? and tag = ?", -1, &stmt, NULL);
 	if (ret != SQLITE_OK) {
@@ -2018,11 +1933,10 @@ EXPORT_API int notification_noti_check_tag(notification_h noti)
 	}
 
 	ret = sqlite3_step(stmt);
-	if (ret == SQLITE_ROW) {
+	if (ret == SQLITE_ROW)
 		result = sqlite3_column_int(stmt, 0);
-	} else {
+	else
 		result = 0;
-	}
 
 	sqlite3_finalize(stmt);
 

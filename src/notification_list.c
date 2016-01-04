@@ -66,9 +66,8 @@ EXPORT_API notification_list_h notification_list_get_head(notification_list_h li
 
 	cur_list = list;
 
-	while (cur_list->prev != NULL) {
+	while (cur_list->prev != NULL)
 		cur_list = cur_list->prev;
-	}
 
 	set_last_result(NOTIFICATION_ERROR_NONE);
 	return cur_list;
@@ -86,9 +85,8 @@ EXPORT_API notification_list_h notification_list_get_tail(notification_list_h li
 
 	cur_list = list;
 
-	while (cur_list->next != NULL) {
+	while (cur_list->next != NULL)
 		cur_list = cur_list->next;
-	}
 
 	set_last_result(NOTIFICATION_ERROR_NONE);
 	return cur_list;
@@ -194,7 +192,7 @@ EXPORT_API notification_list_h notification_list_remove(notification_list_h list
 	cur_list = notification_list_get_head(list);
 	while (cur_list != NULL) {
 		if (cur_list->noti == noti) {
-			//remove
+			/* remove */
 			prev_list = cur_list->prev;
 			next_list = cur_list->next;
 
@@ -206,9 +204,8 @@ EXPORT_API notification_list_h notification_list_remove(notification_list_h list
 					next_list->prev = NULL;
 				}
 			} else {
-				if (prev_list != NULL) {
+				if (prev_list != NULL)
 					prev_list->next = NULL;
-				}
 			}
 
 			free(cur_list);
@@ -218,11 +215,10 @@ EXPORT_API notification_list_h notification_list_remove(notification_list_h list
 		cur_list = cur_list->next;
 	}
 
-	if (prev_list != NULL) {
+	if (prev_list != NULL)
 		return notification_list_get_head(prev_list);
-	} else if (next_list != NULL) {
+	else if (next_list != NULL)
 		return next_list;
-	}
 
 	return NULL;
 }
@@ -234,14 +230,12 @@ EXPORT_API int notification_get_list(notification_type_e type,
 	notification_list_h get_list = NULL;
 	int ret = 0;
 
-	if (list == NULL) {
+	if (list == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	ret = notification_noti_get_grouping_list(type, count, &get_list);
-	if (ret != NOTIFICATION_ERROR_NONE) {
+	if (ret != NOTIFICATION_ERROR_NONE)
 		return ret;
-	}
 
 	*list = get_list;
 
@@ -257,16 +251,14 @@ EXPORT_API int notification_get_detail_list(const char *pkgname,
 	notification_list_h get_list = NULL;
 	int ret = 0;
 
-	if (list == NULL) {
+	if (list == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	ret =
 	    notification_noti_get_detail_list(pkgname, group_id, priv_id, count,
 					      &get_list);
-	if (ret != NOTIFICATION_ERROR_NONE) {
+	if (ret != NOTIFICATION_ERROR_NONE)
 		return ret;
-	}
 
 	*list = get_list;
 
@@ -278,9 +270,8 @@ EXPORT_API int notification_free_list(notification_list_h list)
 	notification_list_h cur_list = NULL;
 	notification_h noti = NULL;
 
-	if (list == NULL) {
+	if (list == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	cur_list = notification_list_get_head(list);
 

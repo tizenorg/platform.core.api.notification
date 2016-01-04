@@ -46,20 +46,19 @@ static int _notification_group_check_data_inserted(const char *pkgname,
 	}
 
 	ret = sqlite3_step(stmt);
-	if (ret == SQLITE_ROW) {
+	if (ret == SQLITE_ROW)
 		result = sqlite3_column_int(stmt, 0);
-	} else {
+	else
 		result = 0;
-	}
+
 
 	NOTIFICATION_INFO("Check Data Inserted : query[%s], result : [%d]",
 			  query, result);
 
 	sqlite3_finalize(stmt);
 
-	if (result > 0) {
+	if (result > 0)
 		return NOTIFICATION_ERROR_ALREADY_EXIST_ID;
-	}
 
 	return NOTIFICATION_ERROR_NONE;
 }
@@ -75,9 +74,8 @@ int notification_group_set_badge(const char *pkgname,
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
-	if (!db) {
+	if (!db)
 		return get_last_result();
-	}
 
 	/* Check pkgname & group_id */
 	ret = _notification_group_check_data_inserted(pkgname, group_id, db);
@@ -102,31 +100,27 @@ int notification_group_set_badge(const char *pkgname,
 		NOTIFICATION_ERR("Insert Query : %s", query);
 		NOTIFICATION_ERR("Insert DB error(%d) : %s", ret,
 				 sqlite3_errmsg(db));
-		if (stmt) {
+		if (stmt)
 			sqlite3_finalize(stmt);
-		}
 
-		if (db) {
+		if (db)
 			notification_db_close(&db);
-		}
+
 		return NOTIFICATION_ERROR_FROM_DB;
 	}
 
 	ret = sqlite3_step(stmt);
-	if (ret == SQLITE_OK || ret == SQLITE_DONE) {
+	if (ret == SQLITE_OK || ret == SQLITE_DONE)
 		result = NOTIFICATION_ERROR_NONE;
-	} else {
+	else
 		result = NOTIFICATION_ERROR_FROM_DB;
-	}
 
-	if (stmt) {
+	if (stmt)
 		sqlite3_finalize(stmt);
-	}
 
 	/* Close DB */
-	if (db) {
+	if (db)
 		notification_db_close(&db);
-	}
 
 	return result;
 }
@@ -142,31 +136,28 @@ int notification_group_get_badge(const char *pkgname,
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
-	if (!db) {
+	if (!db)
 		return get_last_result();
-	}
 
 	/* Make query */
 	if (group_id == NOTIFICATION_GROUP_ID_NONE) {
 		/* Check Group id None is exist */
-		ret =
-		    _notification_group_check_data_inserted(pkgname, group_id,
-							    db);
+		ret = _notification_group_check_data_inserted(pkgname, group_id, db);
 
-		if (ret == NOTIFICATION_ERROR_NONE) {
+		if (ret == NOTIFICATION_ERROR_NONE)
 			/* Get all of pkgname count if none group id is not exist */
 			snprintf(query, sizeof(query),
 				 "select sum(badge) "
 				 "from noti_group_data "
 				 "where caller_pkgname = '%s'", pkgname);
-		} else {
+		else
 			/* Get none group id count */
 			snprintf(query, sizeof(query),
 				 "select badge "
 				 "from noti_group_data "
 				 "where caller_pkgname = '%s' and group_id = %d",
 				 pkgname, group_id);
-		}
+
 	} else {
 		snprintf(query, sizeof(query),
 			 "select badge "
@@ -187,16 +178,14 @@ int notification_group_get_badge(const char *pkgname,
 	}
 
 	ret = sqlite3_step(stmt);
-	if (ret == SQLITE_ROW) {
+	if (ret == SQLITE_ROW)
 		*count = sqlite3_column_int(stmt, col++);
-	}
 
 	sqlite3_finalize(stmt);
 
-	// db close
-	if (db) {
+	/* db close */
+	if (db)
 		notification_db_close(&db);
-	}
 
 	return NOTIFICATION_ERROR_NONE;
 }

@@ -67,9 +67,9 @@ static int _get_table_field_data_string(char **table, char **buf, int ucs2, int 
 
 	char *pTemp = table[index];
 	int sLen = 0;
-	if (pTemp == NULL)
+	if (pTemp == NULL) {
 		*buf = NULL;
-	else {
+	} else {
 		sLen = strlen(pTemp);
 		if (sLen) {
 			*buf = (char *) malloc(sLen + 1);
@@ -79,8 +79,9 @@ static int _get_table_field_data_string(char **table, char **buf, int ucs2, int 
 			}
 			memset(*buf, 0, sLen + 1);
 			strncpy(*buf, pTemp, sLen);
-		} else
+		} else {
 			*buf = NULL;
+		}
 	}
 
 	ret = true;
@@ -170,9 +171,8 @@ out:
 
 	if (local_db_handle) {
 		sql_return = db_util_close(local_db_handle);
-		if (sql_return != SQLITE_OK) {
+		if (sql_return != SQLITE_OK)
 			NOTIFICATION_WARN("fail to db_util_close - [%d]", sql_return);
-		}
 	}
 
 	return err;
@@ -257,9 +257,8 @@ out:
 
 	if (local_db_handle) {
 		sql_return = db_util_close(local_db_handle);
-		if (sql_return != SQLITE_OK) {
+		if (sql_return != SQLITE_OK)
 			NOTIFICATION_WARN("fail to db_util_close - [%d]", sql_return);
-		}
 	}
 
 	return err;
@@ -315,9 +314,8 @@ EXPORT_API int notification_setting_set_package_name(notification_setting_h sett
 		goto out;
 	}
 
-	if (setting->package_name != NULL) {
+	if (setting->package_name != NULL)
 		free(setting->package_name);
-	}
 
 	setting->package_name = SAFE_STRDUP(value);
 
@@ -495,14 +493,13 @@ EXPORT_API int notification_setting_db_update(const char *package_name, int allo
 
 	err = notification_db_exec(db, sqlbuf, NULL);
 
-	return_close_db:
+return_close_db:
 	if (sqlbuf)
 		sqlite3_free(sqlbuf);
 
 	sqlret = db_util_close(db);
-	if (sqlret != SQLITE_OK) {
+	if (sqlret != SQLITE_OK)
 		NOTIFICATION_WARN("fail to db_util_close - [%d]", sqlret);
-	}
 
 	return err;
 }
@@ -538,9 +535,8 @@ static bool _is_package_in_setting_table(sqlite3 *db, const char *package_name)
 		goto out;
 	}
 out:
-	if (db_statement) {
+	if (db_statement)
 		sqlite3_finalize(db_statement);
-	}
 
 	return err;
 }
@@ -588,9 +584,8 @@ static int foreach_package_info_callback(const pkgmgrinfo_pkginfo_h package_info
 	}
 
 out:
-	if (db_statement) {
+	if (db_statement)
 		sqlite3_finalize(db_statement);
-	}
 
 	NOTIFICATION_INFO("foreach_package_info_callback returns[%d]", err);
 	return err;
@@ -644,15 +639,13 @@ EXPORT_API int notification_setting_refresh_setting_table()
 out:
 
 	if (db) {
-		if (err == NOTIFICATION_ERROR_NONE) {
+		if (err == NOTIFICATION_ERROR_NONE)
 			sqlite3_exec(db, "END;", NULL, NULL, NULL);
-		} else {
+		else
 			sqlite3_exec(db, "ROLLBACK;", NULL, NULL, NULL);
-		}
 
-		if ((sqlite3_ret = db_util_close(db)) != SQLITE_OK) {
+		if ((sqlite3_ret = db_util_close(db)) != SQLITE_OK)
 			NOTIFICATION_WARN("fail to db_util_close - [%d]", sqlite3_ret);
-		}
 	}
 
 	NOTIFICATION_INFO("notification_setting_refresh_setting_table returns [%08X]", err);
@@ -724,21 +717,20 @@ static int _notification_setting_alter_package_list(notification_setting_operati
 	}
 
 out:
-	if (db_statement) {
+	if (db_statement)
 		sqlite3_finalize(db_statement);
-	}
 
 	if (db) {
 		NOTIFICATION_INFO("err [%d]", err);
-		if (err == NOTIFICATION_ERROR_NONE) {
+		if (err == NOTIFICATION_ERROR_NONE)
 			sqlite3_exec(db, "END;", NULL, NULL, NULL);
-		} else {
+		else
 			sqlite3_exec(db, "ROLLBACK;", NULL, NULL, NULL);
-		}
 
-		if ((sqlite3_ret = db_util_close(db)) != SQLITE_OK) {
+
+		if ((sqlite3_ret = db_util_close(db)) != SQLITE_OK)
 			NOTIFICATION_WARN("fail to db_util_close - [%d]", sqlite3_ret);
-		}
+
 	}
 
 	return err;
@@ -777,9 +769,8 @@ static bool _has_privilege(const char *package_id)
 
 out:
 
-	if (package_info) {
+	if (package_info)
 		package_info_destroy(package_info);
-	}
 
 	return found;
 }
@@ -788,9 +779,8 @@ EXPORT_API int notification_setting_insert_package(const char *package_id)
 {
 	int err = NOTIFICATION_ERROR_NONE;
 
-	if (_has_privilege(package_id) == true) {
+	if (_has_privilege(package_id) == true)
 		err = _notification_setting_alter_package_list(OPERATION_TYPE_INSERT_RECORD, package_id);
-	}
 
 	return err;
 }
@@ -877,9 +867,8 @@ out:
 
 	if (local_db_handle) {
 		sql_return = db_util_close(local_db_handle);
-		if (sql_return != SQLITE_OK) {
+		if (sql_return != SQLITE_OK)
 			NOTIFICATION_WARN("fail to db_util_close - [%d]", sql_return);
-		}
 	}
 
 	return err;
@@ -1032,27 +1021,26 @@ EXPORT_API int notification_setting_db_update_system_setting(int do_not_disturb,
 
 	sqlret = sqlite3_changes(db);
 
-	if (sqlret == 0) {
+	if (sqlret == 0)
 		NOTIFICATION_WARN("No changes on DB");
-	}
+
 
 return_close_db:
-	if (db_statement) {
+	if (db_statement)
 		sqlite3_finalize(db_statement);
-	}
+
 
 	if (db) {
-		if (err == NOTIFICATION_ERROR_NONE) {
+		if (err == NOTIFICATION_ERROR_NONE)
 			sqlite3_exec(db, "END;", NULL, NULL, NULL);
-		} else {
+		else
 			sqlite3_exec(db, "ROLLBACK;", NULL, NULL, NULL);
-		}
+
 		sqlret = db_util_close(db);
 	}
 
-	if (sqlret != SQLITE_OK) {
+	if (sqlret != SQLITE_OK)
 		NOTIFICATION_WARN("fail to db_util_close - [%d]", sqlret);
-	}
 
 	return err;
 }
@@ -1176,7 +1164,7 @@ static int _is_record_exist(const char *pkgname, sqlite3 *db)
 	else
 		result = NOTIFICATION_ERROR_NOT_EXIST_ID;
 
-	free_and_return:
+free_and_return:
 	if (sqlbuf)
 		sqlite3_free(sqlbuf);
 
@@ -1231,14 +1219,13 @@ EXPORT_API int notification_setting_db_set(const char *pkgname, const char *prop
 
 	result = notification_db_exec(db, sqlbuf, NULL);
 
-	return_close_db:
+return_close_db:
 	if (sqlbuf)
 		sqlite3_free(sqlbuf);
 
 	sqlret = db_util_close(db);
-	if (sqlret != SQLITE_OK) {
+	if (sqlret != SQLITE_OK)
 		NOTIFICATION_WARN("fail to db_util_close - [%d]", sqlret);
-	}
 
 	return result;
 }
@@ -1311,7 +1298,7 @@ EXPORT_API int notification_setting_db_get(const char *pkgname, const char *prop
 		}
 	}
 
-	return_close_db:
+return_close_db:
 	if (sqlbuf)
 		sqlite3_free(sqlbuf);
 
@@ -1339,9 +1326,8 @@ EXPORT_API int notification_setting_property_set(const char *pkgname, const char
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	ret = notification_ipc_noti_setting_property_set(pkgname, property, value);
-	if (ret != NOTIFICATION_ERROR_NONE) {
+	if (ret != NOTIFICATION_ERROR_NONE)
 		return ret;
-	}
 
 	return NOTIFICATION_ERROR_NONE;
 }
@@ -1360,9 +1346,8 @@ EXPORT_API int notification_setting_property_get(const char *pkgname, const char
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	ret = notification_ipc_noti_setting_property_get(pkgname, property, value);
-	if (ret != NOTIFICATION_ERROR_NONE) {
+	if (ret != NOTIFICATION_ERROR_NONE)
 		return ret;
-	}
 
 	return NOTIFICATION_ERROR_NONE;
 }

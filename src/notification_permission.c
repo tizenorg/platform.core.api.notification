@@ -42,23 +42,20 @@ int notification_permission_check_by_pid(const char *noti_pkgname, int pid, int 
 	bool preload = false;
 	package_manager_compare_result_type_e compare_result;
 
-	//get pkgname by pid
+	/* get pkgname by pid */
 	const char *pkgname = aul_app_get_pkgname_bypid(pid);
 	ret = aul_app_get_pkgname_bypid(pid, pkgname, sizeof(pkgname));
 	if (ret == AUL_R_OK) {
-		if (strcmp(pkgname, noti_pkgname) == 0) {
+		if (strcmp(pkgname, noti_pkgname) == 0)
 			return NOTIFICATION_ERROR_NONE;
-		}
 
 		package_manager_is_preload_package_by_app_id(pkgname, &preload);
-		if (preload == true) {
+		if (preload == true)
 			return NOTIFICATION_ERROR_NONE;
-		}
 
 		package_manager_compare_package_cert_info(noti_pkgname, &compare_result);
-		if (compare_result == PACKAGE_MANAGER_COMPARE_MATCH) {
+		if (compare_result == PACKAGE_MANAGER_COMPARE_MATCH)
 			return NOTIFICATION_ERROR_NONE;
-		}
 	}
 
 	return NOTIFICATION_ERROR_PERMISSION_DENIED;

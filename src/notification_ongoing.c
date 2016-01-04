@@ -62,16 +62,14 @@ int notification_ongoing_update_progress(const char *caller_pkgname,
 
 	if (ret) {
 		ret = dbus_connection_send(connection, signal, NULL);
-		if (ret) {
+		if (ret)
 			dbus_connection_flush(connection);
-		}
 	}
 
 	dbus_message_unref(signal);
 
-	if (ret) {
+	if (ret)
 		return NOTIFICATION_ERROR_NONE;
-	}
 
 	return NOTIFICATION_ERROR_FROM_DBUS;
 }
@@ -107,16 +105,14 @@ int notification_ongoing_update_size(const char *caller_pkgname,
 	if (ret) {
 		ret = dbus_connection_send(connection, signal, NULL);
 
-		if (ret) {
+		if (ret)
 			dbus_connection_flush(connection);
-		}
 	}
 
 	dbus_message_unref(signal);
 
-	if (ret) {
+	if (ret)
 		return NOTIFICATION_ERROR_NONE;
-	}
 
 	return NOTIFICATION_ERROR_FROM_DBUS;
 }
@@ -144,31 +140,29 @@ int notification_ongoing_update_content(const char *caller_pkgname,
 		return NOTIFICATION_ERROR_FROM_DBUS;
 	}
 
-	if (content == NULL) {
+	if (content == NULL)
 		ret = dbus_message_append_args(signal,
 						   DBUS_TYPE_STRING, &caller_pkgname,
 						   DBUS_TYPE_INT32, &priv_id,
 						   DBUS_TYPE_INVALID);
-	} else {
+	else
 		ret = dbus_message_append_args(signal,
 						   DBUS_TYPE_STRING, &caller_pkgname,
 						   DBUS_TYPE_INT32, &priv_id,
 						   DBUS_TYPE_STRING, &content,
 						   DBUS_TYPE_INVALID);
-	}
+
 	if (ret) {
 		ret = dbus_connection_send(connection, signal, NULL);
 
-		if (ret) {
+		if (ret)
 			dbus_connection_flush(connection);
-		}
 	}
 
 	dbus_message_unref(signal);
 
-	if (ret) {
+	if (ret)
 		return NOTIFICATION_ERROR_NONE;
-	}
 
 	return NOTIFICATION_ERROR_FROM_DBUS;
 }

@@ -209,16 +209,16 @@ static int testapp_add_a_notification()
 		goto FINISH_OFF;
 	}
 
-	FINISH_OFF:
+FINISH_OFF:
 	if (noti_handle)
 		notification_free(noti_handle);
 
 	return noti_err;
 }
 
-/* Common } ------------------------------------------------------------------*/
+/* Common } ------------------------------------------------------------------ */
 
-/* Basic Test { --------------------------------------------------------------*/
+/* Basic Test { -------------------------------------------------------------- */
 static int testapp_test_post_notification()
 {
 	int err = NOTIFICATION_ERROR_NONE;
@@ -229,7 +229,7 @@ static int testapp_test_post_notification()
 	}
 
 
-	FINISH_OFF:
+FINISH_OFF:
 
 	return err;
 }
@@ -276,9 +276,10 @@ static int testapp_test_post_notification_on_indicator()
 	}
 
 	noti_err  = notification_set_image(noti_handle, NOTIFICATION_IMAGE_TYPE_ICON_FOR_INDICATOR, "/usr/apps/org.tizen.indicator/res/icons/Shealth/B03_shealth.png");
-	// noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_TITLE, "I'm Title", "TITLE", NOTIFICATION_VARIABLE_TYPE_NONE);
-	// noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_CONTENT, "I'm Content", "This is very loooooooooooooooooooooooooooooooooooooooooong message", NOTIFICATION_VARIABLE_TYPE_NONE);
-
+	/*
+	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_TITLE, "I'm Title", "TITLE", NOTIFICATION_VARIABLE_TYPE_NONE);
+	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_CONTENT, "I'm Content", "This is very loooooooooooooooooooooooooooooooooooooooooong message", NOTIFICATION_VARIABLE_TYPE_NONE);
+	*/
 	noti_err  = notification_set_display_applist(noti_handle, NOTIFICATION_DISPLAY_APP_TICKER | NOTIFICATION_DISPLAY_APP_INDICATOR);
 
 	if (noti_err != NOTIFICATION_ERROR_NONE) {
@@ -293,7 +294,7 @@ static int testapp_test_post_notification_on_indicator()
 		goto FINISH_OFF;
 	}
 
-	FINISH_OFF:
+FINISH_OFF:
 	if (noti_handle)
 		notification_free(noti_handle);
 
@@ -307,9 +308,8 @@ static int testapp_test_post_status_message()
 
 	noti_err = notification_status_message_post("This is only a test");
 
-	if (noti_err != NOTIFICATION_ERROR_NONE) {
+	if (noti_err != NOTIFICATION_ERROR_NONE)
 		testapp_print("notification_status_message_post failed[%d]", noti_err);
-	}
 
 	return noti_err;
 }
@@ -665,9 +665,8 @@ static int testapp_test_update_setting()
 		notification_setting_update_setting(setting);
 	}
 
-	if (setting) {
+	if (setting)
 		notification_setting_free_notification(setting);
-	}
 
 	return err;
 }

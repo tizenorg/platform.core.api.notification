@@ -61,26 +61,24 @@ char *notification_get_pkgname_by_pid(void)
 	int pid = 0, ret = AUL_R_OK;
 	int fd;
 	char  *dup_pkgname;
+	char buf[NOTI_PKGNAME_LEN + 1] = { 0, };
 
 	pid = getpid();
 
 	ret = aul_app_get_pkgname_bypid(pid, pkgname, sizeof(pkgname));
 	if (ret != AUL_R_OK) {
-		char buf[NOTI_PKGNAME_LEN + 1] = { 0, };
 
 		snprintf(buf, sizeof(buf), "/proc/%d/cmdline", pid);
 
 		fd = open(buf, O_RDONLY);
-		if (fd < 0) {
+		if (fd < 0)
 			return NULL;
-		}
 
 		ret = read(fd, pkgname, sizeof(pkgname) - 1);
 		close(fd);
 
-		if (ret <= 0) {
+		if (ret <= 0)
 			return NULL;
-		}
 
 		pkgname[ret] = '\0';
 		/*!
@@ -89,9 +87,8 @@ char *notification_get_pkgname_by_pid(void)
 		 * if the system is not going wrong.
 		 */
 	} else {
-		if (strlen(pkgname) <= 0) {
+		if (strlen(pkgname) <= 0)
 			return NULL;
-		}
 	}
 
 	dup_pkgname = strdup(pkgname);
@@ -110,15 +107,13 @@ EXPORT_API int notification_set_image(notification_h noti,
 	char *ret_val = NULL;
 
 	/* Check noti and image_path are valid data */
-	if (noti == NULL || image_path == NULL) {
+	if (noti == NULL || image_path == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Check image type is valid type */
 	if (type <= NOTIFICATION_IMAGE_TYPE_NONE
-	    || type >= NOTIFICATION_IMAGE_TYPE_MAX) {
+	    || type >= NOTIFICATION_IMAGE_TYPE_MAX)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Check image path bundle is exist */
 	if (noti->b_image_path) {
@@ -130,10 +125,9 @@ EXPORT_API int notification_set_image(notification_h noti,
 
 		/* Get value using key */
 		bundle_get_str(b, buf_key, &ret_val);
-		if (ret_val != NULL) {
+		if (ret_val != NULL)
 			/* If key is exist, remove this value to store new image path */
 			bundle_del(b, buf_key);
-		}
 
 		/* Add new image path with type key */
 		bundle_add_str(b, buf_key, image_path);
@@ -163,15 +157,13 @@ EXPORT_API int notification_get_image(notification_h noti,
 	char *ret_val = NULL;
 
 	/* Check noti and image_path is valid data */
-	if (noti == NULL || image_path == NULL) {
+	if (noti == NULL || image_path == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Check image type is valid data */
 	if (type <= NOTIFICATION_IMAGE_TYPE_NONE
-	    || type >= NOTIFICATION_IMAGE_TYPE_MAX) {
+	    || type >= NOTIFICATION_IMAGE_TYPE_MAX)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Check image path bundle exist */
 	if (noti->b_image_path) {
@@ -194,12 +186,11 @@ EXPORT_API int notification_get_image(notification_h noti,
 	/* order : user icon -> launch_pkgname icon -> caller_pkgname icon -> service app icon */
 	if (*image_path == NULL && type == NOTIFICATION_IMAGE_TYPE_ICON) {
 		/* Check App icon path is already set */
-		if (noti->app_icon_path != NULL) {
+		if (noti->app_icon_path != NULL)
 			/* image path will be app icon path */
 			*image_path = noti->app_icon_path;
-		} else {
+		else
 			*image_path = NULL;
-		}
 	}
 
 	return NOTIFICATION_ERROR_NONE;
@@ -209,17 +200,15 @@ EXPORT_API int notification_set_time(notification_h noti,
 						      time_t input_time)
 {
 	/* Check noti is valid data */
-	if (noti == NULL) {
+	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
-	if (input_time == 0) {
+	if (input_time == 0)
 		/* If input time is 0, set current time */
 		noti->time = time(NULL);
-	} else {
+	else
 		/* save input time */
 		noti->time = input_time;
-	}
 
 	return NOTIFICATION_ERROR_NONE;
 }
@@ -228,9 +217,8 @@ EXPORT_API int notification_get_time(notification_h noti,
 						      time_t * ret_time)
 {
 	/* Check noti and time is valid data */
-	if (noti == NULL || ret_time == NULL) {
+	if (noti == NULL || ret_time == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Set time infomation */
 	*ret_time = noti->time;
@@ -242,9 +230,8 @@ EXPORT_API int notification_get_insert_time(notification_h noti,
 							     time_t * ret_time)
 {
 	/* Check noti and ret_time is valid data */
-	if (noti == NULL || ret_time == NULL) {
+	if (noti == NULL || ret_time == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Set insert time information */
 	*ret_time = noti->insert_time;
@@ -273,15 +260,13 @@ EXPORT_API int notification_set_text(notification_h noti,
 	    NOTIFICATION_COUNT_POS_NONE;
 
 	/* Check noti is valid data */
-	if (noti == NULL) {
+	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Check text type is valid type */
 	if (type <= NOTIFICATION_TEXT_TYPE_NONE
-	    || type >= NOTIFICATION_TEXT_TYPE_MAX) {
+	    || type >= NOTIFICATION_TEXT_TYPE_MAX)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Check text bundle exist */
 	if (text != NULL) {
@@ -294,10 +279,10 @@ EXPORT_API int notification_set_text(notification_h noti,
 
 			/* Get value using type key */
 			bundle_get_str(b, buf_key, &ret_val);
-			if (ret_val != NULL) {
+
+			if (ret_val != NULL)
 				/* If value exist, remove this to add new value */
 				bundle_del(b, buf_key);
-			}
 
 			snprintf(buf_val, sizeof(buf_val), "%s", text);
 
@@ -329,10 +314,9 @@ EXPORT_API int notification_set_text(notification_h noti,
 
 			/* Get value using type key */
 			bundle_get_str(b, buf_key, &ret_val);
-			if (ret_val != NULL) {
+			if (ret_val != NULL)
 				/* If value exist, remove this */
 				bundle_del(b, buf_key);
-			}
 		}
 	}
 
@@ -348,10 +332,9 @@ EXPORT_API int notification_set_text(notification_h noti,
 
 			/* Get value using type key */
 			bundle_get_str(b, buf_key, &ret_val);
-			if (ret_val != NULL) {
+			if (ret_val != NULL)
 				/* If value exist, remove this to add new value */
 				bundle_del(b, buf_key);
-			}
 
 			snprintf(buf_val, sizeof(buf_val), "%s", key);
 
@@ -383,18 +366,16 @@ EXPORT_API int notification_set_text(notification_h noti,
 
 			/* Get value using type key */
 			bundle_get_str(b, buf_key, &ret_val);
-			if (ret_val != NULL) {
+			if (ret_val != NULL)
 				/* If value exist, remove this */
 				bundle_del(b, buf_key);
-			}
 		}
 	}
 
-	if (noti->b_format_args != NULL) {
+	if (noti->b_format_args != NULL)
 		b = noti->b_format_args;
-	} else {
+	else
 		b = bundle_create();
-	}
 
 	va_start(var_args, args_type);
 
@@ -407,9 +388,8 @@ EXPORT_API int notification_set_text(notification_h noti,
 		snprintf(buf_val, sizeof(buf_val), "%d", var_type);
 
 		bundle_get_str(b, buf_key, &ret_val);
-		if (ret_val != NULL) {
+		if (ret_val != NULL)
 			bundle_del(b, buf_key);
-		}
 
 		bundle_add_str(b, buf_key, buf_val);
 
@@ -423,12 +403,12 @@ EXPORT_API int notification_set_text(notification_h noti,
 			snprintf(buf_val, sizeof(buf_val), "%d", var_value_int);
 
 			bundle_get_str(b, buf_key, &ret_val);
-			if (ret_val != NULL) {
+			if (ret_val != NULL)
 				bundle_del(b, buf_key);
-			}
 
 			bundle_add_str(b, buf_key, buf_val);
 			break;
+
 		case NOTIFICATION_VARIABLE_TYPE_DOUBLE:
 			var_value_double = va_arg(var_args, double);
 
@@ -439,12 +419,12 @@ EXPORT_API int notification_set_text(notification_h noti,
 				 var_value_double);
 
 			bundle_get_str(b, buf_key, &ret_val);
-			if (ret_val != NULL) {
+			if (ret_val != NULL)
 				bundle_del(b, buf_key);
-			}
 
 			bundle_add_str(b, buf_key, buf_val);
 			break;
+
 		case NOTIFICATION_VARIABLE_TYPE_STRING:
 			var_value_string = va_arg(var_args, char *);
 
@@ -455,12 +435,12 @@ EXPORT_API int notification_set_text(notification_h noti,
 				 var_value_string);
 
 			bundle_get_str(b, buf_key, &ret_val);
-			if (ret_val != NULL) {
+			if (ret_val != NULL)
 				bundle_del(b, buf_key);
-			}
 
 			bundle_add_str(b, buf_key, buf_val);
 			break;
+
 		case NOTIFICATION_VARIABLE_TYPE_COUNT:
 			var_value_count =
 			    va_arg(var_args, notification_count_pos_type_e);
@@ -472,12 +452,12 @@ EXPORT_API int notification_set_text(notification_h noti,
 				 var_value_count);
 
 			bundle_get_str(b, buf_key, &ret_val);
-			if (ret_val != NULL) {
+			if (ret_val != NULL)
 				bundle_del(b, buf_key);
-			}
 
 			bundle_add_str(b, buf_key, buf_val);
 			break;
+
 		default:
 			NOTIFICATION_ERR("Error. invalid variable type. : %d",
 					 var_type);
@@ -490,19 +470,17 @@ EXPORT_API int notification_set_text(notification_h noti,
 	}
 	va_end(var_args);
 
-	if (noti_err == NOTIFICATION_ERROR_NONE) {
+	if (noti_err == NOTIFICATION_ERROR_NONE)
 		noti->num_format_args = num_args;
-	} else {
+	else
 		noti->num_format_args = 0;
-	}
 
 	snprintf(buf_key, sizeof(buf_key), "num%d", type);
 	snprintf(buf_val, sizeof(buf_val), "%d", noti->num_format_args);
 
 	bundle_get_str(b, buf_key, &ret_val);
-	if (ret_val != NULL) {
+	if (ret_val != NULL)
 		bundle_del(b, buf_key);
-	}
 
 	bundle_add_str(b, buf_key, buf_val);
 
@@ -520,7 +498,7 @@ EXPORT_API int notification_get_text(notification_h noti,
 	char *ret_val = NULL;
 	char *get_str = NULL;
 	notification_text_type_e check_type = NOTIFICATION_TEXT_TYPE_NONE;
-	//int display_option_flag = 0;
+	/* int display_option_flag = 0; */
 
 	char *temp_str = NULL;
 	char *translated_str = NULL;
@@ -534,22 +512,21 @@ EXPORT_API int notification_get_text(notification_h noti,
 	int max_len = 0;
 
 	/* Check noti is valid data */
-	if (noti == NULL || text == NULL) {
+	if (noti == NULL || text == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Check text type is valid type */
 	if (type <= NOTIFICATION_TEXT_TYPE_NONE
-	    || type >= NOTIFICATION_TEXT_TYPE_MAX) {
+	    || type >= NOTIFICATION_TEXT_TYPE_MAX)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
+
 
 	/* Check key */
 	if (noti->b_key != NULL) {
 		b = noti->b_key;
 
 		/* Get text domain and dir */
-		//_notification_get_text_domain(noti);
+		/* _notification_get_text_domain(noti); */
 
 		snprintf(buf_key, sizeof(buf_key), "%d", type);
 
@@ -586,9 +563,8 @@ EXPORT_API int notification_get_text(notification_h noti,
 		if (b != NULL) {
 			snprintf(buf_key, sizeof(buf_key), "num%d", check_type);
 			bundle_get_str(b, buf_key, &ret_val);
-			if (ret_val != NULL) {
+			if (ret_val != NULL)
 				noti->num_format_args = atoi(ret_val);
-			}
 		}
 
 		if (noti->num_format_args == 0) {
@@ -598,18 +574,16 @@ EXPORT_API int notification_get_text(notification_h noti,
 			snprintf(buf_key, sizeof(buf_key), "%dtype%d",
 				 check_type, num_args);
 			bundle_get_str(b, buf_key, &ret_val);
-			if (ret_val != NULL) {
+			if (ret_val != NULL)
 				ret_var_type = atoi(ret_val);
-			}
 
 			if (ret_var_type == NOTIFICATION_VARIABLE_TYPE_COUNT) {
 				/* Get var Value */
 				snprintf(buf_key, sizeof(buf_key), "%dvalue%d",
 					 check_type, num_args);
 				bundle_get_str(b, buf_key, &ret_val);
-				if (ret_val != NULL) {
+				if (ret_val != NULL)
 					ret_variable_int = atoi(ret_val);
-				}
 
 				if (ret_variable_int ==
 				    NOTIFICATION_COUNT_POS_LEFT) {
@@ -648,9 +622,9 @@ EXPORT_API int notification_get_text(notification_h noti,
 							 "%dtype%d", check_type,
 							 num_args);
 						bundle_get_str(b, buf_key, &ret_val);
-						if (ret_val != NULL) {
+						if (ret_val != NULL)
 							ret_var_type = atoi(ret_val);
-						}
+
 						if (ret_var_type ==
 						    NOTIFICATION_VARIABLE_TYPE_COUNT) {
 							/* Get notification count */
@@ -668,9 +642,8 @@ EXPORT_API int notification_get_text(notification_h noti,
 								 check_type,
 								 num_args);
 							bundle_get_str(b, buf_key, &ret_val);
-							if (ret_val != NULL) {
+							if (ret_val != NULL)
 								ret_variable_int = atoi(ret_val);
-							}
 						}
 
 						snprintf(buf_str,
@@ -722,9 +695,8 @@ EXPORT_API int notification_get_text(notification_h noti,
 							 "%dvalue%d",
 							 check_type, num_args);
 						bundle_get_str(b, buf_key, &ret_val);
-						if (ret_val != NULL) {
+						if (ret_val != NULL)
 							ret_variable_double = atof(ret_val);
-						}
 
 						snprintf(buf_str,
 							 sizeof(buf_str),
@@ -747,9 +719,9 @@ EXPORT_API int notification_get_text(notification_h noti,
 								 "%dtype%d", check_type,
 								 num_args + *(temp_str + 1) - 49);
 							bundle_get_str(b, buf_key, &ret_val);
-							if (ret_val != NULL) {
+							if (ret_val != NULL)
 								ret_var_type = atoi(ret_val);
-							}
+
 							if (ret_var_type ==
 							    NOTIFICATION_VARIABLE_TYPE_COUNT) {
 								/* Get notification count */
@@ -768,9 +740,9 @@ EXPORT_API int notification_get_text(notification_h noti,
 									 check_type,
 									 num_args + *(temp_str + 1) - 49);
 								bundle_get_str(b, buf_key, &ret_val);
-								if (ret_val != NULL) {
+								if (ret_val != NULL)
 									ret_variable_int = atoi(ret_val);
-								}
+
 							}
 
 							snprintf(buf_str,
@@ -808,9 +780,8 @@ EXPORT_API int notification_get_text(notification_h noti,
 								 "%dvalue%d",
 								 check_type, num_args + *(temp_str + 1) - 49);
 							bundle_get_str(b, buf_key, &ret_val);
-							if (ret_val != NULL) {
+							if (ret_val != NULL)
 								ret_variable_double = atof(ret_val);
-							}
 
 							snprintf(buf_str,
 								 sizeof(buf_str),
@@ -834,9 +805,8 @@ EXPORT_API int notification_get_text(notification_h noti,
 				snprintf(buf_key, sizeof(buf_key), "%dtype%d",
 					 check_type, num_args);
 				bundle_get_str(b, buf_key, &ret_val);
-				if (ret_val != NULL) {
+				if (ret_val != NULL)
 					ret_var_type = atoi(ret_val);
-				}
 
 				if (ret_var_type ==
 				    NOTIFICATION_VARIABLE_TYPE_COUNT) {
@@ -845,9 +815,8 @@ EXPORT_API int notification_get_text(notification_h noti,
 						 "%dvalue%d", check_type,
 						 num_args);
 					bundle_get_str(b, buf_key, &ret_val);
-					if (ret_val != NULL) {
+					if (ret_val != NULL)
 						ret_variable_int = atoi(ret_val);
-					}
 
 					if (ret_variable_int ==
 					    NOTIFICATION_COUNT_POS_RIGHT) {
@@ -912,23 +881,22 @@ EXPORT_API int notification_set_text_domain(notification_h noti,
 							     const char *dir)
 {
 	/* check noti and domain is valid data */
-	if (noti == NULL || domain == NULL || dir == NULL) {
+	if (noti == NULL || domain == NULL || dir == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Check domain */
-	if (noti->domain) {
+	if (noti->domain)
 		/* Remove previous domain */
 		free(noti->domain);
-	}
+
 	/* Copy domain */
 	noti->domain = strdup(domain);
 
 	/* Check locale dir */
-	if (noti->dir) {
+	if (noti->dir)
 		/* Remove previous locale dir */
 		free(noti->dir);
-	}
+
 	/* Copy locale dir */
 	noti->dir = strdup(dir);
 
@@ -940,19 +908,16 @@ EXPORT_API int notification_get_text_domain(notification_h noti,
 							     char **dir)
 {
 	/* Check noti is valid data */
-	if (noti == NULL) {
+	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Get domain */
-	if (domain != NULL && noti->domain != NULL) {
+	if (domain != NULL && noti->domain != NULL)
 		*domain = noti->domain;
-	}
 
 	/* Get locale dir */
-	if (dir != NULL && noti->dir != NULL) {
+	if (dir != NULL && noti->dir != NULL)
 		*dir = noti->dir;
-	}
 
 	return NOTIFICATION_ERROR_NONE;
 }
@@ -964,24 +929,22 @@ EXPORT_API int notification_set_time_to_text(notification_h noti, notification_t
 	char buf[256] = { 0, };
 	char buf_tag[512] = { 0, };
 
-	if (noti == NULL) {
+	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
-	if (time <= 0) {
+
+	if (time <= 0)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
+
 	if (type <= NOTIFICATION_TEXT_TYPE_NONE
-	    || type >= NOTIFICATION_TEXT_TYPE_MAX) {
+	    || type >= NOTIFICATION_TEXT_TYPE_MAX)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 
 	snprintf(buf, sizeof(buf), "%lu", time);
 	ret = notification_noti_set_tag(TAG_TIME, buf, buf_tag, sizeof(buf_tag));
 
-	if (ret != NOTIFICATION_ERROR_NONE) {
+	if (ret != NOTIFICATION_ERROR_NONE)
 		return ret;
-	}
 
 	return notification_set_text(noti, type, buf_tag, NULL, NOTIFICATION_VARIABLE_TYPE_NONE);
 }
@@ -990,34 +953,30 @@ EXPORT_API int notification_get_time_from_text(notification_h noti, notification
 								time_t *time)
 {
 	int ret = NOTIFICATION_ERROR_NONE;
-
-	if (noti == NULL) {
-		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
-	if (time == NULL) {
-		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
-	if (type <= NOTIFICATION_TEXT_TYPE_NONE
-	    || type >= NOTIFICATION_TEXT_TYPE_MAX) {
-		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
-
 	char *ret_text = NULL;
+	char *tag_value;
+
+	if (noti == NULL)
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
+
+	if (time == NULL)
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
+
+	if (type <= NOTIFICATION_TEXT_TYPE_NONE
+	    || type >= NOTIFICATION_TEXT_TYPE_MAX)
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
+
 	ret = notification_get_text(noti, type, &ret_text);
 
-	if (ret != NOTIFICATION_ERROR_NONE || ret_text == NULL) {
+	if (ret != NOTIFICATION_ERROR_NONE || ret_text == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
-	if (notification_noti_get_tag_type(ret_text) == TAG_TYPE_INVALID) {
+	if (notification_noti_get_tag_type(ret_text) == TAG_TYPE_INVALID)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
-	char *tag_value = NULL;
 	tag_value = notification_noti_strip_tag(ret_text);
-	if (tag_value == NULL) {
+	if (tag_value == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	*time = atol(tag_value);
 	free(tag_value);
@@ -1030,24 +989,22 @@ EXPORT_API int notification_set_sound(notification_h noti,
 						       const char *path)
 {
 	/* Check noti is valid data */
-	if (noti == NULL) {
+	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
+
 
 	/* Check type is valid */
 	if (type < NOTIFICATION_SOUND_TYPE_NONE
-	    || type >= NOTIFICATION_SOUND_TYPE_MAX) {
+	    || type >= NOTIFICATION_SOUND_TYPE_MAX)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Save sound type */
 	noti->sound_type = type;
 
 	/* Save sound path if user data type */
 	if (type == NOTIFICATION_SOUND_TYPE_USER_DATA && path != NULL) {
-		if (noti->sound_path != NULL) {
+		if (noti->sound_path != NULL)
 			free(noti->sound_path);
-		}
 
 		noti->sound_path = strdup(path);
 	} else {
@@ -1069,18 +1026,16 @@ EXPORT_API int notification_get_sound(notification_h noti,
 						       const char **path)
 {
 	/* check noti and type is valid data */
-	if (noti == NULL || type == NULL) {
+	if (noti == NULL || type == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Set sound type */
 	*type = noti->sound_type;
 
 	/* Set sound path if user data type */
 	if (noti->sound_type == NOTIFICATION_SOUND_TYPE_USER_DATA
-	    && path != NULL) {
+	    && path != NULL)
 		*path = noti->sound_path;
-	}
 
 	return NOTIFICATION_ERROR_NONE;
 }
@@ -1090,24 +1045,21 @@ EXPORT_API int notification_set_vibration(notification_h noti,
 							   const char *path)
 {
 	/* Check noti is valid data */
-	if (noti == NULL) {
+	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Check type is valid */
 	if (type < NOTIFICATION_VIBRATION_TYPE_NONE
-	    || type >= NOTIFICATION_VIBRATION_TYPE_MAX) {
+	    || type >= NOTIFICATION_VIBRATION_TYPE_MAX)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Save vibration type */
 	noti->vibration_type = type;
 
 	/* Save sound path if user data type */
 	if (type == NOTIFICATION_VIBRATION_TYPE_USER_DATA && path != NULL) {
-		if (noti->vibration_path != NULL) {
+		if (noti->vibration_path != NULL)
 			free(noti->vibration_path);
-		}
 
 		noti->vibration_path = strdup(path);
 	} else {
@@ -1130,18 +1082,16 @@ EXPORT_API int notification_get_vibration(notification_h noti,
 							   const char **path)
 {
 	/* check noti and type is valid data */
-	if (noti == NULL || type == NULL) {
+	if (noti == NULL || type == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Set vibration type */
 	*type = noti->vibration_type;
 
 	/* Set sound path if user data type */
 	if (noti->vibration_type == NOTIFICATION_VIBRATION_TYPE_USER_DATA
-	    && path != NULL) {
+	    && path != NULL)
 		*path = noti->vibration_path;
-	}
 
 	return NOTIFICATION_ERROR_NONE;
 }
@@ -1151,23 +1101,20 @@ EXPORT_API int notification_set_led(notification_h noti,
 							   int led_argb)
 {
 	/* Check noti is valid data */
-	if (noti == NULL) {
+	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Check operation is valid */
 	if (operation < NOTIFICATION_LED_OP_OFF
-	    || operation >= NOTIFICATION_LED_OP_MAX) {
+	    || operation >= NOTIFICATION_LED_OP_MAX)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Save led operation */
 	noti->led_operation = operation;
 
 	/* Save led argb if operation is turning on LED with custom color */
-	if (operation == NOTIFICATION_LED_OP_ON_CUSTOM_COLOR) {
+	if (operation == NOTIFICATION_LED_OP_ON_CUSTOM_COLOR)
 		noti->led_argb = led_argb;
-	}
 
 	return NOTIFICATION_ERROR_NONE;
 }
@@ -1177,18 +1124,16 @@ EXPORT_API int notification_get_led(notification_h noti,
 							   int *led_argb)
 {
 	/* check noti and operation is valid data */
-	if (noti == NULL || operation == NULL) {
+	if (noti == NULL || operation == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Set led operation */
 	*operation = noti->led_operation;
 
 	/* Save led argb if operation is turning on LED with custom color */
 	if (noti->led_operation == NOTIFICATION_LED_OP_ON_CUSTOM_COLOR
-	    && led_argb != NULL) {
+	    && led_argb != NULL)
 		*led_argb = noti->led_argb;
-	}
 
 	return NOTIFICATION_ERROR_NONE;
 }
@@ -1197,9 +1142,8 @@ EXPORT_API int notification_set_led_time_period(notification_h noti,
 									int on_ms, int off_ms)
 {
 	/* Check noti is valid data */
-	if (noti == NULL || on_ms < 0 || off_ms < 0) {
+	if (noti == NULL || on_ms < 0 || off_ms < 0)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Save led operation */
 	noti->led_on_ms = on_ms;
@@ -1212,9 +1156,8 @@ EXPORT_API int notification_get_led_time_period(notification_h noti,
 									int *on_ms, int *off_ms)
 {
 	/* check noti and operation is valid data */
-	if (noti == NULL) {
+	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	if (on_ms)
 		*(on_ms) = noti->led_on_ms;
@@ -1260,15 +1203,15 @@ EXPORT_API int notification_get_launch_option(notification_h noti,
 	app_control_h *app_control = (app_control_h *)option;
 	app_control_h app_control_new = NULL;
 
-	if (noti == NULL) {
+	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
-	if (app_control == NULL) {
+
+	if (app_control == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
-	if (type != NOTIFICATION_LAUNCH_OPTION_APP_CONTROL) {
+
+	if (type != NOTIFICATION_LAUNCH_OPTION_APP_CONTROL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
+
 
 	ret = notification_get_execute_option(noti,
 				NOTIFICATION_EXECUTE_TYPE_SINGLE_LAUNCH,
@@ -1320,9 +1263,8 @@ EXPORT_API int notification_set_event_handler(notification_h noti, notification_
 		goto out;
 	}
 
-	if (noti->b_event_handler[event_type] != NULL) {
+	if (noti->b_event_handler[event_type] != NULL)
 		bundle_free(noti->b_event_handler[event_type]);
-	}
 
 	noti->b_event_handler[event_type] = app_control_bundle;
 
@@ -1394,9 +1336,8 @@ EXPORT_API int notification_set_property(notification_h noti,
 							  int flags)
 {
 	/* Check noti is valid data */
-	if (noti == NULL) {
+	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Set flags */
 	noti->flags_for_property = flags;
@@ -1408,9 +1349,8 @@ EXPORT_API int notification_get_property(notification_h noti,
 							  int *flags)
 {
 	/* Check noti and flags are valid data */
-	if (noti == NULL || flags == NULL) {
+	if (noti == NULL || flags == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Set flags */
 	*flags = noti->flags_for_property;
@@ -1422,14 +1362,14 @@ EXPORT_API int notification_set_display_applist(notification_h noti,
 								 int applist)
 {
 	/* Check noti is valid data */
-	if (noti == NULL) {
+	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
+
 
 	/* Set app list */
-	if (applist == 0xffffffff) { /* 0xffffffff means old NOTIFICATION_DISPLAY_APP_ALL */
+	if (applist == 0xffffffff) /* 0xffffffff means old NOTIFICATION_DISPLAY_APP_ALL */
 		applist = NOTIFICATION_DISPLAY_APP_ALL;
-	}
+
 	noti->display_applist = applist;
 
 	return NOTIFICATION_ERROR_NONE;
@@ -1439,9 +1379,8 @@ EXPORT_API int notification_get_display_applist(notification_h noti,
 								 int *applist)
 {
 	/* Check noti and applist are valid data */
-	if (noti == NULL || applist == NULL) {
+	if (noti == NULL || applist == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Set app list */
 	*applist = noti->display_applist;
@@ -1453,9 +1392,8 @@ EXPORT_API int notification_set_size(notification_h noti,
 						      double size)
 {
 	/* Check noti is valid data */
-	if (noti == NULL) {
+	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Save progress size */
 	noti->progress_size = size;
@@ -1467,9 +1405,8 @@ EXPORT_API int notification_get_size(notification_h noti,
 						      double *size)
 {
 	/* Check noti and size is valid data */
-	if (noti == NULL || size == NULL) {
+	if (noti == NULL || size == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Set progress size */
 	*size = noti->progress_size;
@@ -1481,9 +1418,8 @@ EXPORT_API int notification_set_progress(notification_h noti,
 							  double percentage)
 {
 	/* Check noti is valid data */
-	if (noti == NULL) {
+	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Save progress percentage */
 	noti->progress_percentage = percentage;
@@ -1495,9 +1431,8 @@ EXPORT_API int notification_get_progress(notification_h noti,
 							  double *percentage)
 {
 	/* Check noti and percentage are valid data */
-	if (noti == NULL || percentage == NULL) {
+	if (noti == NULL || percentage == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Set progress percentage */
 	*percentage = noti->progress_percentage;
@@ -1509,16 +1444,14 @@ EXPORT_API int notification_get_pkgname(notification_h noti,
 							 char **pkgname)
 {
 	/* Check noti and pkgname are valid data */
-	if (noti == NULL || pkgname == NULL) {
+	if (noti == NULL || pkgname == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Get caller pkgname */
-	if (noti->caller_pkgname) {
+	if (noti->caller_pkgname)
 		*pkgname = noti->caller_pkgname;
-	} else {
+	else
 		*pkgname = NULL;
-	}
 
 	return NOTIFICATION_ERROR_NONE;
 }
@@ -1527,9 +1460,8 @@ EXPORT_API int notification_set_layout(notification_h noti,
 		notification_ly_type_e layout)
 {
 	/* check noti and pkgname are valid data */
-	if (noti == NULL || (layout < NOTIFICATION_LY_NONE || layout >= NOTIFICATION_LY_MAX)) {
+	if (noti == NULL || (layout < NOTIFICATION_LY_NONE || layout >= NOTIFICATION_LY_MAX))
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	noti->layout = layout;
 
@@ -1540,9 +1472,8 @@ EXPORT_API int notification_get_layout(notification_h noti,
 		notification_ly_type_e *layout)
 {
 	/* Check noti and pkgname are valid data */
-	if (noti == NULL || layout == NULL) {
+	if (noti == NULL || layout == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	*layout = noti->layout;
 
@@ -1555,9 +1486,8 @@ EXPORT_API int notification_get_type(notification_h noti,
 						      notification_type_e *type)
 {
 	/* Check noti and type is valid data */
-	if (noti == NULL || type == NULL) {
+	if (noti == NULL || type == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Set noti type */
 	*type = noti->type;
@@ -1571,23 +1501,21 @@ EXPORT_API int notification_post(notification_h noti)
 	int id = 0;
 
 	/* Check noti is vaild data */
-	if (noti == NULL) {
+	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Check noti type is valid type */
 	if (noti->type <= NOTIFICATION_TYPE_NONE
-	    || noti->type >= NOTIFICATION_TYPE_MAX) {
+	    || noti->type >= NOTIFICATION_TYPE_MAX)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	/* Save insert time */
 	noti->insert_time = time(NULL);
 
 	ret = notification_ipc_request_insert(noti, &id);
-	if (ret != NOTIFICATION_ERROR_NONE) {
+	if (ret != NOTIFICATION_ERROR_NONE)
 		return ret;
-	}
+
 	noti->priv_id = id;
 	NOTIFICATION_DBG("from master:%d", id);
 
@@ -1617,17 +1545,15 @@ EXPORT_API int notification_delete_all(notification_type_e type)
 	int ret = 0;
 	char *caller_pkgname = NULL;
 
-	if (type <= NOTIFICATION_TYPE_NONE || type >= NOTIFICATION_TYPE_MAX) {
+	if (type <= NOTIFICATION_TYPE_NONE || type >= NOTIFICATION_TYPE_MAX)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	caller_pkgname = notification_get_pkgname_by_pid();
 
 	ret = notification_ipc_request_delete_multiple(type, caller_pkgname);
 
-	if (caller_pkgname) {
+	if (caller_pkgname)
 		free(caller_pkgname);
-	}
 
 	return ret;
 }
@@ -1636,9 +1562,8 @@ EXPORT_API int notification_delete(notification_h noti)
 {
 	int ret = 0;
 
-	if (noti == NULL) {
+	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	ret = notification_ipc_request_delete_single(NOTIFICATION_TYPE_NONE, noti->caller_pkgname, noti->priv_id);
 
@@ -1720,21 +1645,17 @@ static notification_h _notification_create(notification_type_e type)
 	noti->dir    = strdup(locale_directory);
 
 out:
-	if (domain_name) {
+	if (domain_name)
 		free(domain_name);
-	}
 
-	if (app_id) {
+	if (app_id)
 		free(app_id);
-	}
 
-	if (app_root_path) {
+	if (app_root_path)
 		free(app_root_path);
-	}
 
-	if (package_info) {
+	if (package_info)
 		package_info_destroy(package_info);
-	}
 
 	/*!
 	 * \NOTE
@@ -1814,107 +1735,101 @@ EXPORT_API int notification_clone(notification_h noti, notification_h *clone)
 	new_noti->internal_group_id = noti->internal_group_id;
 	new_noti->priv_id = noti->priv_id;
 
-	if (noti->caller_pkgname != NULL) {
+	if (noti->caller_pkgname != NULL)
 		new_noti->caller_pkgname = strdup(noti->caller_pkgname);
-	} else {
+	else
 		new_noti->caller_pkgname = notification_get_pkgname_by_pid();
-	}
-	if (noti->launch_pkgname != NULL) {
+
+	if (noti->launch_pkgname != NULL)
 		new_noti->launch_pkgname = strdup(noti->launch_pkgname);
-	} else {
+	else
 		new_noti->launch_pkgname = NULL;
-	}
 
-	if (noti->args != NULL) {
+	if (noti->args != NULL)
 		new_noti->args = bundle_dup(noti->args);
-	} else {
+	else
 		new_noti->args = NULL;
-	}
-	if (noti->group_args != NULL) {
-		new_noti->group_args = bundle_dup(noti->group_args);
-	} else {
-		new_noti->group_args = NULL;
-	}
 
-	if (noti->b_execute_option != NULL) {
+	if (noti->group_args != NULL)
+		new_noti->group_args = bundle_dup(noti->group_args);
+	else
+		new_noti->group_args = NULL;
+
+	if (noti->b_execute_option != NULL)
 		new_noti->b_execute_option = bundle_dup(noti->b_execute_option);
-	} else {
+	else
 		new_noti->b_execute_option = NULL;
-	}
-	if (noti->b_service_responding != NULL) {
+
+	if (noti->b_service_responding != NULL)
 		new_noti->b_service_responding = bundle_dup(noti->b_service_responding);
-	} else {
+	else
 		new_noti->b_service_responding = NULL;
-	}
-	if (noti->b_service_single_launch != NULL) {
+
+	if (noti->b_service_single_launch != NULL)
 		new_noti->b_service_single_launch = bundle_dup(noti->b_service_single_launch);
-	} else {
+	else
 		new_noti->b_service_single_launch = NULL;
-	}
-	if (noti->b_service_multi_launch != NULL) {
+
+	if (noti->b_service_multi_launch != NULL)
 		new_noti->b_service_multi_launch = bundle_dup(noti->b_service_multi_launch);
-	} else {
+	else
 		new_noti->b_service_multi_launch = NULL;
-	}
 
 	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
-		if (noti->b_event_handler[i] != NULL) {
+		if (noti->b_event_handler[i] != NULL)
 			new_noti->b_event_handler[i] = bundle_dup(noti->b_event_handler[i]);
-		} else {
+		else
 			new_noti->b_event_handler[i] = NULL;
-		}
 	}
 
 	new_noti->sound_type = noti->sound_type;
-	if (noti->sound_path != NULL) {
+	if (noti->sound_path != NULL)
 		new_noti->sound_path = strdup(noti->sound_path);
-	} else {
+	else
 		new_noti->sound_path = NULL;
-	}
+
 	new_noti->vibration_type = noti->vibration_type;
-	if (noti->vibration_path != NULL) {
+	if (noti->vibration_path != NULL)
 		new_noti->vibration_path = strdup(noti->vibration_path);
-	} else {
+	else
 		new_noti->vibration_path = NULL;
-	}
+
 	new_noti->led_operation = noti->led_operation;
 	new_noti->led_argb = noti->led_argb;
 	new_noti->led_on_ms = noti->led_on_ms;
 	new_noti->led_off_ms = noti->led_off_ms;
 
-	if (noti->domain != NULL) {
+	if (noti->domain != NULL)
 		new_noti->domain = strdup(noti->domain);
-	} else {
+	else
 		new_noti->domain = NULL;
-	}
-	if (noti->dir != NULL) {
-		new_noti->dir = strdup(noti->dir);
-	} else {
-		new_noti->dir = NULL;
-	}
 
-	if (noti->b_text != NULL) {
+	if (noti->dir != NULL)
+		new_noti->dir = strdup(noti->dir);
+	else
+		new_noti->dir = NULL;
+
+	if (noti->b_text != NULL)
 		new_noti->b_text = bundle_dup(noti->b_text);
-	} else {
+	else
 		new_noti->b_text = NULL;
-	}
-	if (noti->b_key != NULL) {
+
+	if (noti->b_key != NULL)
 		new_noti->b_key = bundle_dup(noti->b_key);
-	} else {
+	else
 		new_noti->b_key = NULL;
-	}
-	if (noti->b_format_args != NULL) {
+
+	if (noti->b_format_args != NULL)
 		new_noti->b_format_args = bundle_dup(noti->b_format_args);
-	} else {
+	else
 		new_noti->b_format_args = NULL;
-	}
+
 	new_noti->num_format_args = noti->num_format_args;
 
-	if (noti->b_image_path != NULL) {
+	if (noti->b_image_path != NULL)
 		new_noti->b_image_path = bundle_dup(noti->b_image_path);
-	} else {
+	else
 		new_noti->b_image_path = NULL;
-	}
 
 	new_noti->time = noti->time;
 	new_noti->insert_time = noti->insert_time;
@@ -1942,86 +1857,76 @@ EXPORT_API int notification_clone(notification_h noti, notification_h *clone)
 EXPORT_API int notification_free(notification_h noti)
 {
 	int i = 0;
-	if (noti == NULL) {
+	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
-	if (noti->caller_pkgname) {
+	if (noti->caller_pkgname)
 		free(noti->caller_pkgname);
-	}
-	if (noti->launch_pkgname) {
-		free(noti->launch_pkgname);
-	}
-	if (noti->args) {
-		bundle_free(noti->args);
-	}
-	if (noti->group_args) {
-		bundle_free(noti->group_args);
-	}
 
-	if (noti->b_execute_option) {
+	if (noti->launch_pkgname)
+		free(noti->launch_pkgname);
+
+	if (noti->args)
+		bundle_free(noti->args);
+
+	if (noti->group_args)
+		bundle_free(noti->group_args);
+
+	if (noti->b_execute_option)
 		bundle_free(noti->b_execute_option);
-	}
-	if (noti->b_service_responding) {
+
+	if (noti->b_service_responding)
 		bundle_free(noti->b_service_responding);
-	}
-	if (noti->b_service_single_launch) {
+
+	if (noti->b_service_single_launch)
 		bundle_free(noti->b_service_single_launch);
-	}
-	if (noti->b_service_multi_launch) {
+
+	if (noti->b_service_multi_launch)
 		bundle_free(noti->b_service_multi_launch);
-	}
 
 	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
-		if (noti->b_event_handler[i] != NULL) {
+		if (noti->b_event_handler[i] != NULL)
 			bundle_free(noti->b_event_handler[i]);
-		}
 	}
 
-	if (noti->sound_path) {
+	if (noti->sound_path)
 		free(noti->sound_path);
-	}
-	if (noti->vibration_path) {
+
+	if (noti->vibration_path)
 		free(noti->vibration_path);
-	}
 
-	if (noti->domain) {
+	if (noti->domain)
 		free(noti->domain);
-	}
-	if (noti->dir) {
+
+	if (noti->dir)
 		free(noti->dir);
-	}
 
-	if (noti->b_text) {
+	if (noti->b_text)
 		bundle_free(noti->b_text);
-	}
-	if (noti->b_key) {
+
+	if (noti->b_key)
 		bundle_free(noti->b_key);
-	}
-	if (noti->b_format_args) {
+
+	if (noti->b_format_args)
 		bundle_free(noti->b_format_args);
-	}
 
-	if (noti->b_image_path) {
+	if (noti->b_image_path)
 		bundle_free(noti->b_image_path);
-	}
 
-	if (noti->app_icon_path) {
+	if (noti->app_icon_path)
 		free(noti->app_icon_path);
-	}
-	if (noti->app_name) {
-		free(noti->app_name);
-	}
-	if (noti->temp_title) {
-		free(noti->temp_title);
-	}
-	if (noti->temp_content) {
-		free(noti->temp_content);
-	}
 
-	if (noti->tag) {
+	if (noti->app_name)
+		free(noti->app_name);
+
+	if (noti->temp_title)
+		free(noti->temp_title);
+
+	if (noti->temp_content)
+		free(noti->temp_content);
+
+	if (noti->tag)
 		free(noti->tag);
-	}
 
 	free(noti);
 
@@ -2031,15 +1936,14 @@ EXPORT_API int notification_free(notification_h noti)
 EXPORT_API int notification_set_tag(notification_h noti, const char *tag)
 {
 	/* Check noti is valid data */
-	if (noti == NULL) {
+	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	if (tag != NULL) {
 		/* save input TAG */
-		if (noti->tag != NULL) {
+		if (noti->tag != NULL)
 			free(noti->tag);
-		}
+
 		noti->tag = strdup(tag);
 	}
 
@@ -2050,9 +1954,8 @@ EXPORT_API int notification_set_tag(notification_h noti, const char *tag)
 EXPORT_API int notification_get_tag(notification_h noti, const char **tag)
 {
 	/* Check noti is valid data */
-	if (noti == NULL) {
+	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	*tag = noti->tag;
 	return NOTIFICATION_ERROR_NONE;
@@ -2060,9 +1963,8 @@ EXPORT_API int notification_get_tag(notification_h noti, const char **tag)
 
 void notification_call_posted_toast_cb(const char *message)
 {
-	if (posted_toast_message_cb != NULL) {
+	if (posted_toast_message_cb != NULL)
 		posted_toast_message_cb((void*)message);
-	}
 }
 
 EXPORT_API int notification_set_ongoing_flag(notification_h noti, bool ongoing_flag)

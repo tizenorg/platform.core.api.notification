@@ -181,9 +181,8 @@ int notification_status_message_post(const char *message)
 	if (ret) {
 		ret = dbus_connection_send(connection, signal, NULL);
 
-		if (ret) {
+		if (ret)
 			dbus_connection_flush(connection);
-		}
 	}
 
 	dbus_message_unref(signal);

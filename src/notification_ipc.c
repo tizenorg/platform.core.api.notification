@@ -90,12 +90,11 @@ static void _master_started_cb_task(keynode_t *node, void *data);
 
 static inline char *_string_get(char *string)
 {
-	if (string == NULL) {
+	if (string == NULL)
 		return NULL;
-	}
-	if (string[0] == '\0') {
+
+	if (string[0] == '\0')
 		return NULL;
-	}
 
 	return string;
 }
@@ -107,24 +106,20 @@ static inline void _set_master_started_cb(vconf_callback_fn cb)
 {
 	int ret = -1;
 
-	ret = vconf_notify_key_changed(VCONFKEY_MASTER_STARTED,
-			cb, NULL);
-	if (ret != 0) {
+	ret = vconf_notify_key_changed(VCONFKEY_MASTER_STARTED, cb, NULL);
+	if (ret != 0)
 		NOTIFICATION_ERR("failed to notify key(%s) : %d",
 				VCONFKEY_MASTER_STARTED, ret);
-	}
 }
 
 static inline void _unset_master_started_cb(vconf_callback_fn cb)
 {
 	int ret = -1;
 
-	ret = vconf_ignore_key_changed(VCONFKEY_MASTER_STARTED,
-			cb);
-	if (ret != 0) {
+	ret = vconf_ignore_key_changed(VCONFKEY_MASTER_STARTED, cb);
+	if (ret != 0)
 		NOTIFICATION_ERR("failed to notify key(%s) : %d",
 				VCONFKEY_MASTER_STARTED, ret);
-	}
 }
 
 int notification_ipc_is_master_ready(void)
@@ -142,8 +137,7 @@ int notification_ipc_is_master_ready(void)
 	return is_master_started;
 }
 
-int
-notification_ipc_add_deffered_task(
+int notification_ipc_add_deffered_task(
 		void (*deferred_task_cb)(void *data),
 		void *user_data)
 {
@@ -153,9 +147,8 @@ notification_ipc_add_deffered_task(
 	list_new =
 	    (task_list *) malloc(sizeof(task_list));
 
-	if (list_new == NULL) {
+	if (list_new == NULL)
 		return NOTIFICATION_ERROR_OUT_OF_MEMORY;
-	}
 
 	if (s_info.is_started_cb_set_task == 0) {
 		_set_master_started_cb(_master_started_cb_task);
@@ -173,9 +166,9 @@ notification_ipc_add_deffered_task(
 	} else {
 		list = g_task_list;
 
-		while (list->next != NULL) {
+		while (list->next != NULL)
 			list = list->next;
-		}
+
 
 		list->next = list_new;
 		list_new->prev = list;
@@ -193,29 +186,28 @@ notification_ipc_del_deffered_task(
 
 	list_del = g_task_list;
 
-	if (list_del == NULL) {
+	if (list_del == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
-	while (list_del->prev != NULL) {
+
+	while (list_del->prev != NULL)
 		list_del = list_del->prev;
-	}
+
 
 	do {
 		if (list_del->task_cb == deferred_task_cb) {
 			list_prev = list_del->prev;
 			list_next = list_del->next;
 
-			if (list_prev == NULL) {
+			if (list_prev == NULL)
 				g_task_list = list_next;
-			} else {
+			else
 				list_prev->next = list_next;
-			}
 
 			if (list_next == NULL) {
-				if (list_prev != NULL) {
+				if (list_prev != NULL)
 					list_prev->next = NULL;
-				}
+
 			} else {
 				list_next->prev = list_prev;
 			}
@@ -242,9 +234,8 @@ static void _do_deffered_task(void)
 	task_list *list_do = NULL;
 	task_list *list_temp = NULL;
 
-	if (g_task_list == NULL) {
+	if (g_task_list == NULL)
 		return;
-	}
 
 	list_do = g_task_list;
 	g_task_list = NULL;
@@ -253,9 +244,9 @@ static void _do_deffered_task(void)
 		s_info.is_started_cb_set_task = 0;
 	}
 
-	while (list_do->prev != NULL) {
+	while (list_do->prev != NULL)
 		list_do = list_do->prev;
-	}
+
 
 	while (list_do != NULL) {
 		if (list_do->task_cb != NULL) {
@@ -275,28 +266,27 @@ static void _master_started_cb_service(keynode_t *node,
 	if (notification_ipc_is_master_ready()) {
 		NOTIFICATION_ERR("try to register a notification service");
 		ret = notification_ipc_monitor_deregister();
-		if (ret != NOTIFICATION_ERROR_NONE) {
+		if (ret != NOTIFICATION_ERROR_NONE)
 			NOTIFICATION_ERR("failed to unregister a monitor");
-		}
+
 		ret = notification_ipc_monitor_register();
-		if (ret != NOTIFICATION_ERROR_NONE) {
+		if (ret != NOTIFICATION_ERROR_NONE)
 			NOTIFICATION_ERR("failed to register a monitor");
-		}
+
 	} else {
 		NOTIFICATION_ERR("try to unregister a notification service");
 		ret = notification_ipc_monitor_deregister();
-		if (ret != NOTIFICATION_ERROR_NONE) {
+		if (ret != NOTIFICATION_ERROR_NONE)
 			NOTIFICATION_ERR("failed to deregister a monitor");
-		}
+
 	}
 }
 
 static void _master_started_cb_task(keynode_t *node,
 		void *data) {
 
-	if (notification_ipc_is_master_ready()) {
+	if (notification_ipc_is_master_ready())
 		_do_deffered_task();
-	}
 }
 
 /*!
@@ -307,9 +297,8 @@ notification_op *notification_ipc_create_op(notification_op_type_e type, int num
 	int i = 0;
 	notification_op *op_list = NULL;
 
-	if (num_op <= 0) {
+	if (num_op <= 0)
 		return NULL;
-	}
 
 	op_list = (notification_op *)malloc(sizeof(notification_op) * num_op);
 
@@ -322,12 +311,11 @@ notification_op *notification_ipc_create_op(notification_op_type_e type, int num
 
 	for (i = 0; i < num_op; i++) {
 		(op_list + i)->type = type;
-		if (list_priv_id != NULL) {
+		if (list_priv_id != NULL)
 			(op_list + i)->priv_id = *(list_priv_id + i);
-		}
-		if (noti_list != NULL) {
+
+		if (noti_list != NULL)
 			(op_list + i)->noti = *(noti_list + i);
-		}
 	}
 
 	return op_list;
@@ -340,12 +328,11 @@ static inline char *_dup_string(const char *string)
 {
 	char *ret;
 
-	if (string == NULL) {
+	if (string == NULL)
 		return NULL;
-	}
-	if (string[0] == '\0') {
+
+	if (string[0] == '\0')
 		return NULL;
-	}
 
 	ret = strdup(string);
 	if (!ret)
@@ -356,12 +343,11 @@ static inline char *_dup_string(const char *string)
 
 static inline bundle *_create_bundle_from_string(unsigned char *string)
 {
-	if (string == NULL) {
+	if (string == NULL)
 		return NULL;
-	}
-	if (string[0] == '\0') {
+
+	if (string[0] == '\0')
 		return NULL;
-	}
 
 	return bundle_decode(string, strlen((char *)string));
 }
@@ -492,9 +478,9 @@ EXPORT_API int notification_ipc_make_noti_from_packet(notification_h noti, const
 	noti->b_service_responding = _create_bundle_from_string(b_service_responding);
 	noti->b_service_single_launch = _create_bundle_from_string(b_service_single_launch);
 	noti->b_service_multi_launch = _create_bundle_from_string(b_service_multi_launch);
-	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
+	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++)
 		noti->b_event_handler[i] = _create_bundle_from_string(b_event_handler[i]);
-	}
+
 	noti->domain = _dup_string(domain);
 	noti->dir = _dup_string(dir);
 	noti->b_text = _create_bundle_from_string(b_text);
@@ -554,53 +540,49 @@ EXPORT_API struct packet *notification_ipc_make_packet_from_noti(notification_h 
 	char buf_key[32] = { 0, };
 
 	/* Decode bundle to insert DB */
-	if (noti->args) {
+	if (noti->args)
 		bundle_encode(noti->args, (bundle_raw **) & args, NULL);
-	}
-	if (noti->group_args) {
+
+	if (noti->group_args)
 		bundle_encode(noti->group_args, (bundle_raw **) & group_args,
 			      &b_encode_len);
-	}
 
-	if (noti->b_execute_option) {
+	if (noti->b_execute_option)
 		bundle_encode(noti->b_execute_option,
 			      (bundle_raw **) & b_execute_option, &b_encode_len);
-	}
-	if (noti->b_service_responding) {
+
+	if (noti->b_service_responding)
 		bundle_encode(noti->b_service_responding,
 			      (bundle_raw **) & b_service_responding, &b_encode_len);
-	}
-	if (noti->b_service_single_launch) {
+
+	if (noti->b_service_single_launch)
 		bundle_encode(noti->b_service_single_launch,
 			      (bundle_raw **) & b_service_single_launch, &b_encode_len);
-	}
-	if (noti->b_service_multi_launch) {
+
+	if (noti->b_service_multi_launch)
 		bundle_encode(noti->b_service_multi_launch,
 			      (bundle_raw **) & b_service_multi_launch, &b_encode_len);
-	}
 
 	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
-		if (noti->b_event_handler[i]) {
+		if (noti->b_event_handler[i])
 			bundle_encode(noti->b_event_handler[i],
 					(bundle_raw **) & b_event_handler[i], &b_encode_len);
-		}
+
 	}
 
-	if (noti->b_text) {
+	if (noti->b_text)
 		bundle_encode(noti->b_text, (bundle_raw **) & b_text, &b_encode_len);
-	}
-	if (noti->b_key) {
+
+	if (noti->b_key)
 		bundle_encode(noti->b_key, (bundle_raw **) & b_key, &b_encode_len);
-	}
-	if (noti->b_format_args) {
+
+	if (noti->b_format_args)
 		bundle_encode(noti->b_format_args,
 			      (bundle_raw **) & b_format_args, &b_encode_len);
-	}
 
-	if (noti->b_image_path) {
+	if (noti->b_image_path)
 		bundle_encode(noti->b_image_path,
 			      (bundle_raw **) & b_image_path, &b_encode_len);
-	}
 
 	if (noti->b_key != NULL) {
 		snprintf(buf_key, sizeof(buf_key), "%d",
@@ -616,17 +598,16 @@ EXPORT_API struct packet *notification_ipc_make_packet_from_noti(notification_h 
 		bundle_get_str(noti->b_text, buf_key, &title_key);
 	}
 
-	if (title_key == NULL) {
+	if (title_key == NULL)
 		title_key = noti->caller_pkgname;
-	}
+
 
 	if (packet_type == 1)
 		func_to_create_packet = packet_create;
 	else if (packet_type == 2)
 		func_to_create_packet = packet_create_noack;
-	else {
+	else
 		goto out;
-	}
 
 	result = func_to_create_packet(command,
 			"iiiiisssssssssssssssssssssisisisiiiiiiiiddsssssii",
@@ -682,45 +663,40 @@ EXPORT_API struct packet *notification_ipc_make_packet_from_noti(notification_h 
 
 out:
 	/* Free decoded data */
-	if (args) {
+	if (args)
 		free(args);
-	}
-	if (group_args) {
-		free(group_args);
-	}
 
-	if (b_execute_option) {
+	if (group_args)
+		free(group_args);
+
+	if (b_execute_option)
 		free(b_execute_option);
-	}
-	if (b_service_responding) {
+
+	if (b_service_responding)
 		free(b_service_responding);
-	}
-	if (b_service_single_launch) {
+
+	if (b_service_single_launch)
 		free(b_service_single_launch);
-	}
-	if (b_service_multi_launch) {
+
+	if (b_service_multi_launch)
 		free(b_service_multi_launch);
-	}
 
 	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
-		if (b_event_handler[i]) {
+		if (b_event_handler[i])
 			free(b_event_handler[i]);
-		}
 	}
 
-	if (b_text) {
+	if (b_text)
 		free(b_text);
-	}
-	if (b_key) {
-		free(b_key);
-	}
-	if (b_format_args) {
-		free(b_format_args);
-	}
 
-	if (b_image_path) {
+	if (b_key)
+		free(b_key);
+
+	if (b_format_args)
+		free(b_format_args);
+
+	if (b_image_path)
 		free(b_image_path);
-	}
 
 	return result;
 }
@@ -745,53 +721,48 @@ EXPORT_API struct packet *notification_ipc_make_reply_packet_from_noti(notificat
 	char buf_key[32] = { 0, };
 
 	/* Decode bundle to insert DB */
-	if (noti->args) {
+	if (noti->args)
 		bundle_encode(noti->args, (bundle_raw **) & args, &b_encode_len);
-	}
-	if (noti->group_args) {
+
+	if (noti->group_args)
 		bundle_encode(noti->group_args, (bundle_raw **) & group_args,
 			      &b_encode_len);
-	}
 
-	if (noti->b_execute_option) {
+	if (noti->b_execute_option)
 		bundle_encode(noti->b_execute_option,
 			      (bundle_raw **) & b_execute_option, &b_encode_len);
-	}
-	if (noti->b_service_responding) {
+
+	if (noti->b_service_responding)
 		bundle_encode(noti->b_service_responding,
 			      (bundle_raw **) & b_service_responding, &b_encode_len);
-	}
-	if (noti->b_service_single_launch) {
+
+	if (noti->b_service_single_launch)
 		bundle_encode(noti->b_service_single_launch,
 			      (bundle_raw **) & b_service_single_launch, &b_encode_len);
-	}
-	if (noti->b_service_multi_launch) {
+
+	if (noti->b_service_multi_launch)
 		bundle_encode(noti->b_service_multi_launch,
 			      (bundle_raw **) & b_service_multi_launch, &b_encode_len);
-	}
 
 	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
-		if (noti->b_event_handler[i]) {
+		if (noti->b_event_handler[i])
 			bundle_encode(noti->b_event_handler[i],
 					(bundle_raw **) & b_event_handler[i], &b_encode_len);
-		}
 	}
 
-	if (noti->b_text) {
+	if (noti->b_text)
 		bundle_encode(noti->b_text, (bundle_raw **) & b_text, &b_encode_len);
-	}
-	if (noti->b_key) {
+
+	if (noti->b_key)
 		bundle_encode(noti->b_key, (bundle_raw **) & b_key, &b_encode_len);
-	}
-	if (noti->b_format_args) {
+
+	if (noti->b_format_args)
 		bundle_encode(noti->b_format_args,
 			      (bundle_raw **) & b_format_args, &b_encode_len);
-	}
 
-	if (noti->b_image_path) {
+	if (noti->b_image_path)
 		bundle_encode(noti->b_image_path,
 			      (bundle_raw **) & b_image_path, &b_encode_len);
-	}
 
 	if (noti->b_key != NULL) {
 		snprintf(buf_key, sizeof(buf_key), "%d",
@@ -807,9 +778,8 @@ EXPORT_API struct packet *notification_ipc_make_reply_packet_from_noti(notificat
 		bundle_get_str(noti->b_text, buf_key, &title_key);
 	}
 
-	if (title_key == NULL) {
+	if (title_key == NULL)
 		title_key = noti->caller_pkgname;
-	}
 
 	result = packet_create_reply(packet,
 			"iiiiisssssssssssssssssssssisisisiiiiiiiiddsssssii",
@@ -864,45 +834,41 @@ EXPORT_API struct packet *notification_ipc_make_reply_packet_from_noti(notificat
 			noti->auto_remove);
 
 	/* Free decoded data */
-	if (args) {
+	if (args)
 		free(args);
-	}
-	if (group_args) {
-		free(group_args);
-	}
 
-	if (b_execute_option) {
+	if (group_args)
+		free(group_args);
+
+	if (b_execute_option)
 		free(b_execute_option);
-	}
-	if (b_service_responding) {
+
+	if (b_service_responding)
 		free(b_service_responding);
-	}
-	if (b_service_single_launch) {
+
+	if (b_service_single_launch)
 		free(b_service_single_launch);
-	}
-	if (b_service_multi_launch) {
+
+	if (b_service_multi_launch)
 		free(b_service_multi_launch);
-	}
+
 
 	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
-		if (b_event_handler[i]) {
+		if (b_event_handler[i])
 			free(b_event_handler[i]);
-		}
 	}
 
-	if (b_text) {
+	if (b_text)
 		free(b_text);
-	}
-	if (b_key) {
-		free(b_key);
-	}
-	if (b_format_args) {
-		free(b_format_args);
-	}
 
-	if (b_image_path) {
+	if (b_key)
+		free(b_key);
+
+	if (b_format_args)
+		free(b_format_args);
+
+	if (b_image_path)
 		free(b_image_path);
-	}
 
 	return result;
 }
@@ -913,6 +879,7 @@ EXPORT_API struct packet *notification_ipc_make_reply_packet_from_noti(notificat
 static struct packet *_handler_insert(pid_t pid, int handle, const struct packet *packet)
 {
 	notification_h noti = NULL;
+	notification_op *noti_op;
 
 	if (!packet) {
 		NOTIFICATION_ERR("a packet is null");
@@ -930,7 +897,7 @@ static struct packet *_handler_insert(pid_t pid, int handle, const struct packet
 		/* Disable changed cb */
 	} else {
 		/* Enable changed cb */
-		notification_op *noti_op = notification_ipc_create_op(NOTIFICATION_OP_INSERT, 1, &(noti->priv_id), 1, &noti);
+		noti_op = notification_ipc_create_op(NOTIFICATION_OP_INSERT, 1, &(noti->priv_id), 1, &noti);
 		if (noti_op != NULL) {
 			notification_call_changed_cb(noti_op, 1);
 			free(noti_op);
@@ -944,6 +911,7 @@ static struct packet *_handler_insert(pid_t pid, int handle, const struct packet
 static struct packet *_handler_update(pid_t pid, int handle, const struct packet *packet)
 {
 	notification_h noti = NULL;
+	notification_op *noti_op;
 
 	if (!packet) {
 		NOTIFICATION_ERR("a packet is null");
@@ -958,7 +926,7 @@ static struct packet *_handler_update(pid_t pid, int handle, const struct packet
 
 	notification_ipc_make_noti_from_packet(noti, packet);
 
-	notification_op *noti_op = notification_ipc_create_op(NOTIFICATION_OP_UPDATE, 1, &(noti->priv_id), 1, &noti);
+	noti_op = notification_ipc_create_op(NOTIFICATION_OP_UPDATE, 1, &(noti->priv_id), 1, &noti);
 	if (noti_op != NULL) {
 		notification_call_changed_cb(noti_op, 1);
 		free(noti_op);
@@ -971,11 +939,14 @@ static struct packet *_handler_update(pid_t pid, int handle, const struct packet
 
 static struct packet *_handler_refresh(pid_t pid, int handle, const struct packet *packet)
 {
+	notification_op *noti_op;
+
 	if (!packet) {
 		NOTIFICATION_ERR("a packet is null");
 		return NULL;
 	}
-	notification_op *noti_op = notification_ipc_create_op(NOTIFICATION_OP_REFRESH, 1, NULL, 0, NULL);
+
+	noti_op = notification_ipc_create_op(NOTIFICATION_OP_REFRESH, 1, NULL, 0, NULL);
 	if (noti_op != NULL) {
 		notification_call_changed_cb(noti_op, 1);
 		free(noti_op);
@@ -988,13 +959,14 @@ static struct packet *_handler_delete_single(pid_t pid, int handle, const struct
 {
 	int num_deleted = 0;
 	int priv_id = NOTIFICATION_PRIV_ID_NONE;
+	notification_op *noti_op;
 
 	if (!packet) {
 		NOTIFICATION_ERR("a packet is null");
 		return NULL;
 	}
 	if (packet_get(packet, "ii", &num_deleted, &priv_id) == 2) {
-		notification_op *noti_op = notification_ipc_create_op(NOTIFICATION_OP_DELETE, 1, &priv_id, 1, NULL);
+		noti_op = notification_ipc_create_op(NOTIFICATION_OP_DELETE, 1, &priv_id, 1, NULL);
 		if (noti_op != NULL) {
 			notification_call_changed_cb(noti_op, 1);
 			free(noti_op);
@@ -1009,6 +981,7 @@ static struct packet *_handler_delete_multiple(pid_t pid, int handle, const stru
 	int ret = 0;
 	int buf[10] = {0,};
 	int num_deleted = 0;
+	notification_op *noti_op;
 
 	NOTIFICATION_INFO("delete_noti_multiple");
 
@@ -1032,12 +1005,12 @@ static struct packet *_handler_delete_multiple(pid_t pid, int handle, const stru
 	NOTIFICATION_INFO("packet data num deleted:%d", num_deleted);
 
 	int i = 0;
-	for (i = 0 ; i < 10 ; i++) {
+	for (i = 0 ; i < 10 ; i++)
 		NOTIFICATION_INFO("packet data[%d]:%d", i, buf[i]);
-	}
+
 
 	if (ret == 11) {
-		notification_op *noti_op = notification_ipc_create_op(
+		noti_op = notification_ipc_create_op(
 				NOTIFICATION_OP_DELETE, num_deleted, buf, num_deleted, NULL);
 		if (noti_op == NULL) {
 			NOTIFICATION_ERR("notification_ipc_create_op failed");
@@ -1053,6 +1026,7 @@ static struct packet *_handler_delete_multiple(pid_t pid, int handle, const stru
 static int _handler_service_register(pid_t pid, int handle, const struct packet *packet, void *data)
 {
 	int ret;
+	notification_op *noti_op;
 
 	if (!packet) {
 		NOTIFICATION_ERR("Packet is not valid\n");
@@ -1062,7 +1036,7 @@ static int _handler_service_register(pid_t pid, int handle, const struct packet 
 		ret = NOTIFICATION_ERROR_INVALID_PARAMETER;
 	} else {
 		if (ret == 0) {
-			notification_op *noti_op = notification_ipc_create_op(NOTIFICATION_OP_SERVICE_READY, 1, NULL, 1, NULL);
+			noti_op = notification_ipc_create_op(NOTIFICATION_OP_SERVICE_READY, 1, NULL, 1, NULL);
 			if (noti_op != NULL) {
 				notification_call_changed_cb(noti_op, 1);
 				free(noti_op);
@@ -1106,11 +1080,10 @@ static int notification_ipc_monitor_register(void)
 		},
 	};
 
-	if (s_info.initialized == 1) {
+	if (s_info.initialized == 1)
 		return NOTIFICATION_ERROR_NONE;
-	} else {
+	else
 		s_info.initialized = 1;
-	}
 
 	NOTIFICATION_ERR("register a service\n");
 
@@ -1145,9 +1118,8 @@ static int notification_ipc_monitor_register(void)
 
 int notification_ipc_monitor_deregister(void)
 {
-	if (s_info.initialized == 0) {
+	if (s_info.initialized == 0)
 		return NOTIFICATION_ERROR_NONE;
-	}
 
 	com_core_packet_client_fini(s_info.server_fd);
 	s_info.server_fd = NOTIFICATION_ERROR_INVALID_PARAMETER;
@@ -1161,9 +1133,8 @@ int notification_ipc_monitor_init(void)
 {
 	int ret = NOTIFICATION_ERROR_NONE;
 
-	if (notification_ipc_is_master_ready()) {
+	if (notification_ipc_is_master_ready())
 		ret = notification_ipc_monitor_register();
-	}
 
 	if (s_info.is_started_cb_set_svc == 0) {
 		_set_master_started_cb(_master_started_cb_service);
@@ -1222,16 +1193,14 @@ int notification_ipc_request_insert(notification_h noti, int *priv_id)
 		packet_unref(result);
 	} else {
 		NOTIFICATION_ERR("failed to receive answer(insert)");
-		if (notification_ipc_is_master_ready() == 1) {
+		if (notification_ipc_is_master_ready() == 1)
 			return NOTIFICATION_ERROR_PERMISSION_DENIED;
-		} else {
+		else
 			return NOTIFICATION_ERROR_SERVICE_NOT_READY;
-		}
 	}
 
-	if (priv_id != NULL) {
+	if (priv_id != NULL)
 		*priv_id = id;
-	}
 
 	return NOTIFICATION_ERROR_NONE;
 }
@@ -1258,11 +1227,10 @@ int notification_ipc_request_delete_single(notification_type_e type, char *pkgna
 		packet_unref(result);
 	} else {
 		NOTIFICATION_ERR("failed to receive answer(delete)");
-		if (notification_ipc_is_master_ready() == 1) {
+		if (notification_ipc_is_master_ready() == 1)
 			return NOTIFICATION_ERROR_PERMISSION_DENIED;
-		} else {
+		else
 			return NOTIFICATION_ERROR_SERVICE_NOT_READY;
-		}
 	}
 
 	return status;
@@ -1291,11 +1259,10 @@ int notification_ipc_request_delete_multiple(notification_type_e type, char *pkg
 		packet_unref(result);
 	} else {
 		NOTIFICATION_ERR("failed to receive answer(delete multiple)");
-		if (notification_ipc_is_master_ready() == 1) {
+		if (notification_ipc_is_master_ready() == 1)
 			return NOTIFICATION_ERROR_PERMISSION_DENIED;
-		} else {
+		else
 			return NOTIFICATION_ERROR_SERVICE_NOT_READY;
-		}
 	}
 
 	return status;
@@ -1323,11 +1290,10 @@ int notification_ipc_request_update(notification_h noti)
 		packet_unref(result);
 	} else {
 		NOTIFICATION_ERR("failed to receive answer(update)");
-		if (notification_ipc_is_master_ready() == 1) {
+		if (notification_ipc_is_master_ready() == 1)
 			return NOTIFICATION_ERROR_PERMISSION_DENIED;
-		} else {
+		else
 			return NOTIFICATION_ERROR_SERVICE_NOT_READY;
-		}
 	}
 
 	return status;
@@ -1359,9 +1325,9 @@ static int _notification_ipc_update_cb(pid_t pid, int handle, const struct packe
 		}
 	}
 
-	if (cb_item->result_cb != NULL) {
+	if (cb_item->result_cb != NULL)
 		cb_item->result_cb(id, status, cb_item->data);
-	}
+
 	free(cb_item);
 
 	return status;
@@ -1392,11 +1358,11 @@ int notification_ipc_request_update_async(notification_h noti,
 		s_info.server_cl_fd = com_core_packet_client_init(s_info.socket_file, 0, NULL);
 		if (s_info.server_cl_fd < 0) {
 			NOTIFICATION_DBG("Failed to init client: %d", s_info.server_cl_fd);
-		if (notification_ipc_is_master_ready() == 1) {
-			ret = NOTIFICATION_ERROR_PERMISSION_DENIED;
-		} else {
-			ret =  NOTIFICATION_ERROR_SERVICE_NOT_READY;
-		}
+			if (notification_ipc_is_master_ready() == 1)
+				ret = NOTIFICATION_ERROR_PERMISSION_DENIED;
+			else
+				ret =  NOTIFICATION_ERROR_SERVICE_NOT_READY;
+
 			goto fail;
 		}
 		s_info.server_cl_fd_ref_cnt = 1;
@@ -1458,11 +1424,10 @@ int notification_ipc_request_refresh(void)
 		packet_unref(result);
 	} else {
 		NOTIFICATION_ERR("failed to receive answer(refresh)");
-		if (notification_ipc_is_master_ready() == 1) {
+		if (notification_ipc_is_master_ready() == 1)
 			return NOTIFICATION_ERROR_PERMISSION_DENIED;
-		} else {
+		else
 			return NOTIFICATION_ERROR_SERVICE_NOT_READY;
-		}
 	}
 
 	return status;
@@ -1491,11 +1456,10 @@ int notification_ipc_update_setting(notification_setting_h setting)
 		packet_unref(result);
 	} else {
 		NOTIFICATION_ERR("failed to receive answer(delete)");
-		if (notification_ipc_is_master_ready() == 1) {
+		if (notification_ipc_is_master_ready() == 1)
 			return NOTIFICATION_ERROR_PERMISSION_DENIED;
-		} else {
+		else
 			return NOTIFICATION_ERROR_SERVICE_NOT_READY;
-		}
 	}
 
 	return status;
@@ -1534,9 +1498,8 @@ int notification_ipc_update_system_setting(notification_system_setting_h system_
 		}
 	}
 out:
-	if (result) {
+	if (result)
 		packet_unref(result);
-	}
 
 	return status;
 }
@@ -1563,11 +1526,10 @@ int notification_ipc_noti_setting_property_set(const char *pkgname, const char *
 		packet_unref(result);
 	} else {
 		NOTIFICATION_ERR("failed to receive answer(delete)");
-		if (notification_ipc_is_master_ready() == 1) {
+		if (notification_ipc_is_master_ready() == 1)
 			return NOTIFICATION_ERROR_PERMISSION_DENIED;
-		} else {
+		else
 			return NOTIFICATION_ERROR_SERVICE_NOT_READY;
-		}
 	}
 
 	return status;
@@ -1592,17 +1554,16 @@ int notification_ipc_noti_setting_property_get(const char *pkgname, const char *
 			packet_unref(result);
 			return NOTIFICATION_ERROR_IO_ERROR;
 		}
-		if (status == NOTIFICATION_ERROR_NONE && ret != NULL) {
+		if (status == NOTIFICATION_ERROR_NONE && ret != NULL)
 			*value = strdup(ret);
-		}
+
 		packet_unref(result);
 	} else {
 		NOTIFICATION_ERR("failed to receive answer(delete)");
-		if (notification_ipc_is_master_ready() == 1) {
+		if (notification_ipc_is_master_ready() == 1)
 			return NOTIFICATION_ERROR_PERMISSION_DENIED;
-		} else {
+		else
 			return NOTIFICATION_ERROR_SERVICE_NOT_READY;
-		}
 	}
 
 	return status;
@@ -1629,11 +1590,10 @@ int notification_ipc_request_load_noti_by_tag(notification_h noti, const char *p
 		packet_unref(result);
 	} else {
 		NOTIFICATION_ERR("failed to receive answer(load noti by tag)");
-		if (notification_ipc_is_master_ready() == 1) {
+		if (notification_ipc_is_master_ready() == 1)
 			return NOTIFICATION_ERROR_PERMISSION_DENIED;
-		} else {
+		else
 			return NOTIFICATION_ERROR_SERVICE_NOT_READY;
-		}
 	}
 
 	return NOTIFICATION_ERROR_NONE;

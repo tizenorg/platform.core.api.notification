@@ -39,11 +39,11 @@ sqlite3 * notification_db_open(const char *dbfile)
 
 	ret = db_util_open(dbfile, &db, 0);
 	if (ret != SQLITE_OK) {
-		if (ret == SQLITE_PERM) {
+		if (ret == SQLITE_PERM)
 			set_last_result(NOTIFICATION_ERROR_PERMISSION_DENIED);
-		} else {
+		else
 			set_last_result(NOTIFICATION_ERROR_FROM_DB);
-		}
+
 		return NULL;
 	}
 
@@ -54,9 +54,8 @@ int notification_db_close(sqlite3 ** db)
 {
 	int ret = 0;
 
-	if (db == NULL || *db == NULL) {
+	if (db == NULL || *db == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	ret = db_util_close(*db);
 	if (ret != SQLITE_OK) {
@@ -74,12 +73,11 @@ int notification_db_exec(sqlite3 * db, const char *query, int *num_changes)
 	int ret = 0;
 	sqlite3_stmt *stmt = NULL;
 
-	if (db == NULL) {
+	if (db == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
-	if (query == NULL) {
+
+	if (query == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
 
 	ret = sqlite3_prepare_v2(db, query, strlen(query), &stmt, NULL);
 	if (ret != SQLITE_OK) {
@@ -91,9 +89,9 @@ int notification_db_exec(sqlite3 * db, const char *query, int *num_changes)
 	if (stmt != NULL) {
 		ret = sqlite3_step(stmt);
 		if (ret == SQLITE_OK || ret == SQLITE_DONE) {
-			if (num_changes != NULL) {
+			if (num_changes != NULL)
 				*num_changes = sqlite3_changes(db);
-			}
+
 			sqlite3_finalize(stmt);
 		} else {
 			NOTIFICATION_ERR("DB err(%d) : %s", ret,
@@ -113,9 +111,8 @@ char *notification_db_column_text(sqlite3_stmt * stmt, int col)
 	const unsigned char *col_text = NULL;
 
 	col_text = sqlite3_column_text(stmt, col);
-	if (col_text == NULL || col_text[0] == '\0') {
+	if (col_text == NULL || col_text[0] == '\0')
 		return NULL;
-	}
 
 	return strdup((char *)col_text);
 }
@@ -125,9 +122,8 @@ bundle *notification_db_column_bundle(sqlite3_stmt * stmt, int col)
 	const unsigned char *col_bundle = NULL;
 
 	col_bundle = sqlite3_column_text(stmt, col);
-	if (col_bundle == NULL || col_bundle[0] == '\0') {
+	if (col_bundle == NULL || col_bundle[0] == '\0')
 		return NULL;
-	}
 
 	return bundle_decode(col_bundle, strlen((char *)col_bundle));
 }
