@@ -587,11 +587,11 @@ EXPORT_API int notification_get_text(notification_h noti,
 
 				if (ret_variable_int ==
 				    NOTIFICATION_COUNT_POS_LEFT) {
-					notification_noti_get_count(noti->type,
-								    noti->caller_pkgname,
-								    noti->group_id,
-								    noti->priv_id,
-								    &ret_variable_int);
+					notification_get_count(noti->type,
+							noti->caller_pkgname,
+							noti->group_id,
+							noti->priv_id,
+							&ret_variable_int);
 					snprintf(buf_str, sizeof(buf_str),
 						 "%d ", ret_variable_int);
 
@@ -628,12 +628,11 @@ EXPORT_API int notification_get_text(notification_h noti,
 						if (ret_var_type ==
 						    NOTIFICATION_VARIABLE_TYPE_COUNT) {
 							/* Get notification count */
-							notification_noti_get_count
-							    (noti->type,
-							     noti->caller_pkgname,
-							     noti->group_id,
-							     noti->priv_id,
-							     &ret_variable_int);
+							notification_get_count(noti->type,
+									noti->caller_pkgname,
+									noti->group_id,
+									noti->priv_id,
+									&ret_variable_int);
 						} else {
 							/* Get var Value */
 							snprintf(buf_key,
@@ -725,12 +724,11 @@ EXPORT_API int notification_get_text(notification_h noti,
 							if (ret_var_type ==
 							    NOTIFICATION_VARIABLE_TYPE_COUNT) {
 								/* Get notification count */
-								notification_noti_get_count
-								    (noti->type,
-								     noti->caller_pkgname,
-								     noti->group_id,
-								     noti->priv_id,
-								     &ret_variable_int);
+								notification_get_count(noti->type,
+										noti->caller_pkgname,
+										noti->group_id,
+										noti->priv_id,
+										&ret_variable_int);
 							} else {
 								/* Get var Value */
 								snprintf(buf_key,
@@ -820,12 +818,11 @@ EXPORT_API int notification_get_text(notification_h noti,
 
 					if (ret_variable_int ==
 					    NOTIFICATION_COUNT_POS_RIGHT) {
-						notification_noti_get_count
-						    (noti->type,
-						     noti->caller_pkgname,
-						     noti->group_id,
-						     noti->priv_id,
-						     &ret_variable_int);
+						notification_get_count(noti->type,
+								noti->caller_pkgname,
+								noti->group_id,
+								noti->priv_id,
+								&ret_variable_int);
 						snprintf(buf_str,
 							 sizeof(buf_str), " %d",
 							 ret_variable_int);
@@ -1689,7 +1686,7 @@ EXPORT_API notification_h  notification_load_by_tag(const char *tag)
 		return NULL;
 	}
 
-	noti = (notification_h) calloc(1, sizeof(struct _notification));
+	noti = (notification_h)calloc(1, sizeof(struct _notification));
 	if (noti == NULL) {
 		NOTIFICATION_ERR("Failed to alloc a new notification");
 		set_last_result(NOTIFICATION_ERROR_OUT_OF_MEMORY);
@@ -1698,12 +1695,10 @@ EXPORT_API notification_h  notification_load_by_tag(const char *tag)
 		return NULL;
 	}
 
-	ret = notification_noti_get_by_tag(noti, caller_pkgname, (char*)tag);
-
+	ret = notification_ipc_request_load_noti_by_tag(noti, caller_pkgname, (char*)tag);
 	free(caller_pkgname);
 
 	set_last_result(ret);
-
 	if (ret != NOTIFICATION_ERROR_NONE) {
 		notification_free(noti);
 		return NULL;

@@ -40,228 +40,27 @@
 #define NOTIFICATION_PRIVILEGE "http://tizen.org/privilege/notification"
 
 
-static int _get_table_field_data_int(char  **table, int *buf, int index)
-{
-	if ((table == NULL) || (buf == NULL) || (index < 0))  {
-		NOTIFICATION_ERR("table[%p], buf[%p], index[%d]", table, buf, index);
-		return false;
-	}
-
-	if (table[index] != NULL) {
-		*buf = atoi(table[index]);
-		return true;
-	}
-
-	*buf = 0;
-	return false;
-}
-
-static int _get_table_field_data_string(char **table, char **buf, int ucs2, int index)
-{
-	int ret = false;
-
-	if ((table == NULL) || (buf == NULL) || (index < 0))  {
-		NOTIFICATION_ERR("table[%p], buf[%p], index[%d]", table, buf, index);
-		return false;
-	}
-
-	char *pTemp = table[index];
-	int sLen = 0;
-	if (pTemp == NULL) {
-		*buf = NULL;
-	} else {
-		sLen = strlen(pTemp);
-		if (sLen) {
-			*buf = (char *) malloc(sLen + 1);
-			if (*buf == NULL) {
-				NOTIFICATION_ERR("malloc is failed");
-				goto out;
-			}
-			memset(*buf, 0, sLen + 1);
-			strncpy(*buf, pTemp, sLen);
-		} else {
-			*buf = NULL;
-		}
-	}
-
-	ret = true;
-out:
-
-	return ret;
-}
-
-
 
 EXPORT_API int notification_setting_get_setting_array(notification_setting_h *setting_array, int *count)
 {
-	int err = NOTIFICATION_ERROR_NONE;
-	sqlite3 *local_db_handle = NULL;
-	char *sql_query = NULL;
-	char **query_result = NULL;
-	int sql_return;
-	int row_count = 0;
-	int column_count = 0;
-	int i = 0;
-	int col_index = 0;
-	notification_setting_h result_setting_array = NULL;
-
+	int ret = NOTIFICATION_ERROR_NONE;
 	if (setting_array == NULL || count == NULL) {
 		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
-		err =  NOTIFICATION_ERROR_INVALID_PARAMETER;
-		goto out;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
-
-	sql_return = db_util_open(DBPATH, &local_db_handle, 0);
-
-	if (sql_return != SQLITE_OK || local_db_handle == NULL) {
-		NOTIFICATION_ERR("db_util_open failed [%d]", sql_return);
-		err = NOTIFICATION_ERROR_FROM_DB;
-		goto out;
-	}
-
-	sql_query = sqlite3_mprintf("SELECT package_name, allow_to_notify, do_not_disturb_except, visibility_class "
-			"FROM %s "
-			"ORDER BY package_name", NOTIFICATION_SETTING_DB_TABLE);
-
-	if (!sql_query) {
-		NOTIFICATION_ERR("fail to alloc query");
-		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
-		goto out;
-	}
-
-	sql_return = sqlite3_get_table(local_db_handle, sql_query, &query_result, &row_count, &column_count, NULL);
-
-	if (sql_return != SQLITE_OK && sql_return != -1) {
-		NOTIFICATION_ERR("NOTIFICATION_ERROR_FROM_DB failed [%d][%s]", sql_return, sql_query);
-		err = NOTIFICATION_ERROR_FROM_DB;
-		goto out;
-	}
-
-	if (!row_count) {
-		NOTIFICATION_DBG("No setting found...");
-		err = NOTIFICATION_ERROR_NOT_EXIST_ID;
-		goto out;
-	}
-
-	NOTIFICATION_DBG("row_count [%d] column_count [%d]", row_count, column_count);
-	if (!(result_setting_array = (struct notification_setting*)malloc(sizeof(struct notification_setting) * row_count))) {
-		NOTIFICATION_ERR("malloc failed...");
-		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
-		goto out;
-	}
-
-	col_index = column_count;
-
-	for (i = 0; i < row_count; i++) {
-		_get_table_field_data_string(query_result, &(result_setting_array[i].package_name), 1, col_index++);
-		_get_table_field_data_int(query_result, (int*)&(result_setting_array[i].allow_to_notify), col_index++);
-		_get_table_field_data_int(query_result, (int*)&(result_setting_array[i].do_not_disturb_except), col_index++);
-		_get_table_field_data_int(query_result, &(result_setting_array[i].visibility_class), col_index++);
-	}
-
-	*setting_array = result_setting_array;
-	*count = row_count;
-
-out:
-	if (query_result)
-			sqlite3_free_table(query_result);
-
-	if (sql_query)
-		sqlite3_free(sql_query);
-
-	if (local_db_handle) {
-		sql_return = db_util_close(local_db_handle);
-		if (sql_return != SQLITE_OK)
-			NOTIFICATION_WARN("fail to db_util_close - [%d]", sql_return);
-	}
-
-	return err;
+	ret = notification_ipc_request_get_setting_array(setting_array, count);
+	return ret;
 }
 
 EXPORT_API int notification_setting_get_setting_by_package_name(const char *package_name, notification_setting_h *setting)
 {
-	int err = NOTIFICATION_ERROR_NONE;
-	sqlite3 *local_db_handle = NULL;
-	char *sql_query = NULL;
-	char **query_result = NULL;
-	int sql_return;
-	int row_count = 0;
-	int column_count = 0;
-	int i = 0;
-	int col_index = 0;
-	notification_setting_h result_setting_array = NULL;
-
+	int ret = NOTIFICATION_ERROR_NONE;
 	if (package_name == NULL || setting == NULL) {
 		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
-		err =  NOTIFICATION_ERROR_INVALID_PARAMETER;
-		goto out;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
-
-	sql_return = db_util_open(DBPATH, &local_db_handle, 0);
-
-	if (sql_return != SQLITE_OK || local_db_handle == NULL) {
-		NOTIFICATION_ERR("db_util_open failed [%d]", sql_return);
-		err = NOTIFICATION_ERROR_FROM_DB;
-		goto out;
-	}
-
-	sql_query = sqlite3_mprintf("SELECT package_name, allow_to_notify, do_not_disturb_except, visibility_class "
-			"FROM %s "
-			"WHERE package_name = %Q ", NOTIFICATION_SETTING_DB_TABLE, package_name);
-
-	if (!sql_query) {
-		NOTIFICATION_ERR("fail to alloc query");
-		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
-		goto out;
-	}
-
-	sql_return = sqlite3_get_table(local_db_handle, sql_query, &query_result, &row_count, &column_count, NULL);
-
-	if (sql_return != SQLITE_OK && sql_return != -1) {
-		NOTIFICATION_ERR("sqlite3_get_table failed [%d][%s]", sql_return, sql_query);
-		err = NOTIFICATION_ERROR_FROM_DB;
-		goto out;
-	}
-
-	if (!row_count) {
-		NOTIFICATION_DBG("No setting found for [%s]", package_name);
-		err = NOTIFICATION_ERROR_NOT_EXIST_ID;
-		goto out;
-	}
-
-	NOTIFICATION_DBG("row_count [%d] column_count [%d]", row_count, column_count);
-
-	row_count = 1;
-
-	if (!(result_setting_array = (struct notification_setting*)malloc(sizeof(struct notification_setting) * row_count))) {
-		NOTIFICATION_ERR("malloc failed...");
-		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
-		goto out;
-	}
-
-	col_index = column_count;
-
-	_get_table_field_data_string(query_result, &(result_setting_array[i].package_name), 1, col_index++);
-	_get_table_field_data_int(query_result, (int*)&(result_setting_array[i].allow_to_notify), col_index++);
-	_get_table_field_data_int(query_result, (int*)&(result_setting_array[i].do_not_disturb_except), col_index++);
-	_get_table_field_data_int(query_result, &(result_setting_array[i].visibility_class), col_index++);
-
-	*setting = result_setting_array;
-
-out:
-	if (query_result)
-			sqlite3_free_table(query_result);
-
-	if (sql_query)
-		sqlite3_free(sql_query);
-
-	if (local_db_handle) {
-		sql_return = db_util_close(local_db_handle);
-		if (sql_return != SQLITE_OK)
-			NOTIFICATION_WARN("fail to db_util_close - [%d]", sql_return);
-	}
-
-	return err;
+	ret = notification_ipc_request_get_setting_by_package_name(package_name, setting);
+	return ret;
 }
 
 EXPORT_API int notification_setting_get_setting(notification_setting_h *setting)
@@ -473,7 +272,7 @@ EXPORT_API int notification_setting_db_update(const char *package_name, int allo
 	char *sqlbuf = NULL;
 	int sqlret;
 
-	if (package_name == NULL)
+	if (package_name == NULL || strlen(package_name) == 0)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	sqlret = db_util_open(DBPATH, &db, 0);
@@ -794,84 +593,14 @@ EXPORT_API int notification_setting_delete_package(const char *package_id)
 
 EXPORT_API int notification_system_setting_load_system_setting(notification_system_setting_h *system_setting)
 {
-	int err = NOTIFICATION_ERROR_NONE;
-	sqlite3 *local_db_handle = NULL;
-	char *sql_query = NULL;
-	char **query_result = NULL;
-	int sql_return;
-	int row_count = 0;
-	int column_count = 0;
-	int col_index = 0;
-	notification_system_setting_h result_system_setting = NULL;
-
+	int ret = NOTIFICATION_ERROR_NONE;
 	if (system_setting == NULL) {
 		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
-		err =  NOTIFICATION_ERROR_INVALID_PARAMETER;
-		goto out;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
+	ret = notification_ipc_request_load_system_setting(system_setting);
 
-	sql_return = db_util_open(DBPATH, &local_db_handle, 0);
-
-	if (sql_return != SQLITE_OK || local_db_handle == NULL) {
-		NOTIFICATION_ERR("db_util_open failed [%d]", sql_return);
-		err = NOTIFICATION_ERROR_FROM_DB;
-		goto out;
-	}
-
-	sql_query = sqlite3_mprintf("SELECT do_not_disturb, visibility_class "
-			"FROM %s ", NOTIFICATION_SYSTEM_SETTING_DB_TABLE);
-
-	if (!sql_query) {
-		NOTIFICATION_ERR("fail to alloc query");
-		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
-		goto out;
-	}
-
-	sql_return = sqlite3_get_table(local_db_handle, sql_query, &query_result, &row_count, &column_count, NULL);
-
-	if (sql_return != SQLITE_OK && sql_return != -1) {
-		NOTIFICATION_ERR("sqlite3_get_table failed [%d][%s]", sql_return, sql_query);
-		err = NOTIFICATION_ERROR_FROM_DB;
-		goto out;
-	}
-
-	if (!row_count) {
-		NOTIFICATION_DBG("No setting found...");
-		err = NOTIFICATION_ERROR_NOT_EXIST_ID;
-		goto out;
-	}
-
-	NOTIFICATION_DBG("row_count [%d] column_count [%d]", row_count, column_count);
-
-	row_count = 1;
-
-	if (!(result_system_setting = (struct notification_system_setting*)malloc(sizeof(struct notification_system_setting)))) {
-		NOTIFICATION_ERR("malloc failed...");
-		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
-		goto out;
-	}
-
-	col_index = column_count;
-
-	_get_table_field_data_int(query_result, (int*)&(result_system_setting->do_not_disturb), col_index++);
-	_get_table_field_data_int(query_result, &(result_system_setting->visibility_class), col_index++);
-
-	*system_setting = result_system_setting;
-
-out:
-	if (query_result)
-			sqlite3_free_table(query_result);
-
-	if (sql_query)
-		sqlite3_free(sql_query);
-
-	if (local_db_handle) {
-		sql_return = db_util_close(local_db_handle);
-		if (sql_return != SQLITE_OK)
-			NOTIFICATION_WARN("fail to db_util_close - [%d]", sql_return);
-	}
-
-	return err;
+	return ret;
 }
 
 EXPORT_API int notification_system_setting_update_system_setting(notification_system_setting_h system_setting)
@@ -1183,13 +912,13 @@ EXPORT_API int notification_setting_db_set(const char *pkgname, const char *prop
 	int sqlret;
 	const char *column = NULL;
 
-	if (!pkgname)
+	if (!pkgname || strlen(pkgname) == 0)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	if (!property)
+	if (!property || strlen(property) == 0)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	if (!value)
+	if (!value || strlen(value) == 0)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	column = _get_prop_column(property);
@@ -1240,10 +969,10 @@ EXPORT_API int notification_setting_db_get(const char *pkgname, const char *prop
 	int sqlret;
 	const char *column = NULL;
 
-	if (!pkgname)
+	if (!pkgname || strlen(pkgname) == 0)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	if (!property)
+	if (!property || strlen(property) == 0)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	if (!value)

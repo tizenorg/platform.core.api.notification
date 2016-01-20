@@ -21,7 +21,7 @@
 
 #ifndef __NOTIFICATION_INTERNAL_H__
 #define __NOTIFICATION_INTERNAL_H__
-
+#include <glib.h>
 #include <notification_error.h>
 #include <notification_type.h>
 #include <notification_list.h>
@@ -36,6 +36,8 @@ extern "C" {
  */
 
 #define NOTIFICATION_DISPLAY_APP_HEADS_UP NOTIFICATION_DISPLAY_APP_ACTIVE /* To avoid build error */
+#define NOTIFICATION_ERROR (notification_error_quark ())
+GQuark notification_error_quark(void);
 
 /**
  * @brief This function add deferred task. the registered task will be executed when notification service become ready

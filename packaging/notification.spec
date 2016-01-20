@@ -27,6 +27,8 @@ BuildRequires: pkgconfig(elementary)
 BuildRequires: pkgconfig(ecore)
 BuildRequires: pkgconfig(eina)
 BuildRequires: pkgconfig(libtzplatform-config)
+BuildRequires: pkgconfig(gio-2.0)
+BuildRequires: pkgconfig(glib-2.0)
 
 BuildRequires: cmake
 Requires(post): /sbin/ldconfig

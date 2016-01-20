@@ -426,6 +426,7 @@ typedef enum notification_permission_type {
     NOTIFICATION_PERMISSION_TYPE_DELETE = 1,
     NOTIFICATION_PERMISSION_TYPE_UPDATE = 2,
 } notification_permission_type_e;
+
 /**
  * @}
  */

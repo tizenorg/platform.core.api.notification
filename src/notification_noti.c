@@ -38,6 +38,7 @@
 #include <notification_private.h>
 #include <notification_setting.h>
 #include <notification_setting_internal.h>
+#include <notification_setting_service.h>
 
 #define NOTI_BURST_DELETE_UNIT 10
 
@@ -358,7 +359,6 @@ static int _insertion_query_create(notification_h noti, char **query)
 
 	return NOTIFICATION_ERROR_NONE;
 }
-
 
 static int _update_query_create(notification_h noti, char **query)
 {
@@ -742,7 +742,7 @@ static bool _is_allowed_to_notify(const char *caller_package_name)
 	char *package_id = NULL;
 	bool ret = true;
 
-	err = notification_setting_get_setting_by_package_name(caller_package_name, &setting);
+	err = noti_setting_service_get_setting_by_package_name(caller_package_name, &setting);
 	if (err != NOTIFICATION_ERROR_NONE) {
 		/* Retry with package id */
 		err = _get_package_id_by_app_id(caller_package_name, &package_id);
@@ -751,9 +751,9 @@ static bool _is_allowed_to_notify(const char *caller_package_name)
 			NOTIFICATION_ERR("_get_package_id_by_app_id failed [%d]", err);
 			goto out;
 		} else {
-			err = notification_setting_get_setting_by_package_name(package_id, &setting);
+			err = noti_setting_service_get_setting_by_package_name(package_id, &setting);
 			if (err != NOTIFICATION_ERROR_NONE) {
-				NOTIFICATION_ERR("notification_setting_get_setting_by_package_name failed [%d]", err);
+				NOTIFICATION_ERR("noti_setting_service_get_setting_by_package_name failed [%d]", err);
 				goto out;
 			}
 		}
@@ -794,8 +794,8 @@ static int _handle_do_not_disturb_option(notification_h noti)
 	}
 
 	/* Get system setting */
-	if ((err = notification_system_setting_load_system_setting(&system_setting)) != NOTIFICATION_ERROR_NONE) {
-		NOTIFICATION_ERR("notification_system_setting_load_system_setting failed [%d]", err);
+	if ((err = noti_system_setting_load_system_setting(&system_setting)) != NOTIFICATION_ERROR_NONE) {
+		NOTIFICATION_ERR("noti_system_setting_load_system_setting failed [%d]", err);
 		goto out;
 	}
 
@@ -808,7 +808,7 @@ static int _handle_do_not_disturb_option(notification_h noti)
 
 	if (do_not_disturb) {
 		/* Check exception option of the caller package */
-		err = notification_setting_get_setting_by_package_name(noti->caller_pkgname, &setting);
+		err = noti_setting_service_get_setting_by_package_name(noti->caller_pkgname, &setting);
 
 		if (err != NOTIFICATION_ERROR_NONE) {
 			/* Retry with package id */
@@ -818,9 +818,9 @@ static int _handle_do_not_disturb_option(notification_h noti)
 				NOTIFICATION_ERR("_get_package_id_by_app_id failed [%d]", err);
 				goto out;
 			} else {
-				err = notification_setting_get_setting_by_package_name(package_id, &setting);
+				err = noti_setting_service_get_setting_by_package_name(package_id, &setting);
 				if (err != NOTIFICATION_ERROR_NONE) {
-					NOTIFICATION_ERR("notification_setting_get_setting_by_package_name failed [%d]", err);
+					NOTIFICATION_ERR("noti_setting_service_get_setting_by_package_name failed [%d]", err);
 					goto out;
 				}
 			}
@@ -899,7 +899,6 @@ EXPORT_API int notification_noti_insert(notification_h noti)
 	if (ret != NOTIFICATION_ERROR_NONE)
 		goto err;
 
-
 	ret = sqlite3_prepare_v2(db, query, -1, &stmt, NULL);
 	if (ret != SQLITE_OK) {
 		NOTIFICATION_ERR("Insert Query : %s", query);
@@ -926,7 +925,6 @@ EXPORT_API int notification_noti_insert(notification_h noti)
 
 	if (title_key == NULL)
 		title_key = noti->caller_pkgname;
-
 
 	/* Bind query */
 	ret = _notification_noti_bind_query_text(stmt, "$tag", noti->tag);
@@ -982,7 +980,7 @@ err:
 	return ret;
 }
 
-int notification_noti_get_by_priv_id(notification_h noti, char *pkgname, int priv_id)
+EXPORT_API int notification_noti_get_by_priv_id(notification_h noti, char *pkgname, int priv_id)
 {
 	int ret = 0;
 	char *query = NULL;
@@ -1161,7 +1159,6 @@ EXPORT_API int notification_noti_update(notification_h noti)
 	if (_handle_do_not_disturb_option(noti) != NOTIFICATION_ERROR_NONE)
 		NOTIFICATION_WARN("_handle_do_not_disturb_option failed");
 
-
 	/* Check private ID is exist */
 	ret = _notification_noti_check_priv_id(noti, db);
 	if (ret != NOTIFICATION_ERROR_ALREADY_EXIST_ID) {
@@ -1188,11 +1185,13 @@ EXPORT_API int notification_noti_update(notification_h noti)
 		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
 		goto err;
 	}
+
 	ret = _notification_noti_bind_query_double(stmt, "$progress_size", noti->progress_size);
 	if (ret != NOTIFICATION_ERROR_NONE) {
 		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
 		goto err;
 	}
+
 	ret = _notification_noti_bind_query_double(stmt, "$progress_percentage", noti->progress_percentage);
 	if (ret != NOTIFICATION_ERROR_NONE) {
 		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
@@ -1236,7 +1235,7 @@ EXPORT_API int notification_noti_delete_all(notification_type_e type, const char
 	if (!db)
 		return get_last_result();
 
-	if (pkgname == NULL) {
+	if (pkgname == NULL || strlen(pkgname) == 0) {
 		if (type != NOTIFICATION_TYPE_NONE)
 			snprintf(query_where, sizeof(query_where),
 				 "where type = %d ", type);
@@ -1530,11 +1529,11 @@ EXPORT_API int notification_noti_delete_by_priv_id(const char *pkgname, int priv
 EXPORT_API int notification_noti_delete_by_priv_id_get_changes(const char *pkgname, int priv_id, int *num_changes)
 {
 	sqlite3 *db = NULL;
-	char query[NOTIFICATION_QUERY_MAX] = { 0, };
+	char query[NOTIFICATION_QUERY_MAX] = {0, };
 	int ret;
 
 	/* Check pkgname is valid */
-	if (pkgname == NULL)
+	if (pkgname == NULL || strlen(pkgname) == 0)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	/* Open DB */
@@ -1546,6 +1545,7 @@ EXPORT_API int notification_noti_delete_by_priv_id_get_changes(const char *pkgna
 	snprintf(query, sizeof(query), "delete from noti_list "
 		 "where caller_pkgname = '%s' and priv_id = %d", pkgname,
 		 priv_id);
+	NOTIFICATION_DBG("%s", query);
 
 	/* execute DB */
 	ret = notification_db_exec(db, query, num_changes);
@@ -1560,7 +1560,7 @@ EXPORT_API int notification_noti_delete_by_priv_id_get_changes(const char *pkgna
 	return ret;
 }
 
-int notification_noti_get_count(notification_type_e type,
+EXPORT_API int notification_noti_get_count(notification_type_e type,
 						 const char *pkgname,
 						 int group_id, int priv_id,
 						 int *count)
@@ -1691,7 +1691,7 @@ err:
 	return ret;
 }
 
-int notification_noti_get_grouping_list(notification_type_e type,
+EXPORT_API int notification_noti_get_grouping_list(notification_type_e type,
 							 int count,
 							 notification_list_h *
 							 list)
@@ -1790,7 +1790,7 @@ err:
 	return ret;
 }
 
-int notification_noti_get_detail_list(const char *pkgname,
+EXPORT_API int notification_noti_get_detail_list(const char *pkgname,
 						       int group_id,
 						       int priv_id, int count,
 						       notification_list_h *list)
