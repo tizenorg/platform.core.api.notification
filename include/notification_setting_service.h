@@ -34,6 +34,10 @@ int notification_setting_db_get(const char *pkgname, const char *property, char 
 int notification_setting_db_update(const char *package_name, int allow_to_notify, int do_not_disturb_except, int visibility_class);
 int notification_setting_db_update_system_setting(int do_not_disturb, int visibility_class);
 
+int noti_setting_service_get_setting_by_package_name(const char *package_name, notification_setting_h *setting);
+int noti_setting_get_setting_array(notification_setting_h *setting_array, int *count);
+int noti_system_setting_load_system_setting(notification_system_setting_h *system_setting);
+
 #ifdef __cplusplus
 }
 #endif

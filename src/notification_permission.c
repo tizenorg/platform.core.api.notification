@@ -30,34 +30,66 @@
 #include <notification_debug.h>
 #include <notification_ipc.h>
 #include <notification_private.h>
+#include <notification_permission.h>
+#include <cynara-client.h>
 
 #define NOTIFICATION_DB_ACCESS_READ 0
 #define NOTIFICATION_DB_ACCESS_WRITE 1
+#define SMACK_LABEL_LEN 255
 
-#if 0
-int notification_permission_check_by_pid(const char *noti_pkgname, int pid, int access)
+int notification_check_permission()
 {
+	cynara *p_cynara;
+
+	int fd = 0;
 	int ret = 0;
-	char pkgname[512 + 1] = { 0, };
-	bool preload = false;
-	package_manager_compare_result_type_e compare_result;
+	char subject_label[SMACK_LABEL_LEN + 1] = "";
+	char uid[10] = {0,};
+	char *client_session = "";
 
-	/* get pkgname by pid */
-	const char *pkgname = aul_app_get_pkgname_bypid(pid);
-	ret = aul_app_get_pkgname_bypid(pid, pkgname, sizeof(pkgname));
-	if (ret == AUL_R_OK) {
-		if (strcmp(pkgname, noti_pkgname) == 0)
-			return NOTIFICATION_ERROR_NONE;
+	static bool checked_privilege = FALSE;
 
-		package_manager_is_preload_package_by_app_id(pkgname, &preload);
-		if (preload == true)
-			return NOTIFICATION_ERROR_NONE;
+	if (checked_privilege)
+		return NOTIFICATION_ERROR_NONE;
 
-		package_manager_compare_package_cert_info(noti_pkgname, &compare_result);
-		if (compare_result == PACKAGE_MANAGER_COMPARE_MATCH)
-			return NOTIFICATION_ERROR_NONE;
+	ret = cynara_initialize(&p_cynara, NULL);
+	if (ret != CYNARA_API_SUCCESS) {
+		LOGE("cannot init cynara [%d] failed!", ret);
+		ret = NOTIFICATION_ERROR_IO_ERROR;
+		goto out;
 	}
 
-	return NOTIFICATION_ERROR_PERMISSION_DENIED;
+	fd = open("/proc/self/attr/current", O_RDONLY);
+	if (fd < 0) {
+		LOGE("open [%d] failed!", errno);
+		ret = NOTIFICATION_ERROR_IO_ERROR;
+		goto out;
+	}
+
+	ret = read(fd, subject_label, SMACK_LABEL_LEN);
+	if (ret < 0) {
+		LOGE("read [%d] failed!", errno);
+		close(fd);
+		ret = NOTIFICATION_ERROR_IO_ERROR;
+		goto out;
+	}
+	close(fd);
+
+	snprintf(uid, 10, "%d", getuid());
+	ret = cynara_check(p_cynara, subject_label, client_session, uid,
+			"http://tizen.org/privilege/notification");
+	if (ret != CYNARA_API_ACCESS_ALLOWED) {
+		LOGE("cynara access check [%d] failed!", ret);
+		ret = NOTIFICATION_ERROR_PERMISSION_DENIED;
+		goto out;
+	}
+	ret = NOTIFICATION_ERROR_NONE;
+	checked_privilege = TRUE;
+out:
+
+	if (p_cynara)
+		cynara_finish(p_cynara);
+
+	return ret;
 }
-#endif
+

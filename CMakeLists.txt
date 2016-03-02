@@ -20,7 +20,9 @@ SET(SRCS
 	./src/notification_status.c
 	./src/notification_ipc.c
 	./src/notification_setting.c
+	./src/notification_setting_service.c
 	./src/notification_internal.c
+	./src/notification_error.c
 	./src/notification_old.c)
 SET(HEADERS-DEVEL
 	./include/notification.h
@@ -64,6 +66,7 @@ pkg_check_modules(pkgs REQUIRED
 	ecore
 	eina
 	libtzplatform-config
+	gio-2.0
 )
 
 FOREACH(flag ${pkgs_CFLAGS})

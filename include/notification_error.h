@@ -51,7 +51,7 @@ typedef enum _notification_error {
 	NOTIFICATION_ERROR_INVALID_OPERATION = TIZEN_ERROR_INVALID_OPERATION, /**< Function not implemented (@b Since: 2.4) */
 } notification_error_e;
 
-/** 
+/**
  * @}
  */
 

@@ -532,17 +532,11 @@ EXPORT_API int notification_delete_group_by_group_id(const char *pkgname,
 		caller_pkgname = strdup(pkgname);
 
 	ret = notification_ipc_request_delete_multiple(type, caller_pkgname);
-	if (ret != NOTIFICATION_ERROR_NONE) {
-		if (caller_pkgname)
-			free(caller_pkgname);
-
-		return ret;
-	}
 
 	if (caller_pkgname)
 		free(caller_pkgname);
 
-	return NOTIFICATION_ERROR_NONE;
+	return ret;
 }
 
 EXPORT_API int notification_delete_group_by_priv_id(const char *pkgname,
@@ -558,17 +552,11 @@ EXPORT_API int notification_delete_group_by_priv_id(const char *pkgname,
 		caller_pkgname = strdup(pkgname);
 
 	ret = notification_ipc_request_delete_single(type, caller_pkgname, priv_id);
-	if (ret != NOTIFICATION_ERROR_NONE) {
-		if (caller_pkgname)
-			free(caller_pkgname);
-
-		return ret;
-	}
 
 	if (caller_pkgname)
 		free(caller_pkgname);
 
-	return NOTIFICATION_ERROR_NONE;
+	return ret;
 }
 
 EXPORT_API int notification_get_count(notification_type_e type,
@@ -577,20 +565,27 @@ EXPORT_API int notification_get_count(notification_type_e type,
 						       int priv_id, int *count)
 {
 	int ret = 0;
-	int noti_count = 0;
+	char *caller_pkgname = NULL;
 
 	if (count == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	ret =
-	    notification_noti_get_count(type, pkgname, group_id, priv_id,
-					&noti_count);
-	if (ret != NOTIFICATION_ERROR_NONE)
-		return ret;
+	if (pkgname == NULL)
+		caller_pkgname = notification_get_pkgname_by_pid();
+	else
+		caller_pkgname = strdup(pkgname);
 
-	*count = noti_count;
+	ret = notification_ipc_request_get_count(
+			type,
+			caller_pkgname,
+			group_id,
+			priv_id,
+			count);
 
-	return NOTIFICATION_ERROR_NONE;
+	if (caller_pkgname)
+		free(caller_pkgname);
+
+	return ret;
 }
 
 EXPORT_API int notification_clear(notification_type_e type)
@@ -825,13 +820,13 @@ EXPORT_API notification_h notification_load(char *pkgname,
 	int ret = 0;
 	notification_h noti = NULL;
 
-	noti = (notification_h) calloc(1, sizeof(struct _notification));
+	noti = (notification_h)calloc(1, sizeof(struct _notification));
 	if (noti == NULL) {
 		NOTIFICATION_ERR("NO MEMORY : noti == NULL");
 		return NULL;
 	}
 
-	ret = notification_noti_get_by_priv_id(noti, pkgname, priv_id);
+	ret = notification_ipc_request_load_noti_by_priv_id(noti, pkgname, priv_id);
 	if (ret != NOTIFICATION_ERROR_NONE) {
 		notification_free(noti);
 		return NULL;

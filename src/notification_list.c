@@ -28,6 +28,8 @@
 #include <notification_noti.h>
 #include <notification_debug.h>
 #include <notification_private.h>
+#include <notification_ipc.h>
+
 
 struct _notification_list {
 	notification_list_h prev;
@@ -233,11 +235,12 @@ EXPORT_API int notification_get_list(notification_type_e type,
 	if (list == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	ret = notification_noti_get_grouping_list(type, count, &get_list);
+	ret = notification_ipc_request_load_noti_grouping_list(type, count, &get_list);
 	if (ret != NOTIFICATION_ERROR_NONE)
 		return ret;
 
-	*list = get_list;
+	if (get_list != NULL)
+		*list = notification_list_get_head(get_list);
 
 	return NOTIFICATION_ERROR_NONE;
 }
@@ -255,12 +258,13 @@ EXPORT_API int notification_get_detail_list(const char *pkgname,
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	ret =
-	    notification_noti_get_detail_list(pkgname, group_id, priv_id, count,
+	    notification_ipc_request_load_noti_detail_list(pkgname, group_id, priv_id, count,
 					      &get_list);
 	if (ret != NOTIFICATION_ERROR_NONE)
 		return ret;
 
-	*list = get_list;
+	if (get_list != NULL)
+		*list = notification_list_get_head(get_list);
 
 	return NOTIFICATION_ERROR_NONE;
 }
