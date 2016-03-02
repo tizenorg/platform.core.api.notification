@@ -40,6 +40,10 @@
 #include <notification_setting_internal.h>
 #include <notification_list.h>
 #include <notification_text_domain.h>
+#include <tzplatform_config.h>
+
+#define PATH_FMT_RO_APP_ROOT tzplatform_getenv(TZ_SYS_RO_APP)
+#define TIZEN_PATH_MAX 1024
 
 /*-----------------------------------------------------------------------------------------*/
 /* types */
@@ -267,6 +271,7 @@ static int testapp_test_post_notification_on_indicator()
 {
 	notification_h noti_handle = NULL;
 	int noti_err = NOTIFICATION_ERROR_NONE;
+	char image_path[TIZEN_PATH_MAX] = {0, };
 
 	noti_handle = notification_create(NOTIFICATION_TYPE_ONGOING);
 
@@ -275,7 +280,8 @@ static int testapp_test_post_notification_on_indicator()
 		goto FINISH_OFF;
 	}
 
-	noti_err  = notification_set_image(noti_handle, NOTIFICATION_IMAGE_TYPE_ICON_FOR_INDICATOR, "/usr/apps/org.tizen.indicator/res/icons/Shealth/B03_shealth.png");
+	snprintf(image_path, TIZEN_PATH_MAX, "%s/org.tizen.indicator/res/icons/Shealth/B03_shealth.png", PATH_FMT_RO_APP_ROOT);
+	noti_err  = notification_set_image(noti_handle, NOTIFICATION_IMAGE_TYPE_ICON_FOR_INDICATOR, image_path);
 	/*
 	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_TITLE, "I'm Title", "TITLE", NOTIFICATION_VARIABLE_TYPE_NONE);
 	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_CONTENT, "I'm Content", "This is very loooooooooooooooooooooooooooooooooooooooooong message", NOTIFICATION_VARIABLE_TYPE_NONE);

@@ -28,7 +28,7 @@ INCLUDE_DIRECTORIES(
 )
 
 INCLUDE(FindPkgConfig)
-pkg_check_modules(test_app_pkgs REQUIRED glib-2.0 gthread-2.0 vconf appsvc capi-appfw-application)
+pkg_check_modules(test_app_pkgs REQUIRED glib-2.0 gthread-2.0 vconf appsvc capi-appfw-application libtzplatform-config)
 
 FOREACH(flag ${test_app_pkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")
