@@ -991,6 +991,7 @@ int notification_ipc_request_load_noti_grouping_list(notification_type_e type, i
 	GVariant *iter_body;
 	GVariantIter *iter;
 	notification_h noti;
+	GVariant *noti_body;
 
 	result = _dbus_init();
 	if (result != NOTIFICATION_ERROR_NONE) {
@@ -1007,7 +1008,8 @@ int notification_ipc_request_load_noti_grouping_list(notification_type_e type, i
 
 		while (g_variant_iter_loop(iter, "(v)", &iter_body)) {
 			noti = notification_create(NOTIFICATION_TYPE_NOTI);
-			notification_ipc_make_noti_from_gvariant(noti, iter_body);
+			g_variant_get(iter_body, "(v)", &noti_body);
+			notification_ipc_make_noti_from_gvariant(noti, noti_body);
 			_print_noti(noti);
 			*list = notification_list_append(*list, noti);
 		}
@@ -1034,6 +1036,7 @@ int notification_ipc_request_load_noti_detail_list(const char *pkgname,
 	GVariant *iter_body;
 	GVariantIter *iter;
 	notification_h noti;
+	GVariant *noti_body;
 
 	result = _dbus_init();
 	if (result != NOTIFICATION_ERROR_NONE) {
@@ -1050,7 +1053,8 @@ int notification_ipc_request_load_noti_detail_list(const char *pkgname,
 
 		while (g_variant_iter_loop(iter, "(v)", &iter_body)) {
 			noti = notification_create(NOTIFICATION_TYPE_NOTI);
-			notification_ipc_make_noti_from_gvariant(noti, iter_body);
+			g_variant_get(iter_body, "(v)", &noti_body);
+			notification_ipc_make_noti_from_gvariant(noti, noti_body);
 			_print_noti(noti);
 			*list = notification_list_append(*list, noti);
 		}
