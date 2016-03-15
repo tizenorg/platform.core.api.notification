@@ -55,7 +55,6 @@ pkg_check_modules(pkgs REQUIRED
 	appsvc
 	dbus-1
 	dbus-glib-1
-	com-core
 	appcore-common
 	capi-appfw-application
 	capi-appfw-app-manager
