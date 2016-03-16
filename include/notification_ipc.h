@@ -59,8 +59,6 @@ int notification_ipc_request_delete_multiple(notification_type_e type, char *pkg
 int notification_ipc_request_delete_single(notification_type_e type, char *pkgname, int priv_id);
 int notification_ipc_update_setting(notification_setting_h setting);
 int notification_ipc_update_system_setting(notification_system_setting_h system_setting);
-int notification_ipc_noti_setting_property_set(const char *pkgname, const char *property, const char *value);
-int notification_ipc_noti_setting_property_get(const char *pkgname, const char *property, char **value);
 int notification_ipc_request_load_noti_by_tag(notification_h noti, const char *pkgname, const char *tag);
 int notification_ipc_request_load_noti_grouping_list(notification_type_e type, int count,
 		notification_list_h *list);

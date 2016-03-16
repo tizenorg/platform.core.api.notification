@@ -65,6 +65,7 @@ pkg_check_modules(pkgs REQUIRED
 	ecore
 	eina
 	libtzplatform-config
+	glib-2.0
 	gio-2.0
 )
 

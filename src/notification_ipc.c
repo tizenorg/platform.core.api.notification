@@ -51,59 +51,6 @@ static int monitor_id = 0;
 static int provider_monitor_id = 0;
 static int is_master_started = 0;
 
-static const char *NOTI_DATA_STRING[] = {
-    "NOTIFICATION_DATA_TYPE_NOTI_TYPE",
-    "NOTIFICATION_DATA_TYPE_LAYOUT",
-    "NOTIFICATION_DATA_TYPE_GROUP_ID",
-    "NOTIFICATION_DATA_TYPE_INTERNAL_GROUP_ID",
-    "NOTIFICATION_DATA_TYPE_PRIV_ID",
-    "NOTIFICATION_DATA_TYPE_CALLER_PKGNAME",
-    "NOTIFICATION_DATA_TYPE_LAUNCH_PKGNAME",
-    "NOTIFICATION_DATA_TYPE_ARGS",
-    "NOTIFICATION_DATA_TYPE_GROUP_ARGS",
-    "NOTIFICATION_DATA_TYPE_EXECUTE_OPTION",
-    "NOTIFICATION_DATA_TYPE_SERVICE_RESPONDING",
-    "NOTIFICATION_DATA_TYPE_SERVICE_SINGLE_LAUNCH",
-    "NOTIFICATION_DATA_TYPE_SERVICE_MULTI_LAUNCH",
-    "NOTIFICATION_DATA_TYPE_BUTTON1_EVENT",
-    "NOTIFICATION_DATA_TYPE_BUTTON2_EVENT",
-    "NOTIFICATION_DATA_TYPE_BUTTON3_EVENT",
-    "NOTIFICATION_DATA_TYPE_BUTTON4_EVENT",
-    "NOTIFICATION_DATA_TYPE_BUTTON5_EVENT",
-    "NOTIFICATION_DATA_TYPE_BUTTON6_EVENT",
-    "NOTIFICATION_DATA_TYPE_ICON_EVENT",
-    "NOTIFICATION_DATA_TYPE_THUMBNAIL_EVENT",
-    "NOTIFICATION_DATA_TYPE_DOMAIN",
-    "NOTIFICATION_DATA_TYPE_DIR",
-    "NOTIFICATION_DATA_TYPE_TEXT",
-    "NOTIFICATION_DATA_TYPE_KEY",
-    "NOTIFICATION_DATA_TYPE_FORMAT_ARGS",
-    "NOTIFICATION_DATA_TYPE_NUM_FORMAT_ARGS",
-    "NOTIFICATION_DATA_TYPE_IMAGE_PATH",
-    "NOTIFICATION_DATA_TYPE_SOUND_TYPE",
-    "NOTIFICATION_DATA_TYPE_SOUND_PATH",
-    "NOTIFICATION_DATA_TYPE_VIBRATION_TYPE",
-    "NOTIFICATION_DATA_TYPE_VIBRATION_PATH",
-    "NOTIFICATION_DATA_TYPE_LED_OPERATION",
-    "NOTIFICATION_DATA_TYPE_LED_ARGB",
-    "NOTIFICATION_DATA_TYPE_LED_ON_MS",
-    "NOTIFICATION_DATA_TYPE_LED_OFF_MS",
-    "NOTIFICATION_DATA_TYPE_TIME",
-    "NOTIFICATION_DATA_TYPE_INSERT_TIME",
-    "NOTIFICATION_DATA_TYPE_FLAGS_FOR_PROPERTY",
-    "NOTIFICATION_DATA_TYPE_DISPLAY_APPLIST",
-    "NOTIFICATION_DATA_TYPE_PROGRESS_SIZE",
-    "NOTIFICATION_DATA_TYPE_PROGRESS_PERCENTAGE",
-    "NOTIFICATION_DATA_TYPE_APP_ICON_PATH",
-    "NOTIFICATION_DATA_TYPE_APP_NAME",
-    "NOTIFICATION_DATA_TYPE_TEMP_TITLE",
-    "NOTIFICATION_DATA_TYPE_TEMP_CONTENT",
-    "NOTIFICATION_DATA_TYPE_TAG",
-    "NOTIFICATION_DATA_TYPE_ONGOING_FLAG",
-    "NOTIFICATION_DATA_TYPE_AUTO_REMOVE",
-};
-
-
 typedef struct _result_cb_item {
 	void (*result_cb)(int priv_id, int result, void *data);
 	void *data;
@@ -1256,63 +1203,6 @@ int notification_ipc_update_system_setting(notification_system_setting_h system_
 		g_object_unref(reply);
 
 	NOTIFICATION_DBG("notification_ipc_update_system_setting done [result: %d]", result);
-	return result;
-}
-
-int notification_ipc_noti_setting_property_set(const char *pkgname, const char *property, const char *value)
-{
-	int result;
-	GDBusMessage *reply = NULL;
-	GVariant *body;
-
-	result = _dbus_init();
-	if (result != NOTIFICATION_ERROR_NONE) {
-		NOTIFICATION_ERR("Can't init dbus %d", result);
-		return result;
-	}
-	body = g_variant_new("(sss)", pkgname, property, value);
-
-	result = _send_sync_noti(body, &reply, "set_noti_property");
-
-	if (reply)
-		g_object_unref(reply);
-
-	NOTIFICATION_DBG("notification_ipc_noti_setting_property_set done [result: %d]", result);
-	return result;
-}
-
-int notification_ipc_noti_setting_property_get(const char *pkgname, const char *property, char **value)
-{
-	int result;
-	GDBusMessage *reply = NULL;
-	GVariant *body;
-	GVariant *reply_body = NULL;
-	gchar *ret_val;
-
-	result = _dbus_init();
-
-	if (result != NOTIFICATION_ERROR_NONE) {
-		NOTIFICATION_ERR("Can't init dbus %d", result);
-		return result;
-	}
-
-	body = g_variant_new("(ss)", pkgname, property);
-	result = _send_sync_noti(body, &reply, "get_noti_property");
-
-	if (result == NOTIFICATION_ERROR_NONE) {
-		reply_body = g_dbus_message_get_body(reply);
-		g_variant_get(body, "(s)", &ret_val);
-
-		if (ret_val != NULL) {
-			*value = g_strdup(ret_val);
-			g_free(ret_val);
-		}
-	}
-
-	if(reply)
-		g_object_unref(reply);
-
-	NOTIFICATION_DBG("notification_ipc_noti_setting_property_get done [result: %d]", result);
 	return result;
 }
 
