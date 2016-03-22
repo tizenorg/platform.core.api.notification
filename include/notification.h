@@ -1466,28 +1466,6 @@ int notification_set_auto_remove(notification_h noti, bool auto_remove);
  */
 int notification_get_auto_remove(notification_h noti, bool *auto_remove);
 
-/* For backward compatibility */
-/**
- * @brief Wait for a response coming for this notification
- * @details The notification should have the EXECUTE_TYPE_RESPONDING flag
- * @remarks
- * @param[in] noti notification handle
- * @param[in] timeout in seconds - 0 for infinite
- * @param[out] integer response
- * @param[out] text response
- * @return NOTIFICATION_ERROR_NONE if success, other value if failure
- * @retval NOTIFICATION_ERROR_NONE - success
- * @retval NOTIFICATION_ERROR_INVALID_PARAMETER - invalid parameter
- * @retval NOTIFICATION_ERROR_OUT_OF_MEMORY - not enough memory
- * @pre notification handle should be created by notification_new().
- * @post
- * @see
- */
-int notification_wait_response(notification_h noti,
-						int timeout,
-						int *respi,
-						char **respc);
-
 /**
  * @}
  */
