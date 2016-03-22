@@ -1435,7 +1435,7 @@ static gboolean _variant_to_int_dict(GHashTable **dict, GVariant *variant) {
 	while (g_variant_iter_next(&iter, "{iv}", &key, &value)) {
 		hash_key = (int *)calloc(sizeof(int), 1);
 		if (hash_key == NULL) {
-			g_hash_table_remove_all(*dict);
+			g_hash_table_unref(*dict);
 			return FALSE;
 		}
 		*hash_key = key;
@@ -1589,7 +1589,7 @@ EXPORT_API int notification_ipc_make_noti_from_gvariant(notification_h noti,
 	noti->temp_content = _dup_string(temp_content);
 	noti->tag = _dup_string(tag);
 
-	g_hash_table_remove_all(dict);
+	g_hash_table_unref(dict);
 
 	return NOTIFICATION_ERROR_NONE;
 }

@@ -173,6 +173,8 @@ int notification_group_get_badge(const char *pkgname,
 		NOTIFICATION_ERR("Select Query : %s", query);
 		NOTIFICATION_ERR("Select DB error(%d) : %s", ret,
 				 sqlite3_errmsg(db));
+		if (db)
+			notification_db_close(&db);
 
 		return NOTIFICATION_ERROR_FROM_DB;
 	}

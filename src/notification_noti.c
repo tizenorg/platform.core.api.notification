@@ -940,18 +940,12 @@ EXPORT_API int notification_noti_insert(notification_h noti)
 	ret = _notification_noti_bind_query_double(stmt, "$progress_size", noti->progress_size);
 	if (ret != NOTIFICATION_ERROR_NONE) {
 		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
-		if (stmt)
-			sqlite3_finalize(stmt);
-
-		return ret;
+		goto err;
 	}
 	ret = _notification_noti_bind_query_double(stmt, "$progress_percentage", noti->progress_percentage);
 	if (ret != NOTIFICATION_ERROR_NONE) {
 		NOTIFICATION_ERR("Bind error : %s", sqlite3_errmsg(db));
-		if (stmt)
-			sqlite3_finalize(stmt);
-
-		return ret;
+		goto err;
 	}
 
 	ret = sqlite3_step(stmt);
@@ -1917,6 +1911,8 @@ EXPORT_API int notification_noti_check_tag(notification_h noti)
 	ret = sqlite3_prepare_v2(db, "SELECT priv_id FROM noti_list WHERE caller_pkgname = ? and tag = ?", -1, &stmt, NULL);
 	if (ret != SQLITE_OK) {
 		NOTIFICATION_ERR("Error: %s\n", sqlite3_errmsg(db));
+		if (db)
+			notification_db_close(&db);
 		return NOTIFICATION_ERROR_OUT_OF_MEMORY;
 	}
 
@@ -1949,6 +1945,8 @@ EXPORT_API int notification_noti_check_tag(notification_h noti)
 	}
 
 err:
+	if (db)
+		notification_db_close(&db);
 
 	return ret;
 }
