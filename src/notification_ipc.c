@@ -76,11 +76,13 @@ static void _print_noti(notification_h noti) {
 	char *text = NULL;
 	char *content = NULL;
 	const char *tag = NULL;
+	notification_vibration_type_e vib_type = NOTIFICATION_VIBRATION_TYPE_NONE;
 
 	notification_get_pkgname(noti, &pkgname);
 	notification_get_text(noti, NOTIFICATION_TEXT_TYPE_TITLE, &text);
 	notification_get_text(noti, NOTIFICATION_TEXT_TYPE_CONTENT, &content);
 	notification_get_tag(noti, &tag);
+	notification_get_vibration(noti, &vib_type, NULL);
 
 	NOTIFICATION_DBG("client print_noti  pkgname  = %s ", pkgname );
 	NOTIFICATION_DBG("client print_noti  title  = %s ", text );
@@ -88,6 +90,7 @@ static void _print_noti(notification_h noti) {
 	NOTIFICATION_DBG("client print_noti  tag  = %s ", tag );
 	NOTIFICATION_DBG("client print_noti  priv_id  = %d ", noti->priv_id);
 	NOTIFICATION_DBG("client print_noti  vibration_path  = %s ", noti->vibration_path);
+	NOTIFICATION_DBG("client print_noti  vibration_type  = %d ", vib_type);
 }
 
 static inline char *_string_get(char *string)
@@ -816,6 +819,9 @@ int notification_ipc_request_delete_multiple(notification_type_e type, char *pkg
 		return result;
 	}
 
+	if (!pkgname)
+		pkgname = "";
+
 	body = g_variant_new("(si)", pkgname, type);
 	result = _send_sync_noti(body, &reply, "del_noti_multiple");
 
@@ -844,6 +850,9 @@ int notification_ipc_request_load_noti_by_tag(notification_h noti, const char *p
 		NOTIFICATION_ERR("Can't init dbus %d", result);
 		return result;
 	}
+
+	if (!pkgname)
+		pkgname = "";
 
 	body = g_variant_new("(ss)", pkgname, tag);
 	result = _send_sync_noti(body, &reply, "load_noti_by_tag");
@@ -879,6 +888,9 @@ int notification_ipc_request_load_noti_by_priv_id(notification_h noti, const cha
 		return result;
 	}
 
+	if (!pkgname)
+		pkgname = "";
+
 	body = g_variant_new("(si)", pkgname, priv_id);
 	result = _send_sync_noti(body, &reply, "load_noti_by_priv_id");
 
@@ -912,6 +924,9 @@ int notification_ipc_request_get_count(notification_type_e type,
 		NOTIFICATION_ERR("Can't init dbus %d", result);
 		return result;
 	}
+
+	if (!pkgname)
+		pkgname = "";
 
 	body = g_variant_new("(isii)", type, pkgname, group_id, priv_id);
 	result = _send_sync_noti(body, &reply, "get_noti_count");
@@ -1351,8 +1366,7 @@ EXPORT_API GVariant *notification_ipc_make_gvariant_from_noti(notification_h not
 	if (noti->sound_path)
 		g_variant_builder_add(&builder, "{iv}", NOTIFICATION_DATA_TYPE_SOUND_PATH, g_variant_new_string((const gchar *)noti->sound_path));
 
-	if (noti->vibration_type != NOTIFICATION_VIBRATION_TYPE_NONE)
-		g_variant_builder_add(&builder, "{iv}", NOTIFICATION_DATA_TYPE_VIBRATION_TYPE, g_variant_new_int32(noti->vibration_type));
+	g_variant_builder_add(&builder, "{iv}", NOTIFICATION_DATA_TYPE_VIBRATION_TYPE, g_variant_new_int32(noti->vibration_type));
 
 	if (noti->vibration_path)
 		g_variant_builder_add(&builder, "{iv}", NOTIFICATION_DATA_TYPE_VIBRATION_PATH, g_variant_new_string((const gchar *)noti->vibration_path));

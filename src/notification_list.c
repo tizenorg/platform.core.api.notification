@@ -254,7 +254,7 @@ EXPORT_API int notification_get_detail_list(const char *pkgname,
 	notification_list_h get_list = NULL;
 	int ret = 0;
 
-	if (list == NULL)
+	if (list == NULL || pkgname == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	ret =

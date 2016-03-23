@@ -1009,7 +1009,7 @@ EXPORT_API int notification_noti_get_by_priv_id(notification_h noti, char *pkgna
 			 "flags_for_property, display_applist, progress_size, progress_percentage, ongoing_flag, auto_remove "
 			 "from noti_list ";
 
-	if (pkgname != NULL)
+	if (pkgname != NULL && strlen(pkgname) != 0)
 		query = sqlite3_mprintf("%s where caller_pkgname = '%s' and priv_id = %d",
 				base_query, pkgname, priv_id);
 	else
@@ -1067,7 +1067,7 @@ EXPORT_API int notification_noti_get_by_tag(notification_h noti, char *pkgname, 
 	if (!db)
 		return get_last_result();
 
-	if (pkgname != NULL) {
+	if (pkgname != NULL && strlen(pkgname) != 0) {
 		ret = sqlite3_prepare_v2(db, "select "
 			 "type, layout, caller_pkgname, launch_pkgname, image_path, group_id, priv_id, "
 			 "tag, b_text, b_key, b_format_args, num_format_args, "
@@ -1590,7 +1590,7 @@ EXPORT_API int notification_noti_get_count(notification_type_e type,
 	snprintf(query_base, sizeof(query_base),
 		 "select count(*) from noti_list ");
 
-	if (pkgname != NULL) {
+	if (pkgname != NULL && strlen(pkgname) != 0) {
 		if (group_id == NOTIFICATION_GROUP_ID_NONE) {
 			if (priv_id == NOTIFICATION_PRIV_ID_NONE) {
 				snprintf(query_where, sizeof(query_where),
