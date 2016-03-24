@@ -41,6 +41,7 @@
 #include <notification_setting_service.h>
 
 #define NOTI_BURST_DELETE_UNIT 10
+#define ERR_BUFFER_SIZE		1024
 
 static void __free_and_set(void **target_ptr, void *new_ptr)
 {
@@ -1223,6 +1224,7 @@ EXPORT_API int notification_noti_delete_all(notification_type_e type, const char
 	char query[NOTIFICATION_QUERY_MAX] = { 0, };
 	char query_base[NOTIFICATION_QUERY_MAX] = { 0, };
 	char query_where[NOTIFICATION_QUERY_MAX] = { 0, };
+	char err_buf[ERR_BUFFER_SIZE];
 
 	/* Open DB */
 	db = notification_db_open(DBPATH);
@@ -1271,7 +1273,7 @@ EXPORT_API int notification_noti_delete_all(notification_type_e type, const char
 				if (tmp) {
 					*list_deleted_rowid = tmp;
 				} else {
-					NOTIFICATION_ERR("Heap: %s\n", strerror(errno));
+					NOTIFICATION_ERR("Heap: %s\n", strerror_r(errno, err_buf, sizeof(err_buf)));
 					/*!
 					 * \TODO
 					 * How can I handle this?

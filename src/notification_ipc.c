@@ -44,6 +44,7 @@
 #define DBUS_SERVICE_DBUS "org.freedesktop.DBus"
 #define DBUS_PATH_DBUS "/org/freedesktop/DBus"
 #define DBUS_INTERFACE_DBUS "org.freedesktop.DBus"
+#define ERR_BUFFER_SIZE		1024
 
 static const gchar *_bus_name = NULL;
 static GDBusConnection *_gdbus_conn = NULL;
@@ -290,6 +291,7 @@ static notification_op *_ipc_create_op(notification_op_type_e type,
 static inline char *_dup_string(const char *string)
 {
 	char *ret;
+	char err_buf[ERR_BUFFER_SIZE];
 
 	if (string == NULL)
 		return NULL;
@@ -298,7 +300,7 @@ static inline char *_dup_string(const char *string)
 
 	ret = strdup(string);
 	if (!ret)
-		NOTIFICATION_ERR("Error: %s\n", strerror(errno));
+		NOTIFICATION_ERR("Error: %s\n", strerror_r(errno, err_buf, sizeof(err_buf)));
 
 	return ret;
 }
@@ -540,8 +542,12 @@ static int _send_sync_noti(GVariant *body, GDBusMessage **reply, char *cmd)
 	}
 
 	if (g_dbus_message_to_gerror(*reply, &err)) {
-		ret = err->code;
-		NOTIFICATION_ERR("_send_sync_noti cmd = %s, error %s", cmd, err->message);
+		if (err->code == G_DBUS_ERROR_ACCESS_DENIED)
+			ret = NOTIFICATION_ERROR_PERMISSION_DENIED;
+		else
+			ret = err->code;
+
+		NOTIFICATION_ERR("_send_sync_noti cmd = %s, error %s, err code %d", cmd, err->message, ret);
 		g_error_free(err);
 		return ret;
 	}
@@ -579,9 +585,13 @@ static void _send_message_with_reply_async_cb(GDBusConnection *connection,
 		result = NOTIFICATION_ERROR_SERVICE_NOT_READY;
 
 	} else if (g_dbus_message_to_gerror(reply, &err)) {
-		result = err->code;
-		g_error_free(err);
+		if (err->code == G_DBUS_ERROR_ACCESS_DENIED)
+			result = NOTIFICATION_ERROR_PERMISSION_DENIED;
+		else
+			result = err->code;
+
 		NOTIFICATION_ERR("_send_async_noti error %s", err->message);
+		g_error_free(err);
 	}
 
 	NOTIFICATION_DBG("_send_async_noti done !![%d]", result);
@@ -639,7 +649,7 @@ static int _send_async_noti(GVariant *body, result_cb_item *cb_item, char *cmd)
 int notification_ipc_request_insert(notification_h noti, int *priv_id)
 {
 	int result;
-	int id;
+	int id = NOTIFICATION_PRIV_ID_NONE;
 	GDBusMessage *reply = NULL;
 	GVariant *body;
 	GVariant *reply_body;
@@ -676,14 +686,14 @@ int notification_ipc_request_insert(notification_h noti, int *priv_id)
 	if(reply)
 		g_object_unref(reply);
 
-	NOTIFICATION_DBG("notification_ipc_request_insert done [priv_id : %d, result: %d]", *priv_id, result);
+	NOTIFICATION_DBG("notification_ipc_request_insert done [priv_id : %d, result: %d]", id, result);
 	return result;
 }
 
 int notification_ipc_request_update(notification_h noti)
 {
 	int result;
-	int priv_id;
+	int priv_id = NOTIFICATION_PRIV_ID_NONE;
 
 	GDBusMessage *reply = NULL;
 	GVariant *body;
