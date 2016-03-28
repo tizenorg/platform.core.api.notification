@@ -630,7 +630,7 @@ int notification_get_launch_option(notification_h noti,
  * @brief Sets the handler for a specific event.
  * @details When some event occurs on notification, application launched by app_control_send_launch_request with app_control handle.\n
  *          Setting event handler of a button means that the notification will show the button.
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  * @param[in] noti The notification handle
  * @param[in] event_type event type
  * @param[in] event_handler app control handle
@@ -670,7 +670,7 @@ int notification_set_event_handler(notification_h noti, notification_event_type_
 /**
  * @brief Gets the event handler of a specific event.
  * @remarks You must release @a app_control using app_control_destroy().
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  * @param[in]  noti        The notification handle
  * @param[in] event_type Launching option type
  * @param[out] option The pointer of App Control handler
@@ -1318,7 +1318,7 @@ int notification_post(notification_h noti);
 
 /**
  * @brief Gets the package name of the notification
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  * @param[in] noti Notification handle
  * @param[out] pkgname The package name of the notification
  * @return #NOTIFICATION_ERROR_NONE on success, otherwise a negative error value
@@ -1348,7 +1348,7 @@ int notification_get_pkgname(notification_h noti, char **pkgname);
 
 /**
  * @brief Adds a button on the notification
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  * @param[in] noti Notification handle
  * @param[in] button_index Button index
  * @return #NOTIFICATION_ERROR_NONE on success, otherwise a negative error value
@@ -1378,7 +1378,7 @@ int notification_add_button(notification_h noti, notification_button_index_e but
 
 /**
  * @brief Removes a button on the notification
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  * @param[in] noti Notification handle
  * @param[in] button_index Button index
  * @return #NOTIFICATION_ERROR_NONE on success, otherwise a negative error value
@@ -1411,7 +1411,7 @@ int notification_remove_button(notification_h noti, notification_button_index_e 
  * @details The 'auto remove' option let the active notification be removed in several seconds after it shows. Default value is true.
  * @remarks When 'auto_remove' is set as false, the active notification will not be removed
  as long as the user removes the active notification or the app which posted the active notification removes the active notification.
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  * @param[in] noti Notification handle
  * @param[in] auto_remove Auto remove option
  * @return #NOTIFICATION_ERROR_NONE On success, other value if failure
@@ -1440,7 +1440,7 @@ int notification_set_auto_remove(notification_h noti, bool auto_remove);
 /**
  * @brief Gets the 'auto remove' option of the active notification
  * @details The 'auto remove' option let the active notification be removed in several seconds after it shows. Default value is true.
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  * @param[in] noti Notification handle
  * @param[out] auto_remove Auto remove option
  * @return #NOTIFICATION_ERROR_NONE On success, other value on failure

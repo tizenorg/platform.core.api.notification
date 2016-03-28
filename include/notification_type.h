@@ -61,7 +61,7 @@ typedef enum _notification_ly_type {
         /**< Layout for notification. Used to display images*/
 	NOTIFICATION_LY_ONGOING_EVENT,
         /**< Layout for ongoing notification. Used to display text message.
-         * notifications with NOTIFICATION_LY_ONGOING_EVENT can not be protected from removing by user since tizen 2.4 */
+         * notifications with NOTIFICATION_LY_ONGOING_EVENT can not be protected from removing by user since tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif */
 	NOTIFICATION_LY_ONGOING_PROGRESS,
         /**< Layout for ongoing notification. Used to display progress*/
 	NOTIFICATION_LY_MAX,
@@ -79,7 +79,7 @@ typedef enum  _notification_launch_option_type {
 
 /**
  * @brief Enumeration for event type on notification.
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  */
 typedef enum _notification_event_type {
 	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_1  = 0,  /** < Event type : Click on button 1 */
@@ -148,7 +148,7 @@ typedef enum _notification_count_display_type {
 
 /**
  * @brief Enumeration for button
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  */
 typedef enum _notification_button_index {
 	NOTIFICATION_BUTTON_1 = 1, /**< button 1 */
@@ -419,7 +419,7 @@ typedef struct _notification_op {
 
 /**
  * @brief Enumeration for permission.
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  */
 typedef enum notification_permission_type {
     NOTIFICATION_PERMISSION_TYPE_NONE = 0,

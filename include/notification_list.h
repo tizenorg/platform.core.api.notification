@@ -49,7 +49,7 @@ typedef struct _notification_list *notification_list_h;
 /**
  * @brief Returns the notification list handle.
  * @details If count is equal to @c -1, all notifications are returned.
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  * @privlevel public
  * @privilege %http://tizen.org/privilege/notification
  * @param[in]  type  The notification type
@@ -83,7 +83,7 @@ int notification_get_list(notification_type_e type,
 /**
  * @brief Returns the notification detail list handle of grouping data.
  * @details If count is equal to c -1, all notifications are returned.
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  * @privlevel public
  * @privilege %http://tizen.org/privilege/notification
  * @param[in]  pkgname  The caller application package name
@@ -120,7 +120,7 @@ int notification_get_detail_list(const char *pkgname,
 
 /**
  * @brief Frees a notification list.
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  * @privlevel public
  * @privilege %http://tizen.org/privilege/notification
  * @param[in] list The notification list handle
@@ -183,7 +183,7 @@ notification_list_h notification_list_get_head(notification_list_h list);
 
 /**
  * @brief Gets the tail pointer to the notification list.
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  * @remarks The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
  * @param[in] list Notification list handle
  * @return Notification list handle on success, NULL on failure

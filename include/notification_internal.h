@@ -586,7 +586,7 @@ NOTIFICATION_DEPRECATED_API int notification_get_execute_option(notification_h n
  * @brief Inserts a notification.
  * @details The notification will be inserted to the database and then it will appear in the notification area.
  *          When notification_create() is called, if priv_id is #NOTIFICATION_PRIV_ID_NONE, priv_id returns the internally set priv_id.
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  * @privlevel public
  * @privilege %http://tizen.org/privilege/notification
  * @param[in]  noti    The notification handle
@@ -619,7 +619,7 @@ int notification_insert(notification_h noti,
  * @internal
  * @brief Updates a notification, asynchronously.
  * @details The updated notification will appear in the notification area.
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  * @privlevel public
  * @privilege %http://tizen.org/privilege/notification
  * @remarks This function updates the notification asynchronously.
@@ -653,7 +653,7 @@ int notification_update_async(notification_h noti,
  * @internal
  * @brief Registers a callback for all notification events.
  * @details The registered callback could be called for all notification events.
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  * @privlevel public
  * @privilege %http://tizen.org/privilege/notification
  * @param[in] changed_cb The callback function
@@ -683,7 +683,7 @@ int notification_register_detailed_changed_cb(
 /**
  * @internal
  * @brief Unregisters a callback for all notification events.
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  * @privlevel public
  * @privilege %http://tizen.org/privilege/notification
  * @param[in] changed_cb The callback function

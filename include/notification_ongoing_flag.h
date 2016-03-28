@@ -26,7 +26,7 @@
 
 /**
  * @brief Sets the ongoing flag of the notification
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  * @param[in] noti  The notification handle
  * @param[in] ongoing_flag The ongoing flag
  * @return #NOTIFICATION_ERROR_NONE on success,
@@ -59,7 +59,7 @@ int notification_set_ongoing_flag(notification_h noti, bool ongoing_flag);
 
 /**
  * @brief Gets the ongoing flag of the notification
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  * @param[in]  noti  The notification handle
  * @param[out] ongoing_flag The ongoing flag
  * @return #NOTIFICATION_ERROR_NONE on success,
