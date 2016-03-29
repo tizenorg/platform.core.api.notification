@@ -1,6 +1,4 @@
 /*
- *  libnotification
- *
  * Copyright (c) 2000 - 2016 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 #include <errno.h>
@@ -141,7 +138,7 @@ EXPORT_API int noti_setting_service_get_setting_by_package_name(const char *pack
 
 	row_count = 1;
 
-	if (!(result_setting_array = (struct notification_setting*)malloc(sizeof(struct notification_setting) * row_count))) {
+	if (!(result_setting_array = (struct notification_setting *)malloc(sizeof(struct notification_setting) * row_count))) {
 		NOTIFICATION_ERR("malloc failed...");
 		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
 		goto out;
@@ -150,8 +147,8 @@ EXPORT_API int noti_setting_service_get_setting_by_package_name(const char *pack
 	col_index = column_count;
 
 	_get_table_field_data_string(query_result, &(result_setting_array[i].package_name), 1, col_index++);
-	_get_table_field_data_int(query_result, (int*)&(result_setting_array[i].allow_to_notify), col_index++);
-	_get_table_field_data_int(query_result, (int*)&(result_setting_array[i].do_not_disturb_except), col_index++);
+	_get_table_field_data_int(query_result, (int *)&(result_setting_array[i].allow_to_notify), col_index++);
+	_get_table_field_data_int(query_result, (int *)&(result_setting_array[i].do_not_disturb_except), col_index++);
 	_get_table_field_data_int(query_result, &(result_setting_array[i].visibility_class), col_index++);
 
 	*setting = result_setting_array;
@@ -226,7 +223,7 @@ EXPORT_API int noti_setting_get_setting_array(notification_setting_h *setting_ar
 	}
 
 	NOTIFICATION_DBG("row_count [%d] column_count [%d]", row_count, column_count);
-	if (!(result_setting_array = (struct notification_setting*)malloc(sizeof(struct notification_setting) * row_count))) {
+	if (!(result_setting_array = (struct notification_setting *)malloc(sizeof(struct notification_setting) * row_count))) {
 		NOTIFICATION_ERR("malloc failed...");
 		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
 		goto out;
@@ -236,8 +233,8 @@ EXPORT_API int noti_setting_get_setting_array(notification_setting_h *setting_ar
 
 	for (i = 0; i < row_count; i++) {
 		_get_table_field_data_string(query_result, &(result_setting_array[i].package_name), 1, col_index++);
-		_get_table_field_data_int(query_result, (int*)&(result_setting_array[i].allow_to_notify), col_index++);
-		_get_table_field_data_int(query_result, (int*)&(result_setting_array[i].do_not_disturb_except), col_index++);
+		_get_table_field_data_int(query_result, (int *)&(result_setting_array[i].allow_to_notify), col_index++);
+		_get_table_field_data_int(query_result, (int *)&(result_setting_array[i].do_not_disturb_except), col_index++);
 		_get_table_field_data_int(query_result, &(result_setting_array[i].visibility_class), col_index++);
 	}
 
@@ -314,7 +311,7 @@ EXPORT_API int noti_system_setting_load_system_setting(notification_system_setti
 
 	row_count = 1;
 
-	if (!(result_system_setting = (struct notification_system_setting*)malloc(sizeof(struct notification_system_setting)))) {
+	if (!(result_system_setting = (struct notification_system_setting *)malloc(sizeof(struct notification_system_setting)))) {
 		NOTIFICATION_ERR("malloc failed...");
 		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
 		goto out;
@@ -322,7 +319,7 @@ EXPORT_API int noti_system_setting_load_system_setting(notification_system_setti
 
 	col_index = column_count;
 
-	_get_table_field_data_int(query_result, (int*)&(result_system_setting->do_not_disturb), col_index++);
+	_get_table_field_data_int(query_result, (int *)&(result_system_setting->do_not_disturb), col_index++);
 	_get_table_field_data_int(query_result, &(result_system_setting->visibility_class), col_index++);
 
 	*system_setting = result_system_setting;
@@ -342,7 +339,4 @@ out:
 
 	return err;
 }
-
-
-
 

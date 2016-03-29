@@ -1,9 +1,5 @@
 /*
- *  libnotification
- *
- * Copyright (c) 2000 - 2011 Samsung Electronics Co., Ltd. All rights reserved.
- *
- * Contact: Seungtaek Chung <seungtaek.chung@samsung.com>, Mi-Ju Lee <miju52.lee@samsung.com>, Xi Zhichan <zhichan.xi@samsung.com>
+ * Copyright (c) 2000 - 2016 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 #ifndef __NOTIFICATION_TYPE_H__
@@ -27,7 +22,7 @@ extern "C" {
 #endif
 
 #ifndef NOTIFICATION_DEPRECATED_API
-#if 0//__GNUC__
+#if 0 /* __GNUC__ */
 #define NOTIFICATION_DEPRECATED_API __attribute__((deprecated))
 #else
 #define NOTIFICATION_DEPRECATED_API
@@ -52,20 +47,20 @@ extern "C" {
  */
 typedef enum _notification_ly_type {
 	NOTIFICATION_LY_NONE = 0,
-		/**< Default */
+	/**< Default */
 	NOTIFICATION_LY_NOTI_EVENT_SINGLE,
-        /**< Layout for notification. Used to inform single event*/
+	/**< Layout for notification. Used to inform single event*/
 	NOTIFICATION_LY_NOTI_EVENT_MULTIPLE,
-        /**< Layout for notification. Used to inform multiple event*/
+	/**< Layout for notification. Used to inform multiple event*/
 	NOTIFICATION_LY_NOTI_THUMBNAIL,
-        /**< Layout for notification. Used to display images*/
+	/**< Layout for notification. Used to display images*/
 	NOTIFICATION_LY_ONGOING_EVENT,
-        /**< Layout for ongoing notification. Used to display text message.
-         * notifications with NOTIFICATION_LY_ONGOING_EVENT can not be protected from removing by user since tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif */
+	/**< Layout for ongoing notification. Used to display text message.
+	 * notifications with NOTIFICATION_LY_ONGOING_EVENT can not be protected from removing by user since tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif */
 	NOTIFICATION_LY_ONGOING_PROGRESS,
-        /**< Layout for ongoing notification. Used to display progress*/
+	/**< Layout for ongoing notification. Used to display progress*/
 	NOTIFICATION_LY_MAX,
-		/**< TBD */
+	/**< TBD */
 } notification_ly_type_e;
 
 /**
@@ -74,7 +69,7 @@ typedef enum _notification_ly_type {
  */
 typedef enum  _notification_launch_option_type {
 	NOTIFICATION_LAUNCH_OPTION_APP_CONTROL = 1,
-					/**< launching with app control */
+	/**< launching with app control */
 } notification_launch_option_type;
 
 /**
@@ -113,10 +108,10 @@ typedef enum _notification_sound_type {
  */
 typedef enum _notification_vibration_type {
 	NOTIFICATION_VIBRATION_TYPE_NONE = -1,
-                    /**< Default value. No vibration */
+	/**< Default value. No vibration */
 	NOTIFICATION_VIBRATION_TYPE_DEFAULT = 0,/**< Default vibrate pattern */
 	NOTIFICATION_VIBRATION_TYPE_USER_DATA,
-					/**< User vibration data */
+	/**< User vibration data */
 	NOTIFICATION_VIBRATION_TYPE_MAX,
 } notification_vibration_type_e;
 
@@ -422,9 +417,9 @@ typedef struct _notification_op {
  * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  */
 typedef enum notification_permission_type {
-    NOTIFICATION_PERMISSION_TYPE_NONE = 0,
-    NOTIFICATION_PERMISSION_TYPE_DELETE = 1,
-    NOTIFICATION_PERMISSION_TYPE_UPDATE = 2,
+	NOTIFICATION_PERMISSION_TYPE_NONE = 0,
+	NOTIFICATION_PERMISSION_TYPE_DELETE = 1,
+	NOTIFICATION_PERMISSION_TYPE_UPDATE = 2,
 } notification_permission_type_e;
 
 /**
@@ -434,4 +429,5 @@ typedef enum notification_permission_type {
 #ifdef __cplusplus
 }
 #endif
-#endif				/* __NOTIFICATION_TYPE_H__ */
+#endif /* __NOTIFICATION_TYPE_H__ */
+

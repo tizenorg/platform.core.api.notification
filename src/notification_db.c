@@ -1,9 +1,5 @@
 /*
- *  libnotification
- *
- * Copyright (c) 2000 - 2011 Samsung Electronics Co., Ltd. All rights reserved.
- *
- * Contact: Seungtaek Chung <seungtaek.chung@samsung.com>, Mi-Ju Lee <miju52.lee@samsung.com>, Xi Zhichan <zhichan.xi@samsung.com>
+ * Copyright (c) 2000 - 2016 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 #include <errno.h>
@@ -32,7 +27,7 @@
 #include <notification_debug.h>
 #include <notification_db.h>
 
-sqlite3 * notification_db_open(const char *dbfile)
+sqlite3 *notification_db_open(const char *dbfile)
 {
 	int ret = 0;
 	sqlite3 *db = 0;
@@ -50,7 +45,7 @@ sqlite3 * notification_db_open(const char *dbfile)
 	return db;
 }
 
-int notification_db_close(sqlite3 ** db)
+int notification_db_close(sqlite3 **db)
 {
 	int ret = 0;
 
@@ -68,7 +63,7 @@ int notification_db_close(sqlite3 ** db)
 	return NOTIFICATION_ERROR_NONE;
 }
 
-int notification_db_exec(sqlite3 * db, const char *query, int *num_changes)
+int notification_db_exec(sqlite3 *db, const char *query, int *num_changes)
 {
 	int ret = 0;
 	sqlite3_stmt *stmt = NULL;
@@ -127,3 +122,4 @@ bundle *notification_db_column_bundle(sqlite3_stmt * stmt, int col)
 
 	return bundle_decode(col_bundle, strlen((char *)col_bundle));
 }
+

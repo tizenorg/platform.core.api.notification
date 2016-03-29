@@ -1,9 +1,5 @@
 /*
- *  libnotification
- *
- * Copyright (c) 2000 - 2011 Samsung Electronics Co., Ltd. All rights reserved.
- *
- * Contact: Seungtaek Chung <seungtaek.chung@samsung.com>, Mi-Ju Lee <miju52.lee@samsung.com>, Xi Zhichan <zhichan.xi@samsung.com>
+ * Copyright (c) 2000 - 2016 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 #ifndef __NOTIFICATION_INTERNAL_H__
@@ -36,7 +31,7 @@ extern "C" {
  */
 
 #define NOTIFICATION_DISPLAY_APP_HEADS_UP NOTIFICATION_DISPLAY_APP_ACTIVE /* To avoid build error */
-#define NOTIFICATION_ERROR (notification_error_quark ())
+#define NOTIFICATION_ERROR (notification_error_quark())
 GQuark notification_error_quark(void);
 
 /**
@@ -228,14 +223,14 @@ NOTIFICATION_DEPRECATED_API int notification_get_application(notification_h noti
  * @see notification_set_execute_option()
  *
  */
-NOTIFICATION_DEPRECATED_API int notification_set_args(notification_h noti, bundle * args, bundle * group_args);	/* Do not use this */
+NOTIFICATION_DEPRECATED_API int notification_set_args(notification_h noti, bundle *args, bundle *group_args);	/* Do not use this */
 
 /**
  * @brief This function will be deprecated.
  * @see notification_get_execute_option()
  *
  */
-NOTIFICATION_DEPRECATED_API int notification_get_args(notification_h noti, bundle ** args, bundle ** group_args);	/* Do not use this */
+NOTIFICATION_DEPRECATED_API int notification_get_args(notification_h noti, bundle **args, bundle **group_args);	/* Do not use this */
 
 /**
  * @brief This function is deprecated.
@@ -471,7 +466,7 @@ NOTIFICATION_DEPRECATED_API int notification_set_execute_option(notification_h n
   {
 	 int noti_err = NOTIFICATION_ERROR_NONE;
 	 int group_id, priv_id;
- 
+
 	 noti_err  = notification_get_id(noti, &group_id, &priv_id);
 	 if(noti_err != NOTIFICATION_ERROR_NONE) {
 		 return;
@@ -716,3 +711,4 @@ int notification_unregister_detailed_changed_cb(
 }
 #endif
 #endif
+

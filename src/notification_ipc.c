@@ -1,9 +1,5 @@
 /*
- *  libnotification
- *
- * Copyright (c) 2000 - 2011 Samsung Electronics Co., Ltd. All rights reserved.
- *
- * Contact: Seungtaek Chung <seungtaek.chung@samsung.com>, Mi-Ju Lee <miju52.lee@samsung.com>, Xi Zhichan <zhichan.xi@samsung.com>
+ * Copyright (c) 2000 - 2016 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 #include <stdio.h>
@@ -72,7 +67,8 @@ static int _ipc_monitor_register(void);
 static int _ipc_monitor_deregister(void);
 static void _do_deffered_task(void);
 
-static void _print_noti(notification_h noti) {
+static void _print_noti(notification_h noti)
+{
 	char *pkgname = NULL;
 	char *text = NULL;
 	char *content = NULL;
@@ -85,10 +81,10 @@ static void _print_noti(notification_h noti) {
 	notification_get_tag(noti, &tag);
 	notification_get_vibration(noti, &vib_type, NULL);
 
-	NOTIFICATION_DBG("client print_noti  pkgname  = %s ", pkgname );
-	NOTIFICATION_DBG("client print_noti  title  = %s ", text );
-	NOTIFICATION_DBG("client print_noti  content  = %s ", content );
-	NOTIFICATION_DBG("client print_noti  tag  = %s ", tag );
+	NOTIFICATION_DBG("client print_noti  pkgname  = %s ", pkgname);
+	NOTIFICATION_DBG("client print_noti  title  = %s ", text);
+	NOTIFICATION_DBG("client print_noti  content  = %s ", content);
+	NOTIFICATION_DBG("client print_noti  tag  = %s ", tag);
 	NOTIFICATION_DBG("client print_noti  priv_id  = %d ", noti->priv_id);
 	NOTIFICATION_DBG("client print_noti  vibration_path  = %s ", noti->vibration_path);
 	NOTIFICATION_DBG("client print_noti  vibration_type  = %d ", vib_type);
@@ -144,7 +140,7 @@ int notification_ipc_is_master_ready(void)
 		}
 	}
 
-	if(result)
+	if (result)
 		g_variant_unref(result);
 
 	return is_master_started;
@@ -683,7 +679,7 @@ int notification_ipc_request_insert(notification_h noti, int *priv_id)
 			*priv_id = id;
 	}
 
-	if(reply)
+	if (reply)
 		g_object_unref(reply);
 
 	NOTIFICATION_DBG("notification_ipc_request_insert done [priv_id : %d, result: %d]", id, result);
@@ -717,7 +713,7 @@ int notification_ipc_request_update(notification_h noti)
 		g_variant_get(reply_body, "(i)", &priv_id);
 	}
 
-	if(reply)
+	if (reply)
 		g_object_unref(reply);
 
 	NOTIFICATION_DBG("notification_ipc_request_update done [result: %d, priv_id :%d]", result, priv_id);
@@ -779,7 +775,7 @@ int notification_ipc_request_refresh(void)
 	body = g_variant_new("(i)", NOTIFICATION_OP_REFRESH);
 	result = _send_sync_noti(body, &reply, "refresh_noti");
 
-	if(reply)
+	if (reply)
 		g_object_unref(reply);
 
 	NOTIFICATION_ERR("notification_ipc_request_refresh done [result: %d]", result);
@@ -808,7 +804,7 @@ int notification_ipc_request_delete_single(notification_type_e type, char *pkgna
 		g_variant_get(reply_body, "(i)", &id);
 	}
 
-	if(reply)
+	if (reply)
 		g_object_unref(reply);
 
 	NOTIFICATION_ERR("notification_ipc_request_delete_single done [result: %d]", result);
@@ -841,7 +837,7 @@ int notification_ipc_request_delete_multiple(notification_type_e type, char *pkg
 		NOTIFICATION_ERR("num deleted:%d", num_deleted);
 	}
 
-	if(reply)
+	if (reply)
 		g_object_unref(reply);
 
 	return result;
@@ -877,7 +873,7 @@ int notification_ipc_request_load_noti_by_tag(notification_h noti, const char *p
 
 	}
 
-	if(reply)
+	if (reply)
 		g_object_unref(reply);
 
 	NOTIFICATION_DBG("notification_ipc_request_load_noti_by_tag done [result: %d]", result);
@@ -913,7 +909,7 @@ int notification_ipc_request_load_noti_by_priv_id(notification_h noti, const cha
 		_print_noti(noti);
 	}
 
-	if(reply)
+	if (reply)
 		g_object_unref(reply);
 
 	NOTIFICATION_DBG("notification_ipc_request_load_noti_by_priv_id done [result: %d]", result);
@@ -949,7 +945,7 @@ int notification_ipc_request_get_count(notification_type_e type,
 		NOTIFICATION_DBG("noti count [%d]", re_count);
 	}
 
-	if(reply)
+	if (reply)
 		g_object_unref(reply);
 
 	NOTIFICATION_DBG("notification_ipc_request_get_count done [result: %d]", result);
@@ -991,7 +987,7 @@ int notification_ipc_request_load_noti_grouping_list(notification_type_e type, i
 		g_variant_iter_free(iter);
 	}
 
-	if(reply)
+	if (reply)
 		g_object_unref(reply);
 
 	NOTIFICATION_DBG("notification_ipc_request_load_noti_grouping_list done [result: %d]", result);
@@ -1036,7 +1032,7 @@ int notification_ipc_request_load_noti_detail_list(const char *pkgname,
 		g_variant_iter_free(iter);
 	}
 
-	if(reply)
+	if (reply)
 		g_object_unref(reply);
 
 	NOTIFICATION_DBG("notification_ipc_request_load_noti_detail_list done [result: %d]", result);
@@ -1090,7 +1086,7 @@ int notification_ipc_request_get_setting_array(
 		g_variant_iter_free(iter);
 	}
 
-	if(reply)
+	if (reply)
 		g_object_unref(reply);
 
 	NOTIFICATION_DBG("notification_ipc_request_get_setting_array done [result: %d]", result);
@@ -1133,7 +1129,7 @@ int notification_ipc_request_get_setting_by_package_name(
 		g_variant_unref(setting_body);
 	}
 
-	if(reply)
+	if (reply)
 		g_object_unref(reply);
 
 	NOTIFICATION_DBG("notification_ipc_request_get_setting_by_package_name done [result: %d]", result);
@@ -1172,7 +1168,7 @@ int notification_ipc_request_load_system_setting(notification_system_setting_h *
 		g_variant_unref(setting_body);
 	}
 
-	if(reply)
+	if (reply)
 		g_object_unref(reply);
 
 	NOTIFICATION_DBG("notification_ipc_request_load_system_setting done [result: %d]", result);
@@ -1199,7 +1195,7 @@ int notification_ipc_update_setting(notification_setting_h setting)
 
 	result = _send_sync_noti(body, &reply, "update_noti_setting");
 
-	if(reply)
+	if (reply)
 		g_object_unref(reply);
 
 	NOTIFICATION_DBG("notification_ipc_update_setting done [result: %d]", result);
@@ -1430,8 +1426,8 @@ EXPORT_API GVariant *notification_ipc_make_gvariant_from_noti(notification_h not
 	return body;
 }
 
-static gboolean _variant_to_int_dict(GHashTable **dict, GVariant *variant) {
-
+static gboolean _variant_to_int_dict(GHashTable **dict, GVariant *variant)
+{
 	GVariantIter iter;
 	int key;
 	int *hash_key;
@@ -1694,7 +1690,7 @@ static int _send_service_register()
 
 	result = _send_sync_noti(NULL, &reply, "noti_service_register");
 
-	if(reply)
+	if (reply)
 		g_object_unref(reply);
 
 	NOTIFICATION_ERR("_send_service_register done = %s, result = %d", _bus_name, result);
@@ -1791,3 +1787,4 @@ int notification_ipc_monitor_fini(void)
 {
 	return  _ipc_monitor_deregister();
 }
+

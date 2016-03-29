@@ -1,9 +1,5 @@
 /*
- *  libnotification
- *
- * Copyright (c) 2015 Samsung Electronics Co., Ltd. All rights reserved.
- *
- * Contact: Kyuho Jo <kyuho.jo@samsung.com>
+ * Copyright (c) 2015 - 2016 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 #ifndef __NOTIFICATION_ONGOING_FLAG_H__
@@ -84,4 +79,5 @@ int notification_set_ongoing_flag(notification_h noti, bool ongoing_flag);
  */
 int notification_get_ongoing_flag(notification_h noti, bool *ongoing_flag);
 
-#endif				/* __NOTIFICATION_ONGOING_H__ */
+#endif /* __NOTIFICATION_ONGOING_H__ */
+

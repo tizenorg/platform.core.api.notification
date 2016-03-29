@@ -1,9 +1,5 @@
 /*
- *  libnotification
- *
- * Copyright (c) 2000 - 2011 Samsung Electronics Co., Ltd. All rights reserved.
- *
- * Contact: Seungtaek Chung <seungtaek.chung@samsung.com>, Mi-Ju Lee <miju52.lee@samsung.com>, Xi Zhichan <zhichan.xi@samsung.com>
+ * Copyright (c) 2000 - 2016 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 #include <stdio.h>
@@ -53,7 +48,7 @@ static void __free_and_set(void **target_ptr, void *new_ptr)
 	}
 }
 
-static int _notification_noti_bind_query_text(sqlite3_stmt * stmt, const char *name,
+static int _notification_noti_bind_query_text(sqlite3_stmt *stmt, const char *name,
 					 const char *str)
 {
 	int ret = 0;
@@ -77,7 +72,7 @@ static int _notification_noti_bind_query_text(sqlite3_stmt * stmt, const char *n
 	return NOTIFICATION_ERROR_NONE;
 }
 
-static int _notification_noti_bind_query_double(sqlite3_stmt * stmt, const char *name,
+static int _notification_noti_bind_query_double(sqlite3_stmt *stmt, const char *name,
 					 double val)
 {
 	int ret = 0;
@@ -98,7 +93,7 @@ static int _notification_noti_bind_query_double(sqlite3_stmt * stmt, const char 
 	return NOTIFICATION_ERROR_NONE;
 }
 
-static int _notification_noti_check_priv_id(notification_h noti, sqlite3 * db)
+static int _notification_noti_check_priv_id(notification_h noti, sqlite3 *db)
 {
 	int result = 0;
 	int ret = NOTIFICATION_ERROR_NONE;
@@ -142,7 +137,7 @@ err:
 
 static int _notification_noti_get_internal_group_id_by_priv_id(const char *pkgname,
 							       int priv_id,
-							       sqlite3 * db)
+							       sqlite3 *db)
 {
 	char *query = NULL;
 	sqlite3_stmt *stmt = NULL;
@@ -204,48 +199,48 @@ static int _insertion_query_create(notification_h noti, char **query)
 
 	/* Decode bundle to insert DB */
 	if (noti->args)
-		bundle_encode(noti->args, (bundle_raw **) & args, &b_encode_len);
+		bundle_encode(noti->args, (bundle_raw **)&args, &b_encode_len);
 
 	if (noti->group_args)
-		bundle_encode(noti->group_args, (bundle_raw **) & group_args,
+		bundle_encode(noti->group_args, (bundle_raw **)&group_args,
 			      &b_encode_len);
 
 	if (noti->b_execute_option)
 		bundle_encode(noti->b_execute_option,
-			      (bundle_raw **) & b_execute_option, &b_encode_len);
+			      (bundle_raw **)&b_execute_option, &b_encode_len);
 
 	if (noti->b_service_responding)
 		bundle_encode(noti->b_service_responding,
-			      (bundle_raw **) & b_service_responding, &b_encode_len);
+			      (bundle_raw **)&b_service_responding, &b_encode_len);
 
 	if (noti->b_service_single_launch)
 		bundle_encode(noti->b_service_single_launch,
-			      (bundle_raw **) & b_service_single_launch, &b_encode_len);
+			      (bundle_raw **)&b_service_single_launch, &b_encode_len);
 
 	if (noti->b_service_multi_launch)
 		bundle_encode(noti->b_service_multi_launch,
-			      (bundle_raw **) & b_service_multi_launch, &b_encode_len);
+			      (bundle_raw **)&b_service_multi_launch, &b_encode_len);
 
 
 	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
 		if (noti->b_event_handler[i])
 			bundle_encode(noti->b_event_handler[i],
-					(bundle_raw **) & b_event_handler[i], &b_encode_len);
+					(bundle_raw **)&b_event_handler[i], &b_encode_len);
 	}
 
 	if (noti->b_text)
-		bundle_encode(noti->b_text, (bundle_raw **) & b_text, &b_encode_len);
+		bundle_encode(noti->b_text, (bundle_raw **)&b_text, &b_encode_len);
 
 	if (noti->b_key)
-		bundle_encode(noti->b_key, (bundle_raw **) & b_key, &b_encode_len);
+		bundle_encode(noti->b_key, (bundle_raw **)&b_key, &b_encode_len);
 
 	if (noti->b_format_args)
 		bundle_encode(noti->b_format_args,
-			      (bundle_raw **) & b_format_args, &b_encode_len);
+			      (bundle_raw **)&b_format_args, &b_encode_len);
 
 	if (noti->b_image_path)
 		bundle_encode(noti->b_image_path,
-			      (bundle_raw **) & b_image_path, &b_encode_len);
+			      (bundle_raw **)&b_image_path, &b_encode_len);
 
 	/* Check only simmode property is enable */
 	if (noti->flags_for_property & NOTIFICATION_PROP_DISPLAY_ONLY_SIMMODE)
@@ -383,47 +378,47 @@ static int _update_query_create(notification_h noti, char **query)
 
 	/* Decode bundle to update DB */
 	if (noti->args)
-		bundle_encode(noti->args, (bundle_raw **) & args, &b_encode_len);
+		bundle_encode(noti->args, (bundle_raw **)&args, &b_encode_len);
 
 	if (noti->group_args)
-		bundle_encode(noti->group_args, (bundle_raw **) & group_args,
+		bundle_encode(noti->group_args, (bundle_raw **)&group_args,
 			      &b_encode_len);
 
 	if (noti->b_execute_option)
 		bundle_encode(noti->b_execute_option,
-			      (bundle_raw **) & b_execute_option, &b_encode_len);
+			      (bundle_raw **)&b_execute_option, &b_encode_len);
 
 	if (noti->b_service_responding)
 		bundle_encode(noti->b_service_responding,
-			      (bundle_raw **) & b_service_responding, &b_encode_len);
+			      (bundle_raw **)&b_service_responding, &b_encode_len);
 
 	if (noti->b_service_single_launch)
 		bundle_encode(noti->b_service_single_launch,
-			      (bundle_raw **) & b_service_single_launch, &b_encode_len);
+			      (bundle_raw **)&b_service_single_launch, &b_encode_len);
 
 	if (noti->b_service_multi_launch)
 		bundle_encode(noti->b_service_multi_launch,
-			      (bundle_raw **) & b_service_multi_launch, &b_encode_len);
+			      (bundle_raw **)&b_service_multi_launch, &b_encode_len);
 
 	for (i = 0; i < NOTIFICATION_EVENT_TYPE_MAX; i++) {
 		if (noti->b_event_handler[i])
 			bundle_encode(noti->b_event_handler[i],
-					(bundle_raw **) & b_event_handler[i], &b_encode_len);
+					(bundle_raw **)&b_event_handler[i], &b_encode_len);
 	}
 
 	if (noti->b_text)
-		bundle_encode(noti->b_text, (bundle_raw **) & b_text, &b_encode_len);
+		bundle_encode(noti->b_text, (bundle_raw **)&b_text, &b_encode_len);
 
 	if (noti->b_key)
-		bundle_encode(noti->b_key, (bundle_raw **) & b_key, &b_encode_len);
+		bundle_encode(noti->b_key, (bundle_raw **)&b_key, &b_encode_len);
 
 	if (noti->b_format_args)
 		bundle_encode(noti->b_format_args,
-			      (bundle_raw **) & b_format_args, &b_encode_len);
+			      (bundle_raw **)&b_format_args, &b_encode_len);
 
 	if (noti->b_image_path)
 		bundle_encode(noti->b_image_path,
-			      (bundle_raw **) & b_image_path, &b_encode_len);
+			      (bundle_raw **)&b_image_path, &b_encode_len);
 
 	/* Check only simmode property is enable */
 	if (noti->flags_for_property & NOTIFICATION_PROP_DISPLAY_ONLY_SIMMODE)
@@ -531,7 +526,7 @@ static int _update_query_create(notification_h noti, char **query)
 	return NOTIFICATION_ERROR_NONE;
 }
 
-static void _notification_noti_populate_from_stmt(sqlite3_stmt * stmt, notification_h noti)
+static void _notification_noti_populate_from_stmt(sqlite3_stmt *stmt, notification_h noti)
 {
 	int col = 0;
 	int i = 0;
@@ -596,7 +591,7 @@ static void _notification_noti_populate_from_stmt(sqlite3_stmt * stmt, notificat
 	noti->temp_content = NULL;
 }
 
-static notification_h _notification_noti_get_item(sqlite3_stmt * stmt)
+static notification_h _notification_noti_get_item(sqlite3_stmt *stmt)
 {
 	notification_h noti = NULL;
 
@@ -665,7 +660,7 @@ int notification_noti_get_tag_type(const char *tagged_str)
 	return TAG_TYPE_INVALID;
 }
 
-static int _notification_noti_update_priv_id(sqlite3 * db, int rowid)
+static int _notification_noti_update_priv_id(sqlite3 *db, int rowid)
 {
 	int ret = NOTIFICATION_ERROR_NONE;
 	char *query = NULL;
@@ -876,7 +871,7 @@ EXPORT_API int notification_noti_insert(notification_h noti)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 
-	if (_is_allowed_to_notify((const char*)noti->caller_pkgname) == false) {
+	if (_is_allowed_to_notify((const char *)noti->caller_pkgname) == false) {
 		NOTIFICATION_DBG("[%s] is not allowed to notify", noti->caller_pkgname);
 		return NOTIFICATION_ERROR_PERMISSION_DENIED;
 	}
@@ -1146,7 +1141,7 @@ EXPORT_API int notification_noti_update(notification_h noti)
 	if (!db)
 		return get_last_result();
 
-	if (_is_allowed_to_notify((const char*)noti->caller_pkgname) == false) {
+	if (_is_allowed_to_notify((const char *)noti->caller_pkgname) == false) {
 		NOTIFICATION_DBG("[%s] is not allowed to notify", noti->caller_pkgname);
 		return NOTIFICATION_ERROR_PERMISSION_DENIED;
 	}
@@ -1952,3 +1947,4 @@ err:
 
 	return ret;
 }
+

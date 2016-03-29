@@ -1,9 +1,5 @@
 /*
- *  libnotification
- *
- * Copyright (c) 2000 - 2011 Samsung Electronics Co., Ltd. All rights reserved.
- *
- * Contact: Seungtaek Chung <seungtaek.chung@samsung.com>, Mi-Ju Lee <miju52.lee@samsung.com>, Xi Zhichan <zhichan.xi@samsung.com>
+ * Copyright (c) 2000 - 2016 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 #include <stdio.h>
@@ -196,8 +191,7 @@ EXPORT_API int notification_get_image(notification_h noti,
 	return NOTIFICATION_ERROR_NONE;
 }
 
-EXPORT_API int notification_set_time(notification_h noti,
-						      time_t input_time)
+EXPORT_API int notification_set_time(notification_h noti, time_t input_time)
 {
 	/* Check noti is valid data */
 	if (noti == NULL)
@@ -213,8 +207,7 @@ EXPORT_API int notification_set_time(notification_h noti,
 	return NOTIFICATION_ERROR_NONE;
 }
 
-EXPORT_API int notification_get_time(notification_h noti,
-						      time_t * ret_time)
+EXPORT_API int notification_get_time(notification_h noti, time_t *ret_time)
 {
 	/* Check noti and time is valid data */
 	if (noti == NULL || ret_time == NULL)
@@ -227,7 +220,7 @@ EXPORT_API int notification_get_time(notification_h noti,
 }
 
 EXPORT_API int notification_get_insert_time(notification_h noti,
-							     time_t * ret_time)
+		time_t *ret_time)
 {
 	/* Check noti and ret_time is valid data */
 	if (noti == NULL || ret_time == NULL)
@@ -240,10 +233,8 @@ EXPORT_API int notification_get_insert_time(notification_h noti,
 }
 
 EXPORT_API int notification_set_text(notification_h noti,
-						      notification_text_type_e type,
-						      const char *text,
-						      const char *key,
-						      int args_type, ...)
+		notification_text_type_e type, const char *text,
+		const char *key, int args_type, ...)
 {
 	bundle *b = NULL;
 	char buf_key[32] = { 0, };
@@ -1695,7 +1686,7 @@ EXPORT_API notification_h  notification_load_by_tag(const char *tag)
 		return NULL;
 	}
 
-	ret = notification_ipc_request_load_noti_by_tag(noti, caller_pkgname, (char*)tag);
+	ret = notification_ipc_request_load_noti_by_tag(noti, caller_pkgname, (char *)tag);
 	free(caller_pkgname);
 
 	set_last_result(ret);
@@ -1959,7 +1950,7 @@ EXPORT_API int notification_get_tag(notification_h noti, const char **tag)
 void notification_call_posted_toast_cb(const char *message)
 {
 	if (posted_toast_message_cb != NULL)
-		posted_toast_message_cb((void*)message);
+		posted_toast_message_cb((void *)message);
 }
 
 EXPORT_API int notification_set_ongoing_flag(notification_h noti, bool ongoing_flag)
@@ -2023,3 +2014,4 @@ EXPORT_API int notification_get_auto_remove(notification_h noti, bool *auto_remo
 
 	return NOTIFICATION_ERROR_NONE;
 }
+

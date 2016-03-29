@@ -1,9 +1,5 @@
 /*
- *  libnotification
- *
- * Copyright (c) 2000 - 2011 Samsung Electronics Co., Ltd. All rights reserved.
- *
- * Contact: Seungtaek Chung <seungtaek.chung@samsung.com>, Mi-Ju Lee <miju52.lee@samsung.com>, Xi Zhichan <zhichan.xi@samsung.com>
+ * Copyright (c) 2000 - 2016 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 #include <stdio.h>
@@ -460,9 +455,8 @@ EXPORT_API int notification_get_application(notification_h noti,
 	return NOTIFICATION_ERROR_NONE;
 }
 
-EXPORT_API int notification_set_args(notification_h noti,
-						      bundle * args,
-						      bundle * group_args)
+EXPORT_API int notification_set_args(notification_h noti, bundle *args,
+		bundle *group_args)
 {
 	if (noti == NULL || args == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
@@ -484,8 +478,8 @@ EXPORT_API int notification_set_args(notification_h noti,
 }
 
 EXPORT_API int notification_get_args(notification_h noti,
-						      bundle ** args,
-						      bundle ** group_args)
+						      bundle **args,
+						      bundle **group_args)
 {
 	if (noti == NULL || args == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
@@ -502,7 +496,7 @@ EXPORT_API int notification_get_args(notification_h noti,
 }
 
 EXPORT_API int notification_get_grouping_list(notification_type_e type, int count,
-			       notification_list_h * list)
+			       notification_list_h *list)
 {
 	notification_list_h get_list = NULL;
 	int ret = 0;
@@ -608,19 +602,19 @@ EXPORT_API int notification_op_get_data(notification_op *noti_op, notification_o
 
 	switch (type) {
 	case NOTIFICATION_OP_DATA_TYPE:
-		*((int*)data) = noti_op->type;
+		*((int *)data) = noti_op->type;
 		break;
 	case NOTIFICATION_OP_DATA_PRIV_ID:
-		*((int*)data) = noti_op->priv_id;
+		*((int *)data) = noti_op->priv_id;
 		break;
 	case NOTIFICATION_OP_DATA_NOTI:
 		*((notification_h *)data) = noti_op->noti;
 		break;
 	case NOTIFICATION_OP_DATA_EXTRA_INFO_1:
-		*((int*)data) = noti_op->extra_info_1;
+		*((int *)data) = noti_op->extra_info_1;
 		break;
 	case NOTIFICATION_OP_DATA_EXTRA_INFO_2:
-		*((int*)data) = noti_op->extra_info_2;
+		*((int *)data) = noti_op->extra_info_2;
 		break;
 	default:
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
@@ -1075,3 +1069,4 @@ EXPORT_API int notification_is_service_ready(void)
 {
 	return notification_ipc_is_master_ready();
 }
+

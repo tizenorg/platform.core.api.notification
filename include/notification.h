@@ -1,9 +1,5 @@
 /*
- *  libnotification
- *
- * Copyright (c) 2000 - 2011 Samsung Electronics Co., Ltd. All rights reserved.
- *
- * Contact: Seungtaek Chung <seungtaek.chung@samsung.com>, Mi-Ju Lee <miju52.lee@samsung.com>, Xi Zhichan <zhichan.xi@samsung.com>
+ * Copyright (c) 2000 - 2016 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 #ifndef __NOTIFICATION_H__
@@ -78,9 +73,8 @@ extern "C" {
 }
  * @endcode
  */
-int notification_set_image(notification_h noti,
-					    notification_image_type_e type,
-					    const char *image_path);
+int notification_set_image(notification_h noti, notification_image_type_e type,
+		const char *image_path);
 
 /**
  * @brief Gets the absolute path of an image file.
@@ -100,19 +94,18 @@ int notification_set_image(notification_h noti,
  #include <notification.h>
  ...
  {
- 	char *image_path = NULL;
- 	int noti_err = NOTIFICATION_ERROR_NONE;
- 	
- 	noti_err  = notification_get_image(noti, NOTIFICATION_IMAGE_TYPE_ICON, &image_path);
- 	if(noti_err != NOTIFICATION_ERROR_NONE) {
+	char *image_path = NULL;
+	int noti_err = NOTIFICATION_ERROR_NONE;
+
+	noti_err  = notification_get_image(noti, NOTIFICATION_IMAGE_TYPE_ICON, &image_path);
+	if (noti_err != NOTIFICATION_ERROR_NONE) {
 		return;
- 	}
-}
+	}
+ }
  * @endcode
  */
-int notification_get_image(notification_h noti,
-					    notification_image_type_e type,
-					    char **image_path);
+int notification_get_image(notification_h noti, notification_image_type_e type,
+		char **image_path);
 
 /**
  * @brief Sets a timestamp.
@@ -134,22 +127,21 @@ int notification_get_image(notification_h noti,
   {
 	 notification_h noti = NULL;
 	 int noti_err = NOTIFICATION_ERROR_NONE;
-	 
+
 	 noti = notification_create(NOTIFICATION_TYPE_NOTI);
-	 if(noti == NULL) {
+	 if (noti == NULL) {
 		 return;
 	 }
- 
+
 	 noti_err  = notification_set_time(noti, time(NULL));
-	 if(noti_err != NOTIFICATION_ERROR_NONE) {
-	 	notification_free(noti);
-		 return;
+	 if (noti_err != NOTIFICATION_ERROR_NONE) {
+		notification_free(noti);
+		return;
 	 }
  }
  * @endcode
  */
-int notification_set_time(notification_h noti,
-					   time_t input_time);
+int notification_set_time(notification_h noti, time_t input_time);
 
 /**
  * @brief Gets a timestamp.
@@ -169,17 +161,16 @@ int notification_set_time(notification_h noti,
  ...
  {
 	time_t ret_time;
- 	int noti_err = NOTIFICATION_ERROR_NONE;
- 	
- 	noti_err  = notification_get_time(noti, &ret_time);
- 	if(noti_err != NOTIFICATION_ERROR_NONE) {
+	int noti_err = NOTIFICATION_ERROR_NONE;
+
+	noti_err  = notification_get_time(noti, &ret_time);
+	if (noti_err != NOTIFICATION_ERROR_NONE) {
 		return;
- 	}
-}
+	}
+ }
  * @endcode
  */
-int notification_get_time(notification_h noti,
-					   time_t * ret_time);
+int notification_get_time(notification_h noti, time_t *ret_time);
 
 /**
  * @brief Gets an insertion timestamp of the notification.
@@ -196,18 +187,17 @@ int notification_get_time(notification_h noti,
  #include <notification.h>
   ...
   {
-	 time_t ret_time;
-	 int noti_err = NOTIFICATION_ERROR_NONE;
-	 
-	 noti_err  = notification_get_insert_time(noti, &ret_time);
-	 if(noti_err != NOTIFICATION_ERROR_NONE) {
-		 return;
-	 }
+	time_t ret_time;
+	int noti_err = NOTIFICATION_ERROR_NONE;
+
+	noti_err  = notification_get_insert_time(noti, &ret_time);
+	if(noti_err != NOTIFICATION_ERROR_NONE) {
+		return;
+	}
  }
  * @endcode
  */
-int notification_get_insert_time(notification_h noti,
-						  time_t * ret_time);
+int notification_get_insert_time(notification_h noti, time_t *ret_time);
 
 /**
  * @brief Sets the text to display on the notification view.
@@ -252,11 +242,8 @@ int notification_get_insert_time(notification_h noti,
 }
  * @endcode
  */
-int notification_set_text(notification_h noti,
-					   notification_text_type_e type,
-					   const char *text,
-					   const char *key,
-					   int args_type, ...);
+int notification_set_text(notification_h noti, notification_text_type_e type,
+		const char *text, const char *key, int args_type, ...);
 
 /**
  * @brief Gets the text from the notification handle.
@@ -284,9 +271,8 @@ int notification_set_text(notification_h noti,
 }
  * @endcode
  */
-int notification_get_text(notification_h noti,
-					   notification_text_type_e type,
-					   char **text);
+int notification_get_text(notification_h noti, notification_text_type_e type,
+		char **text);
 
 /**
  * @brief Sets the timestamp to display on the notification view.
@@ -301,8 +287,8 @@ int notification_get_text(notification_h noti,
  * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
  * @pre Notification handle should be created by notification_create().
  */
-int notification_set_time_to_text(notification_h noti, notification_text_type_e type,
-								time_t time);
+int notification_set_time_to_text(notification_h noti,
+		notification_text_type_e type, time_t time);
 
 /**
  * @brief Gets the timestamp from the notification handle.
@@ -316,8 +302,8 @@ int notification_set_time_to_text(notification_h noti, notification_text_type_e 
  * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid parameter
  * @pre Notification handle should be created by notification_create().
  */
-int notification_get_time_from_text(notification_h noti, notification_text_type_e type,
-								time_t *time);
+int notification_get_time_from_text(notification_h noti,
+		notification_text_type_e type, time_t *time);
 
 /**
  * @brief Sets the sound type for the notification.
@@ -345,8 +331,7 @@ int notification_get_time_from_text(notification_h noti, notification_text_type_
  * @endcode
  */
 int notification_set_sound(notification_h noti,
-					    notification_sound_type_e type,
-					    const char *path);
+		notification_sound_type_e type, const char *path);
 
 /**
  * @brief Gets the sound type from the notification handle.
@@ -375,8 +360,7 @@ int notification_set_sound(notification_h noti,
  * @endcode
  */
 int notification_get_sound(notification_h noti,
-					    notification_sound_type_e *type,
-					    const char **path);
+		notification_sound_type_e *type, const char **path);
 
 /**
  * @brief Sets the vibration type for the notification.
@@ -404,8 +388,7 @@ int notification_get_sound(notification_h noti,
  * @endcode
  */
 int notification_set_vibration(notification_h noti,
-						notification_vibration_type_e type,
-						const char *path);
+		notification_vibration_type_e type, const char *path);
 
 /**
  * @brief Gets the vibrate type from the notification handle.
@@ -434,8 +417,7 @@ int notification_set_vibration(notification_h noti,
   * @endcode
   */
 int notification_get_vibration(notification_h noti,
-						notification_vibration_type_e *type,
-						const char **path);
+		notification_vibration_type_e *type, const char **path);
 
 /**
  * @brief Sets the LED displaying option.
@@ -462,9 +444,8 @@ int notification_get_vibration(notification_h noti,
 }
  * @endcode
  */
-int notification_set_led(notification_h noti,
-						notification_led_op_e operation,
-						int led_argb);
+int notification_set_led(notification_h noti, notification_led_op_e operation,
+		int led_argb);
 
 /**
  * @brief Gets the LED displaying option from the notification handle.
@@ -492,9 +473,8 @@ int notification_set_led(notification_h noti,
 }
   * @endcode
   */
-int notification_get_led(notification_h noti,
-						notification_led_op_e *operation,
-						int *led_argb);
+int notification_get_led(notification_h noti, notification_led_op_e *operation,
+		int *led_argb);
 
 /**
  * @brief Sets the time period of flashing the LED.
@@ -521,8 +501,8 @@ int notification_get_led(notification_h noti,
 }
  * @endcode
  */
-int notification_set_led_time_period(notification_h noti,
-						int on_ms, int off_ms);
+int notification_set_led_time_period(notification_h noti, int on_ms,
+		int off_ms);
 
 /**
  * @brief Gets the time period of flashing the LED from the notification handle.
@@ -551,8 +531,8 @@ int notification_set_led_time_period(notification_h noti,
 }
   * @endcode
   */
-int notification_get_led_time_period(notification_h noti,
-						int *on_ms, int *off_ms);
+int notification_get_led_time_period(notification_h noti, int *on_ms,
+		int *off_ms);
 
 /**
  * @brief Sets the launch option for a notification.
@@ -592,7 +572,7 @@ int notification_get_led_time_period(notification_h noti,
  * @endcode
  */
 int notification_set_launch_option(notification_h noti,
-								notification_launch_option_type type, void *option);
+		notification_launch_option_type type, void *option);
 
 /**
  * @brief Gets the launch option from the notification handle.
@@ -624,7 +604,7 @@ int notification_set_launch_option(notification_h noti,
  * @endcode
  */
 int notification_get_launch_option(notification_h noti,
-								notification_launch_option_type type, void *option);
+		notification_launch_option_type type, void *option);
 
 /**
  * @brief Sets the handler for a specific event.
@@ -665,7 +645,9 @@ int notification_get_launch_option(notification_h noti,
 }
  * @endcode
  */
-int notification_set_event_handler(notification_h noti, notification_event_type_e event_type, app_control_h event_handler);
+int notification_set_event_handler(notification_h noti,
+		notification_event_type_e event_type,
+		app_control_h event_handler);
 
 /**
  * @brief Gets the event handler of a specific event.
@@ -697,7 +679,9 @@ int notification_set_event_handler(notification_h noti, notification_event_type_
 }
  * @endcode
  */
-int notification_get_event_handler(notification_h noti, notification_event_type_e event_type, app_control_h *event_handler);
+int notification_get_event_handler(notification_h noti,
+		notification_event_type_e event_type,
+		app_control_h *event_handler);
 
 /**
  * @brief Sets the property of the notification.
@@ -730,8 +714,7 @@ int notification_get_event_handler(notification_h noti, notification_event_type_
 }
  * @endcode
  */
-int notification_set_property(notification_h noti,
-					       int flags);
+int notification_set_property(notification_h noti, int flags);
 
 /**
  * @brief Gets the property of the notification from the notification handle.
@@ -758,8 +741,7 @@ int notification_set_property(notification_h noti,
 }
  * @endcode
  */
-int notification_get_property(notification_h noti,
-					       int *flags);
+int notification_get_property(notification_h noti, int *flags);
 
 /**
  * @brief Sets applications to display the notification.
@@ -794,8 +776,7 @@ int notification_get_property(notification_h noti,
 }
  * @endcode
  */
-int notification_set_display_applist(notification_h noti,
-						      int applist);
+int notification_set_display_applist(notification_h noti, int applist);
 
 /**
  * @brief Gets the application list displaying the notification from the notification handle.
@@ -822,8 +803,7 @@ int notification_set_display_applist(notification_h noti,
 }
  * @endcode
  */
-int notification_get_display_applist(notification_h noti,
-						      int *applist);
+int notification_get_display_applist(notification_h noti, int *applist);
 
 /**
  * @brief Sets the initial size for the ongoing type.
@@ -856,8 +836,7 @@ int notification_get_display_applist(notification_h noti,
 }
  * @endcode
  */
-int notification_set_size(notification_h noti,
-					   double size);
+int notification_set_size(notification_h noti, double size);
 
 /**
  * @brief Gets the progress size.
@@ -884,8 +863,7 @@ int notification_set_size(notification_h noti,
 }
  * @endcode
  */
-int notification_get_size(notification_h noti,
-					   double *size);
+int notification_get_size(notification_h noti, double *size);
 
 /**
  * @brief Sets the initial progress for the ongoing type.
@@ -918,8 +896,7 @@ int notification_get_size(notification_h noti,
 }
  * @endcode
  */
-int notification_set_progress(notification_h noti,
-					       double percentage);
+int notification_set_progress(notification_h noti, double percentage);
 
 /**
  * @brief Gets the progress from the notification handle.
@@ -947,8 +924,7 @@ int notification_set_progress(notification_h noti,
 }
  * @endcode
  */
-int notification_get_progress(notification_h noti,
-					       double *percentage);
+int notification_get_progress(notification_h noti, double *percentage);
 
 /**
  * @brief Sets the layout of the notification view.
@@ -962,8 +938,7 @@ int notification_get_progress(notification_h noti,
  * @retval #NOTIFICATION_ERROR_INVALID_PARAMETER Invalid input value
  * @see #notification_ly_type_e
  */
-int notification_set_layout(notification_h noti,
-		notification_ly_type_e layout);
+int notification_set_layout(notification_h noti, notification_ly_type_e layout);
 
 /**
  * @brief Gets the layout of the notification view from the notification handle.
@@ -1003,8 +978,7 @@ int notification_get_layout(notification_h noti,
 }
  * @endcode
  */
-int notification_get_type(notification_h noti,
-					   notification_type_e * type);
+int notification_get_type(notification_h noti, notification_type_e *type);
 /**
  * @brief Updates notification data.
  * @details The updated notification will appear in the notification area.
@@ -1051,7 +1025,7 @@ int notification_update(notification_h noti);
 #include <notification.h>
 ...
  {
- 	notificaton_h noti = NULL;
+	notificaton_h noti = NULL;
 	int noti_err = NOTIFICATION_ERROR_NONE;
 
 	...
@@ -1061,7 +1035,7 @@ int notification_update(notification_h noti);
 		return;
 	}
 
-}
+ }
  * @endcode
  */
 int notification_delete(notification_h noti);
@@ -1374,7 +1348,8 @@ int notification_get_pkgname(notification_h noti, char **pkgname);
 }
  * @endcode
  */
-int notification_add_button(notification_h noti, notification_button_index_e button_index);
+int notification_add_button(notification_h noti,
+		notification_button_index_e button_index);
 
 /**
  * @brief Removes a button on the notification
@@ -1404,7 +1379,8 @@ int notification_add_button(notification_h noti, notification_button_index_e but
 }
  * @endcode
  */
-int notification_remove_button(notification_h noti, notification_button_index_e button_index);
+int notification_remove_button(notification_h noti,
+		notification_button_index_e button_index);
 
 /**
  * @brief Sets the 'auto remove' option of the active notification
@@ -1473,4 +1449,5 @@ int notification_get_auto_remove(notification_h noti, bool *auto_remove);
 #ifdef __cplusplus
 }
 #endif
-#endif				/* __NOTIFICATION_H__ */
+#endif /* __NOTIFICATION_H__ */
+

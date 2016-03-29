@@ -1,9 +1,5 @@
 /*
- *  libnotification
- *
- * Copyright (c) 2000 - 2011 Samsung Electronics Co., Ltd. All rights reserved.
- *
- * Contact: Seungtaek Chung <seungtaek.chung@samsung.com>, Mi-Ju Lee <miju52.lee@samsung.com>, Xi Zhichan <zhichan.xi@samsung.com>
+ * Copyright (c) 2000 - 2016 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 #ifndef __NOTIFICATION_ERROR_H__
@@ -41,7 +36,7 @@ typedef enum _notification_error {
 	NOTIFICATION_ERROR_NONE = TIZEN_ERROR_NONE,	/**< Success */
 	NOTIFICATION_ERROR_INVALID_PARAMETER = TIZEN_ERROR_INVALID_PARAMETER,	/**< Invalid parameter */
 	NOTIFICATION_ERROR_OUT_OF_MEMORY = TIZEN_ERROR_OUT_OF_MEMORY,	/**< out of memory */
-	NOTIFICATION_ERROR_IO_ERROR= TIZEN_ERROR_IO_ERROR,	/**< I/O error */
+	NOTIFICATION_ERROR_IO_ERROR = TIZEN_ERROR_IO_ERROR,	/**< I/O error */
 	NOTIFICATION_ERROR_PERMISSION_DENIED = TIZEN_ERROR_PERMISSION_DENIED, /**< Permission denied */
 	NOTIFICATION_ERROR_FROM_DB = TIZEN_ERROR_NOTIFICATION | 0x01,	/**< Error from DB query */
 	NOTIFICATION_ERROR_ALREADY_EXIST_ID = TIZEN_ERROR_NOTIFICATION | 0x02,	/**< Already exist private ID */
@@ -55,4 +50,5 @@ typedef enum _notification_error {
  * @}
  */
 
-#endif				/* __NOTIFICATION_ERROR_H__ */
+#endif /* __NOTIFICATION_ERROR_H__ */
+

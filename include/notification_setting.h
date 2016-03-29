@@ -1,9 +1,5 @@
 /*
- *  libnotification
- *
- * Copyright (c) 2000 - 2011 Samsung Electronics Co., Ltd. All rights reserved.
- *
- * Contact: Seungtaek Chung <seungtaek.chung@samsung.com>, Mi-Ju Lee <miju52.lee@samsung.com>, Xi Zhichan <zhichan.xi@samsung.com>
+ * Copyright (c) 2000 - 2016 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 #ifndef __NOTIFICATION_SETTING_H__
@@ -29,7 +24,7 @@
 extern "C" {
 #endif
 
-typedef struct notification_setting* notification_setting_h;
+typedef struct notification_setting *notification_setting_h;
 
 int notification_setting_get_setting(notification_setting_h *setting);
 
@@ -45,4 +40,5 @@ int notification_setting_refresh_setting_table();
 #ifdef __cplusplus
 }
 #endif
-#endif				/* __NOTIFICATION_SETTING_H__ */
+#endif /* __NOTIFICATION_SETTING_H__ */
+

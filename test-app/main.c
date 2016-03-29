@@ -1,9 +1,5 @@
 /*
- *  Test application for notification API
- *
- * Copyright (c) 2015 Samsung Electronics Co., Ltd. All rights reserved.
- *
- * Contact: Kyuho Jo <kyuho.jo@samsung.com>
+ * Copyright (c) 2015 - 2016 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-
-
 
 /* common header */
 #include <stdio.h>
@@ -284,7 +277,7 @@ static int testapp_test_post_notification_on_indicator()
 	noti_err  = notification_set_image(noti_handle, NOTIFICATION_IMAGE_TYPE_ICON_FOR_INDICATOR, image_path);
 	/*
 	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_TITLE, "I'm Title", "TITLE", NOTIFICATION_VARIABLE_TYPE_NONE);
-	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_CONTENT, "I'm Content", "This is very loooooooooooooooooooooooooooooooooooooooooong message", NOTIFICATION_VARIABLE_TYPE_NONE);
+	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_CONTENT, "I'm Content", "This is very long message", NOTIFICATION_VARIABLE_TYPE_NONE);
 	*/
 	noti_err  = notification_set_display_applist(noti_handle, NOTIFICATION_DISPLAY_APP_TICKER | NOTIFICATION_DISPLAY_APP_INDICATOR);
 
