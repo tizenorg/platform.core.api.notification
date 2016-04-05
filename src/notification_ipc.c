@@ -101,12 +101,44 @@ static inline char *_string_get(char *string)
 	return string;
 }
 
+static int _dbus_init()
+{
+	int ret = NOTIFICATION_ERROR_NONE;
+	GError *error = NULL;
+
+	if (_gdbus_conn == NULL) {
+		_gdbus_conn = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &error);
+
+		if (_gdbus_conn == NULL) {
+			if (error != NULL) {
+				NOTIFICATION_ERR("Failed to get dbus [%s]", error->message);
+				g_error_free(error);
+			}
+			return NOTIFICATION_ERROR_IO_ERROR;
+		}
+		_bus_name = g_dbus_connection_get_unique_name(_gdbus_conn);
+		NOTIFICATION_DBG("bus name : %s", _bus_name);
+
+		notification_error_quark();
+
+		ret = NOTIFICATION_ERROR_NONE;
+	}
+	return ret;
+}
 
 int notification_ipc_is_master_ready(void)
 {
 	GVariant *result;
 	GError *err = NULL;
 	gboolean name_exist;
+	int ret = NOTIFICATION_ERROR_NONE;
+
+	ret = _dbus_init();
+	if (ret != NOTIFICATION_ERROR_NONE) {
+		NOTIFICATION_ERR("Can't init dbus %d", result);
+		is_master_started = 0;
+		return is_master_started;
+	}
 
 	result = g_dbus_connection_call_sync(
 			_gdbus_conn,
@@ -123,9 +155,10 @@ int notification_ipc_is_master_ready(void)
 
 	if (err || (result == NULL)) {
 		if (err) {
-		NOTIFICATION_ERR("No reply. error = %s", err->message);
+			NOTIFICATION_ERR("No reply. error = %s", err->message);
 			g_error_free(err);
 		}
+		NOTIFICATION_ERR("is master ready fail");
 		is_master_started = 0;
 	} else {
 		g_variant_get(result, "(b)", &name_exist);
@@ -464,32 +497,6 @@ static int _dbus_signal_init()
 			monitor_id = id;
 			ret = NOTIFICATION_ERROR_NONE;
 		}
-	}
-	return ret;
-}
-
-
-static int _dbus_init()
-{
-	int ret = NOTIFICATION_ERROR_NONE;
-	GError *error = NULL;
-
-	if (_gdbus_conn == NULL) {
-		_gdbus_conn = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &error);
-
-		if (_gdbus_conn == NULL) {
-			if (error != NULL) {
-				NOTIFICATION_ERR("Failed to get dbus [%s]", error->message);
-				g_error_free(error);
-			}
-			return NOTIFICATION_ERROR_IO_ERROR;
-		}
-		_bus_name = g_dbus_connection_get_unique_name(_gdbus_conn);
-		NOTIFICATION_DBG("bus name : %s", _bus_name);
-
-		notification_error_quark();
-
-		ret = NOTIFICATION_ERROR_NONE;
 	}
 	return ret;
 }
