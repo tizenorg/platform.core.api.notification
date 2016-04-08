@@ -135,7 +135,7 @@ int notification_ipc_is_master_ready(void)
 
 	ret = _dbus_init();
 	if (ret != NOTIFICATION_ERROR_NONE) {
-		NOTIFICATION_ERR("Can't init dbus %d", result);
+		NOTIFICATION_ERR("Can't init dbus %d", ret);
 		is_master_started = 0;
 		return is_master_started;
 	}
