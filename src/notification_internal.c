@@ -124,9 +124,6 @@ EXPORT_API int notification_resister_changed_cb(void (*changed_cb)
 	if (changed_cb == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	if (notification_ipc_monitor_init() != NOTIFICATION_ERROR_NONE)
-		return NOTIFICATION_ERROR_IO_ERROR;
-
 	noti_cb_list_new =
 	    (notification_cb_list_s *) malloc(sizeof(notification_cb_list_s));
 
@@ -155,6 +152,12 @@ EXPORT_API int notification_resister_changed_cb(void (*changed_cb)
 		noti_cb_list->next = noti_cb_list_new;
 		noti_cb_list_new->prev = noti_cb_list;
 	}
+
+	if (notification_ipc_monitor_init() != NOTIFICATION_ERROR_NONE) {
+		notification_unresister_changed_cb(changed_cb);
+		return NOTIFICATION_ERROR_IO_ERROR;
+	}
+
 	return NOTIFICATION_ERROR_NONE;
 }
 

@@ -1694,13 +1694,20 @@ static int _send_service_register()
 	NOTIFICATION_DBG("service register");
 	GDBusMessage *reply = NULL;
 	int result;
+	notification_op *noti_op = NULL;
 
 	result = _send_sync_noti(NULL, &reply, "noti_service_register");
 
 	if (reply)
 		g_object_unref(reply);
 
-	NOTIFICATION_ERR("_send_service_register done = %s, result = %d", _bus_name, result);
+	NOTIFICATION_DBG("_send_service_register done = %s, result = %d", _bus_name, result);
+	noti_op = _ipc_create_op(NOTIFICATION_OP_SERVICE_READY, 1, NULL, 1, NULL);
+	if (noti_op != NULL) {
+		notification_call_changed_cb(noti_op, 1);
+		free(noti_op);
+	}
+
 	return result;
 }
 
