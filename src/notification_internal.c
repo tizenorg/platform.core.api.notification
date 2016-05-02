@@ -350,6 +350,47 @@ EXPORT_API int notification_get_icon(notification_h noti,
 	return ret_err;
 }
 
+EXPORT_API int notification_translate_localized_text(notification_h noti)
+{
+	int noti_err = NOTIFICATION_ERROR_NONE;
+	char *ret_text = NULL;
+	char buf_key[32];
+	char *bundle_val = NULL;
+	char *new_text;
+	bundle *b;
+	notification_text_type_e type = NOTIFICATION_TEXT_TYPE_TITLE;
+
+	for (; type < NOTIFICATION_TEXT_TYPE_MAX; type++) {
+		noti_err = notification_get_text(noti, type, &ret_text);
+		if (noti_err == NOTIFICATION_ERROR_NONE && ret_text) {
+			b = noti->b_text;
+			if (b == NULL)
+				b = bundle_create();
+
+			new_text = strdup(ret_text);
+
+			snprintf(buf_key, sizeof(buf_key), "%d", type);
+			bundle_get_str(b, buf_key, &bundle_val);
+			if (bundle_val != NULL)
+				bundle_del(b, buf_key);
+
+			bundle_add_str(b, buf_key, new_text);
+			free(new_text);
+			new_text = NULL;
+
+			noti->num_format_args = 0;
+			bundle_val = NULL;
+		}
+	}
+
+	if (noti->b_key) {
+		bundle_free(noti->b_key);
+		noti->b_key = NULL;
+	}
+
+	return noti_err;
+}
+
 EXPORT_API int notification_set_title(notification_h noti,
 						       const char *title,
 						       const char *loc_title)

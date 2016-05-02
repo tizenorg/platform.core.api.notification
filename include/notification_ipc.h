@@ -27,7 +27,7 @@
 extern "C" {
 #endif
 
-GVariant *notification_ipc_make_gvariant_from_noti(notification_h noti);
+GVariant *notification_ipc_make_gvariant_from_noti(notification_h noti, bool translate);
 int notification_ipc_make_noti_from_gvariant(notification_h noti,
 		GVariant *variant);
 

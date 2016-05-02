@@ -669,7 +669,7 @@ int notification_ipc_request_insert(notification_h noti, int *priv_id)
 	noti->internal_group_id = NOTIFICATION_GROUP_ID_NONE;
 
 	_print_noti(noti);
-	body = notification_ipc_make_gvariant_from_noti(noti);
+	body = notification_ipc_make_gvariant_from_noti(noti, false);
 	if (body == NULL) {
 		NOTIFICATION_ERR("cannot make gvariant");
 		return NOTIFICATION_ERROR_OUT_OF_MEMORY;
@@ -708,7 +708,7 @@ int notification_ipc_request_update(notification_h noti)
 		return result;
 	}
 
-	body = notification_ipc_make_gvariant_from_noti(noti);
+	body = notification_ipc_make_gvariant_from_noti(noti, false);
 	if (body == NULL) {
 		NOTIFICATION_ERR("cannot make gvariant");
 		return NOTIFICATION_ERROR_OUT_OF_MEMORY;
@@ -747,7 +747,7 @@ int notification_ipc_request_update_async(notification_h noti,
 	cb_item->result_cb = result_cb;
 	cb_item->data = user_data;
 
-	body = notification_ipc_make_gvariant_from_noti(noti);
+	body = notification_ipc_make_gvariant_from_noti(noti, false);
 	if (body == NULL) {
 		NOTIFICATION_ERR("cannot make gvariant");
 		free(cb_item);
@@ -1234,7 +1234,7 @@ int notification_ipc_update_system_setting(notification_system_setting_h system_
 	return result;
 }
 
-EXPORT_API GVariant *notification_ipc_make_gvariant_from_noti(notification_h noti)
+EXPORT_API GVariant *notification_ipc_make_gvariant_from_noti(notification_h noti, bool translate)
 {
 	NOTIFICATION_DBG("make gvariant from noti");
 	int i = 0;
@@ -1253,6 +1253,9 @@ EXPORT_API GVariant *notification_ipc_make_gvariant_from_noti(notification_h not
 	GVariant *body = NULL;
 	GVariant *result_body = NULL;
 	GVariantBuilder builder;
+
+	if (translate)
+		notification_translate_localized_text(noti);
 
 	g_variant_builder_init(&builder, G_VARIANT_TYPE("a{iv}"));
 	g_variant_builder_add(&builder, "{iv}", NOTIFICATION_DATA_TYPE_NOTI_TYPE, g_variant_new_int32(noti->type));

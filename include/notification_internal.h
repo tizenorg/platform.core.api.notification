@@ -703,10 +703,18 @@ int notification_register_detailed_changed_cb(
 int notification_unregister_detailed_changed_cb(
 		void (*detailed_changed_cb)(void *data, notification_type_e type, notification_op *op_list, int num_op),
 		void *user_data);
+
+/**
+ * @brief This function translate localized texts
+ * @param[in] noti The notification handle that is created by notification_create()
+ * @return #NOTIFICATION_ERROR_NONE if success, other value if failure
+ * @see notification_create()
+ */
+int notification_translate_localized_text(notification_h noti);
+
 /**
  * @}
  */
-
 #ifdef __cplusplus
 }
 #endif
