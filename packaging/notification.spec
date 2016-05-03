@@ -198,8 +198,8 @@ else
 	echo %{TZ_SYS_DB}/.notification.db ": DB file is already exists"
 fi
 
-chown :5000 %{TZ_SYS_DB}/.notification.db
-chown :5000 %{TZ_SYS_DB}/.notification.db-journal
+chown app_fw:app_fw %{TZ_SYS_DB}/.notification.db
+chown app_fw:app_fw %{TZ_SYS_DB}/.notification.db-journal
 chmod 644 %{TZ_SYS_DB}/.notification.db
 chmod 644 %{TZ_SYS_DB}/.notification.db-journal
 
