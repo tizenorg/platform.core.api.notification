@@ -26,7 +26,6 @@
 #include <app.h>
 #include <app_control_internal.h>
 #include <aul.h>
-#include <ail.h>
 #include <appsvc.h>
 #include <tizen.h>
 #include <vconf-keys.h>

@@ -49,7 +49,6 @@ pkg_check_modules(pkgs REQUIRED
 	vconf
 	bundle
 	dlog
-	ail
 	aul
 	appsvc
 	dbus-1
