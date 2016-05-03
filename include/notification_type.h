@@ -77,14 +77,14 @@ typedef enum  _notification_launch_option_type {
  * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  */
 typedef enum _notification_event_type {
-	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_1  = 0,  /** < Event type : Click on button 1 */
-	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_2  = 1,  /** < Event type : Click on button 2 */
-	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_3  = 2,  /** < Event type : Click on button 3 */
-	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_4  = 3,  /** < Event type : Click on button 4 */
-	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_5  = 4,  /** < Event type : Click on button 5 */
-	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_6  = 5,  /** < Event type : Click on button 6 */
-	NOTIFICATION_EVENT_TYPE_CLICK_ON_ICON      = 6,  /** < Event type : Click on icon */
-	NOTIFICATION_EVENT_TYPE_CLICK_ON_THUMBNAIL = 7,  /** < Event type : Click on thumbnail */
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_1  = 0,  /**< Event type : Click on button 1 */
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_2  = 1,  /**< Event type : Click on button 2 */
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_3  = 2,  /**< Event type : Click on button 3 */
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_4  = 3,  /**< Event type : Click on button 4 */
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_5  = 4,  /**< Event type : Click on button 5 */
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_6  = 5,  /**< Event type : Click on button 6 */
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_ICON      = 6,  /**< Event type : Click on icon */
+	NOTIFICATION_EVENT_TYPE_CLICK_ON_THUMBNAIL = 7,  /**< Event type : Click on thumbnail */
 	NOTIFICATION_EVENT_TYPE_MAX,
 } notification_event_type_e;
 
