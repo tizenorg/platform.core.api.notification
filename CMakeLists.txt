@@ -26,6 +26,7 @@ SET(SRCS
 SET(HEADERS-DEVEL
 	./include/notification.h
 	./include/notification_internal.h
+	./include/notification_db.h
 	./include/notification_error.h
 	./include/notification_type.h
 	./include/notification_list.h
