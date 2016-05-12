@@ -131,8 +131,8 @@ create	table if not exists noti_list ( \
 			do_not_disturb INTEGER DEFAULT 0, \
 			visibility_class INTEGER DEFAULT 0 \
 		); \
-		INSERT INTO notification_system_setting (priv_id, do_not_disturb, visibility_class) VALUES (0, 0, 0); \
-		CREATE UNIQUE INDEX package_name_idx1 ON notification_setting (package_name);"
+		INSERT OR IGNORE INTO notification_system_setting (priv_id, do_not_disturb, visibility_class) VALUES (0, 0, 0); \
+		CREATE UNIQUE INDEX IF NOT EXISTS package_name_idx1 ON notification_setting (package_name);"
 
 EXPORT_API int notification_db_init()
 {
