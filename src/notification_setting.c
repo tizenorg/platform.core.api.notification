@@ -21,6 +21,7 @@
 #include <package_manager.h>
 #include <pkgmgr-info.h>
 #include <tizen_type.h>
+#include <tzplatform_config.h>
 
 #include <notification.h>
 #include <notification_db.h>
@@ -33,8 +34,6 @@
 #include <notification_setting_internal.h>
 
 #define NOTIFICATION_PRIVILEGE "http://tizen.org/privilege/notification"
-
-
 
 EXPORT_API int notification_setting_get_setting_array(notification_setting_h *setting_array, int *count)
 {
@@ -392,7 +391,6 @@ EXPORT_API int notification_setting_refresh_setting_table()
 	int sqlite3_ret = SQLITE_OK;
 	int pkgmgr_ret = PACKAGE_MANAGER_ERROR_NONE;
 	pkgmgrinfo_pkginfo_filter_h filter;
-	uid_t current_uid;
 
 	sqlite3_ret = db_util_open(DBPATH, &db, 0);
 
@@ -418,9 +416,11 @@ EXPORT_API int notification_setting_refresh_setting_table()
 		goto out;
 	}
 
-	current_uid = getuid();
-
-	pkgmgr_ret = pkgmgrinfo_pkginfo_usr_filter_foreach_pkginfo(filter, foreach_package_info_callback, db, current_uid);
+	/*
+	 * DEFAULT_UID is owner's uid(5001)
+	 * currently this api do not support multi-user.
+	*/
+	pkgmgr_ret = pkgmgrinfo_pkginfo_usr_filter_foreach_pkginfo(filter, foreach_package_info_callback, db, tzplatform_getuid(TZ_SYS_DEFAULT_USER));
 	if (pkgmgr_ret != PMINFO_R_OK) {
 		NOTIFICATION_ERR("pkgmgrinfo_pkginfo_usr_filter_foreach_pkginfo failed [%d]", pkgmgr_ret);
 		err = NOTIFICATION_ERROR_FROM_DB;
