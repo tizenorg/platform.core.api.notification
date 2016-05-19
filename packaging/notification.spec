@@ -101,6 +101,7 @@ fi
 %{_includedir}/notification/notification_error.h
 %{_includedir}/notification/notification_type.h
 %{_includedir}/notification/notification_list.h
+%{_includedir}/notification/notification_ongoing.h
 %{_includedir}/notification/notification_ongoing_flag.h
 %{_includedir}/notification/notification_text_domain.h
 %{_includedir}/notification/notification_status.h

@@ -30,6 +30,7 @@ SET(HEADERS-DEVEL
 	./include/notification_error.h
 	./include/notification_type.h
 	./include/notification_list.h
+	./include/notification_ongoing.h
 	./include/notification_ongoing_flag.h
 	./include/notification_text_domain.h
 	./include/notification_status.h
