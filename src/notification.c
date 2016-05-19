@@ -1595,6 +1595,7 @@ static notification_h _notification_create(notification_type_e type)
 	noti->led_operation = NOTIFICATION_LED_OP_OFF;
 	noti->display_applist = NOTIFICATION_DISPLAY_APP_NOTIFICATION_TRAY | NOTIFICATION_DISPLAY_APP_TICKER | NOTIFICATION_DISPLAY_APP_INDICATOR;
 	noti->auto_remove = true;
+	noti->ongoing_flag = false;
 
 	err_app_manager = app_manager_get_app_id(getpid(), &app_id);
 	if (err_app_manager != APP_MANAGER_ERROR_NONE || app_id == NULL) {
