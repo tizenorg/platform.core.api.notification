@@ -19,11 +19,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include <vconf.h>
-#include <E_DBus.h>
-#include <Ecore.h>
-#include <Elementary.h>
-#include <Eina.h>
+#include <glib.h>
+#include <gio/gio.h>
 
 #include <notification.h>
 #include <notification_db.h>
@@ -41,42 +38,30 @@
 struct _message_cb_data {
 	notification_status_message_cb callback;
 	void *data;
-	E_DBus_Connection *dbus_connection;
-	E_DBus_Signal_Handler *dbus_hdlr;
+	GDBusConnection *conn;
+	uint message_id;
 };
 
 static struct _message_cb_data md;
 
-static void __notification_status_message_dbus_callback(void *data, DBusMessage *msg)
+static void __notification_status_message_dbus_callback(GDBusConnection *connection,
+					const gchar *sender_name,
+					const gchar *object_path,
+					const gchar *interface_name,
+					const gchar *signal_name,
+					GVariant *parameters,
+					gpointer user_data)
 {
-	int ret = 0;
-	DBusError err;
 	char *message = NULL;
 
-	if (data == NULL || msg == NULL) {
-		NOTIFICATION_ERR("message is NULL");
-		return;
-	}
-
-	dbus_error_init(&err);
-	ret = dbus_message_get_args(msg, &err,
-			DBUS_TYPE_STRING, &message,
-			DBUS_TYPE_INVALID);
-	if (ret == 0)	{
-		NOTIFICATION_ERR("dbus_message_get_args error");
-		return;
-	}
-
-	if (dbus_error_is_set(&err)) {
-		NOTIFICATION_ERR("Dbus err: %s", err.message);
-		dbus_error_free(&err);
-		return;
-	}
-	if (!md.callback)
-		return;
-
+	g_variant_get(parameters, "(&s)", &message);
 	if (strlen(message) <= 0) {
 		NOTIFICATION_ERR("message has only NULL");
+		return;
+	}
+
+	if (!md.callback) {
+		NOTIFICATION_ERR("no callback");
 		return;
 	}
 
@@ -86,33 +71,41 @@ static void __notification_status_message_dbus_callback(void *data, DBusMessage 
 EXPORT_API
 int notification_status_monitor_message_cb_set(notification_status_message_cb callback, void *user_data)
 {
+	GError *error = NULL;
+
 	if (!callback)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	E_DBus_Connection *dbus_connection;
-	E_DBus_Signal_Handler *dbus_handler_size = NULL;
 
-	e_dbus_init();
-	dbus_connection = e_dbus_bus_get(DBUS_BUS_SYSTEM);
-	if (dbus_connection == NULL) {
-		NOTIFICATION_ERR("noti register : failed to get dbus bus");
-		return NOTIFICATION_ERROR_FROM_DBUS;
-	}
-	dbus_handler_size =
-		e_dbus_signal_handler_add(dbus_connection, NULL,
-			PATH_NAME,
-			INTERFACE_NAME, MEMBER_NAME,
-			__notification_status_message_dbus_callback,
-			user_data);
-	if (dbus_handler_size == NULL) {
-		NOTIFICATION_ERR("fail to add size signal");
-		return NOTIFICATION_ERROR_FROM_DBUS;
+	if (md.conn == NULL) {
+		md.conn = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &error);
+		if (md.conn == NULL) {
+			NOTIFICATION_ERR("Failed to connect to the D-BUS Daemon: %s",
+						error->message);
+			g_error_free(error);
+			return NOTIFICATION_ERROR_FROM_DBUS;
+		}
 	}
 
+	if (!md.message_id) {
+		md.message_id = g_dbus_connection_signal_subscribe(md.conn,
+					NULL,
+					INTERFACE_NAME,
+					MEMBER_NAME,
+					PATH_NAME,
+					NULL,
+					G_DBUS_SIGNAL_FLAGS_NONE,
+					__notification_status_message_dbus_callback,
+					NULL,
+					NULL);
+		if (md.message_id == 0) {
+			NOTIFICATION_ERR("g_dbus_connection_signal_subscribe() failed.");
+			g_object_unref(md.conn);
+			return NOTIFICATION_ERROR_FROM_DBUS;
+		}
+	}
 
 	md.callback = callback;
 	md.data = user_data;
-	md.dbus_connection = dbus_connection;
-	md.dbus_hdlr = dbus_handler_size;
 
 	return NOTIFICATION_ERROR_NONE;
 }
@@ -120,15 +113,14 @@ int notification_status_monitor_message_cb_set(notification_status_message_cb ca
 EXPORT_API
 int notification_status_monitor_message_cb_unset(void)
 {
-	if (md.dbus_hdlr != NULL) {
-			e_dbus_signal_handler_del(md.dbus_connection,
-					md.dbus_hdlr);
-			md.dbus_hdlr = NULL;
+	if (md.message_id) {
+		g_dbus_connection_signal_unsubscribe(md.conn, md.message_id);
+		md.message_id = 0;
 	}
-	if (md.dbus_connection != NULL) {
-		e_dbus_connection_close(md.dbus_connection);
-		md.dbus_connection = NULL;
-		e_dbus_shutdown();
+
+	if (md.conn) {
+		g_object_unref(md.conn);
+		md.conn = NULL;
 	}
 
 	md.callback = NULL;
@@ -140,50 +132,51 @@ int notification_status_monitor_message_cb_unset(void)
 EXPORT_API
 int notification_status_message_post(const char *message)
 {
-	DBusConnection *connection = NULL;
-	DBusMessage *signal = NULL;
-	DBusError err;
-	dbus_bool_t ret;
+	GError *err = NULL;
+	GDBusConnection *conn;
+	GVariant *param;
+	int ret = NOTIFICATION_ERROR_NONE;
 
 	if (!message) {
 		NOTIFICATION_ERR("message is NULL");
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 
-	if (strlen(message) <= 0) {
-		NOTIFICATION_ERR("message has only NULL");
-		return NOTIFICATION_ERROR_INVALID_PARAMETER;
+	conn = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &err);
+	if (conn == NULL) {
+		NOTIFICATION_ERR("g_bus_get_sync() failed: %s", err->message);
+		ret = NOTIFICATION_ERROR_FROM_DBUS;
+		goto end;
 	}
 
-	dbus_error_init(&err);
-	connection = dbus_bus_get(DBUS_BUS_SYSTEM, &err);
-	if (!connection) {
-		NOTIFICATION_ERR("Fail to dbus_bus_get");
+	param = g_variant_new("(s)", message);
+
+	if (g_dbus_connection_emit_signal(conn,
+					NULL,
+					PATH_NAME,
+					INTERFACE_NAME,
+					MEMBER_NAME,
+					param,
+					&err) == FALSE) {
+		NOTIFICATION_ERR("g_dbus_connection_emit_signal() failed: %s",
+					err->message);
 		return NOTIFICATION_ERROR_FROM_DBUS;
+		goto end;
 	}
 
-	signal =
-	    dbus_message_new_signal(PATH_NAME, INTERFACE_NAME,
-				    MEMBER_NAME);
-	if (!signal) {
-		NOTIFICATION_ERR("Fail to dbus_message_new_signal");
+	if (g_dbus_connection_flush_sync(conn, NULL, &err) == FALSE) {
+		NOTIFICATION_ERR("g_dbus_connection_flush_sync() failed: %s",
+					err->message);
 		return NOTIFICATION_ERROR_FROM_DBUS;
+		goto end;
 	}
 
-	ret = dbus_message_append_args(signal,
-					   DBUS_TYPE_STRING, &message,
-					   DBUS_TYPE_INVALID);
-	if (ret) {
-		ret = dbus_connection_send(connection, signal, NULL);
+end:
+	if (err)
+		g_error_free(err);
 
-		if (ret)
-			dbus_connection_flush(connection);
-	}
+	if (conn)
+		g_object_unref(conn);
 
-	dbus_message_unref(signal);
-	dbus_connection_unref(connection);
-
-	return NOTIFICATION_ERROR_NONE;
+	return ret;
 }
-
-

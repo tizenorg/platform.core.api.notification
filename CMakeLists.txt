@@ -60,10 +60,6 @@ pkg_check_modules(pkgs REQUIRED
 	capi-appfw-app-manager
 	capi-appfw-package-manager
 	pkgmgr-info
-	edbus
-	elementary
-	ecore
-	eina
 	libtzplatform-config
 	glib-2.0
 	gio-2.0

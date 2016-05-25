@@ -19,9 +19,6 @@
 #include <stdlib.h>
 
 #include <vconf.h>
-#include <Ecore.h>
-#include <Elementary.h>
-#include <Eina.h>
 #include <pkgmgr-info.h>
 #include <package_manager.h>
 
