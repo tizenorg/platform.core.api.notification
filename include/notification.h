@@ -437,7 +437,7 @@ int notification_get_vibration(notification_h noti,
 	notification_h noti = NULL;
 	int noti_err = NOTIFICATION_ERROR_NONE;
 
-	noti_err  = notification_set_led(noti, NOTIFICATION_LED_TYPE_DEFAULT, NULL);
+	noti_err  = notification_set_led(noti, NOTIFICATION_LED_OP_ON, NULL);
 	if(noti_err != NOTIFICATION_ERROR_NONE) {
 		return;
 	}
@@ -464,7 +464,7 @@ int notification_set_led(notification_h noti, notification_led_op_e operation,
  {
 	notification_h noti = NULL;
 	int noti_err = NOTIFICATION_ERROR_NONE;
-	notification_led_type_e type = NOTIFICATION_LED_TYPE_NONE;
+	notification_led_type_e type = NOTIFICATION_LED_OP_OFF;
 
 	noti_err  = notification_get_led(noti, &type, NULL);
 	if(noti_err != NOTIFICATION_ERROR_NONE) {
