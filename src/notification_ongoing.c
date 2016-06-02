@@ -63,18 +63,14 @@ static void __notification_ongoing_update_callback(GDBusConnection *connection,
 	}
 
 	if (g_strcmp0(signal_name, MEMBER_PROGRESS) == 0) {
-		g_variant_get(parameters, "(sid)", &pkgname, &priv_id, &progress);
+		g_variant_get(parameters, "(&sid)", &pkgname, &priv_id, &progress);
 		info->type = ONGOING_TYPE_PROGRESS;
-	}
-
-	if (g_strcmp0(signal_name, MEMBER_SIZE) == 0) {
-		g_variant_get(parameters, "(sid)", &pkgname, &priv_id, &size);
+	} else if (g_strcmp0(signal_name, MEMBER_SIZE) == 0) {
+		g_variant_get(parameters, "(&sid)", &pkgname, &priv_id, &size);
 		info->type = ONGOING_TYPE_SIZE;
 
-	}
-
-	if (g_strcmp0(signal_name, MEMBER_CONTENT) == 0) {
-		g_variant_get(parameters, "(sis)", &pkgname, &priv_id, &content);
+	} else if (g_strcmp0(signal_name, MEMBER_CONTENT) == 0) {
+		g_variant_get(parameters, "(&si&s)", &pkgname, &priv_id, &content);
 		info->type = ONGOING_TYPE_CONTENT;
 	}
 
@@ -84,13 +80,15 @@ static void __notification_ongoing_update_callback(GDBusConnection *connection,
 		return;
 	}
 
-	info->pkgname = strdup(pkgname);
+	info->pkgname = pkgname;
 	info->priv_id = priv_id;
 	info->progress = progress;
 	info->size = size;
 	info->content = content;
 
 	od.callback(info, od.data);
+
+	free(info);
 }
 
 static int __send_ongoing_update_signal(const char *signal_name, GVariant *param)
@@ -150,15 +148,18 @@ int notification_ongoing_update_cb_set(notification_ongoing_update_cb callback,
 	if (!callback)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	od.conn = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &error);
 	if (od.conn == NULL) {
-		NOTIFICATION_ERR("Failed to connect to the D-BUS Daemon: %s",
-					error->message);
-		g_error_free(error);
-		return NOTIFICATION_ERROR_FROM_DBUS;
+		od.conn = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &error);
+		if (od.conn == NULL) {
+			NOTIFICATION_ERR("Failed to connect to the D-BUS Daemon: %s",
+						error->message);
+			g_error_free(error);
+			return NOTIFICATION_ERROR_FROM_DBUS;
+		}
 	}
 
-	od.subscribe_id = g_dbus_connection_signal_subscribe(od.conn,
+	if (!od.subscribe_id) {
+		od.subscribe_id = g_dbus_connection_signal_subscribe(od.conn,
 					NULL,
 					INTERFACE_NAME,
 					NULL,
@@ -168,10 +169,11 @@ int notification_ongoing_update_cb_set(notification_ongoing_update_cb callback,
 					__notification_ongoing_update_callback,
 					NULL,
 					NULL);
-	if (od.subscribe_id == 0) {
-		NOTIFICATION_ERR("g_dbus_connection_signal_subscribe() failed");
-		g_object_unref(od.conn);
-		return NOTIFICATION_ERROR_FROM_DBUS;
+		if (od.subscribe_id == 0) {
+			NOTIFICATION_ERR("g_dbus_connection_signal_subscribe() failed");
+			g_object_unref(od.conn);
+			return NOTIFICATION_ERROR_FROM_DBUS;
+		}
 	}
 
 	od.callback = callback;
