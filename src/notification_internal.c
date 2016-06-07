@@ -320,6 +320,7 @@ EXPORT_API int notification_update_content(notification_h noti,
 }
 
 /* notification_set_icon will be removed */
+/* LCOV_EXCL_START */
 EXPORT_API int notification_set_icon(notification_h noti,
 						      const char *icon_path)
 {
@@ -331,8 +332,10 @@ EXPORT_API int notification_set_icon(notification_h noti,
 
 	return ret_err;
 }
+/* LCOV_EXCL_STOP */
 
 /* notification_get_icon will be removed */
+/* LCOV_EXCL_START */
 EXPORT_API int notification_get_icon(notification_h noti,
 						      char **icon_path)
 {
@@ -348,6 +351,7 @@ EXPORT_API int notification_get_icon(notification_h noti,
 
 	return ret_err;
 }
+/* LCOV_EXCL_STOP */
 
 EXPORT_API int notification_translate_localized_text(notification_h noti)
 {
@@ -390,6 +394,7 @@ EXPORT_API int notification_translate_localized_text(notification_h noti)
 	return noti_err;
 }
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_set_title(notification_h noti,
 						       const char *title,
 						       const char *loc_title)
@@ -402,7 +407,9 @@ EXPORT_API int notification_set_title(notification_h noti,
 
 	return noti_err;
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_get_title(notification_h noti,
 						       char **title,
 						       char **loc_title)
@@ -422,7 +429,9 @@ EXPORT_API int notification_get_title(notification_h noti,
 
 	return noti_err;
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_set_content(notification_h noti,
 							 const char *content,
 							 const char *loc_content)
@@ -435,7 +444,9 @@ EXPORT_API int notification_set_content(notification_h noti,
 
 	return noti_err;
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_get_content(notification_h noti,
 							 char **content,
 							 char **loc_content)
@@ -469,7 +480,9 @@ EXPORT_API int notification_get_content(notification_h noti,
 	}
 #endif
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_set_application(notification_h noti,
 							     const char *pkgname)
 {
@@ -483,7 +496,9 @@ EXPORT_API int notification_set_application(notification_h noti,
 
 	return NOTIFICATION_ERROR_NONE;
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_get_application(notification_h noti,
 							     char **pkgname)
 {
@@ -497,7 +512,9 @@ EXPORT_API int notification_get_application(notification_h noti,
 
 	return NOTIFICATION_ERROR_NONE;
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_set_args(notification_h noti, bundle *args,
 		bundle *group_args)
 {
@@ -519,7 +536,9 @@ EXPORT_API int notification_set_args(notification_h noti, bundle *args,
 
 	return NOTIFICATION_ERROR_NONE;
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_get_args(notification_h noti,
 						      bundle **args,
 						      bundle **group_args)
@@ -537,7 +556,9 @@ EXPORT_API int notification_get_args(notification_h noti,
 
 	return NOTIFICATION_ERROR_NONE;
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_get_grouping_list(notification_type_e type, int count,
 			       notification_list_h *list)
 {
@@ -555,7 +576,9 @@ EXPORT_API int notification_get_grouping_list(notification_type_e type, int coun
 
 	return NOTIFICATION_ERROR_NONE;
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_delete_group_by_group_id(const char *pkgname,
 								      notification_type_e type,
 								      int group_id)
@@ -575,7 +598,9 @@ EXPORT_API int notification_delete_group_by_group_id(const char *pkgname,
 
 	return ret;
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_delete_group_by_priv_id(const char *pkgname,
 								     notification_type_e type,
 								     int priv_id)
@@ -595,7 +620,9 @@ EXPORT_API int notification_delete_group_by_priv_id(const char *pkgname,
 
 	return ret;
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_get_count(notification_type_e type,
 						       const char *pkgname,
 						       int group_id,
@@ -624,7 +651,9 @@ EXPORT_API int notification_get_count(notification_type_e type,
 
 	return ret;
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_clear(notification_type_e type)
 {
 	int ret = 0;
@@ -636,7 +665,9 @@ EXPORT_API int notification_clear(notification_type_e type)
 
 	return ret;
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_op_get_data(notification_op *noti_op, notification_op_data_type_e type,
 						       void *data)
 {
@@ -666,7 +697,9 @@ EXPORT_API int notification_op_get_data(notification_op *noti_op, notification_o
 
 	return NOTIFICATION_ERROR_NONE;
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_set_pkgname(notification_h noti,
 							 const char *pkgname)
 {
@@ -684,7 +717,9 @@ EXPORT_API int notification_set_pkgname(notification_h noti,
 
 	return NOTIFICATION_ERROR_NONE;
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_delete_all_by_type(const char *pkgname,
 								notification_type_e type)
 {
@@ -706,7 +741,9 @@ EXPORT_API int notification_delete_all_by_type(const char *pkgname,
 
 	return ret;
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_delete_by_priv_id(const char *pkgname,
 							       notification_type_e type,
 							       int priv_id)
@@ -729,7 +766,9 @@ EXPORT_API int notification_delete_by_priv_id(const char *pkgname,
 
 	return ret;
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_set_execute_option(notification_h noti,
 								notification_execute_type_e type,
 								const char *text,
@@ -826,7 +865,9 @@ EXPORT_API int notification_set_execute_option(notification_h noti,
 
 	return NOTIFICATION_ERROR_NONE;
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_get_id(notification_h noti,
 						    int *group_id, int *priv_id)
 {
@@ -850,7 +891,9 @@ EXPORT_API int notification_get_id(notification_h noti,
 
 	return NOTIFICATION_ERROR_NONE;
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API notification_h notification_load(char *pkgname,
 						      int priv_id)
 {
@@ -871,11 +914,12 @@ EXPORT_API notification_h notification_load(char *pkgname,
 
 	return noti;
 }
+/* LCOV_EXCL_STOP */
 
 EXPORT_API notification_h notification_new(notification_type_e type,
 					   int group_id, int priv_id)
 {
-	return notification_create(type);
+	return notification_create(type); //LCOV_EXCL_LINE
 }
 
 static void _notification_get_text_domain(notification_h noti)
@@ -891,6 +935,7 @@ static void _notification_get_text_domain(notification_h noti)
 */
 }
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_get_execute_option(notification_h noti,
 								notification_execute_type_e type,
 								const char **text,
@@ -965,6 +1010,7 @@ EXPORT_API int notification_get_execute_option(notification_h noti,
 
 	return NOTIFICATION_ERROR_NONE;
 }
+/* LCOV_EXCL_STOP */
 
 EXPORT_API int notification_insert(notification_h noti,
 						    int *priv_id)
