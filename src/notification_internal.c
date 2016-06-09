@@ -366,9 +366,13 @@ EXPORT_API int notification_translate_localized_text(notification_h noti)
 	for (; type < NOTIFICATION_TEXT_TYPE_MAX; type++) {
 		noti_err = notification_get_text(noti, type, &ret_text);
 		if (noti_err == NOTIFICATION_ERROR_NONE && ret_text) {
+			if (noti->b_text == NULL) {
+				noti->b_text = bundle_create();
+				if (noti->b_text == NULL)
+					return NOTIFICATION_ERROR_OUT_OF_MEMORY;
+			}
+
 			b = noti->b_text;
-			if (b == NULL)
-				b = bundle_create();
 
 			new_text = strdup(ret_text);
 
