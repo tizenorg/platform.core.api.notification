@@ -29,7 +29,7 @@ extern "C" {
  * @addtogroup NOTIFICATION_INTERNAL
  * @{
  */
-
+#define NOTIFICATION_GLOBAL_UID -1
 #define NOTIFICATION_DISPLAY_APP_HEADS_UP NOTIFICATION_DISPLAY_APP_ACTIVE /* To avoid build error */
 #define NOTIFICATION_ERROR (notification_error_quark())
 GQuark notification_error_quark(void);
@@ -54,6 +54,12 @@ int notification_add_deferred_task(
  */
 int notification_del_deferred_task(
 		void (*deferred_task_cb)(void *data));
+
+
+int
+notification_resister_changed_cb_for_uid(
+	void (*changed_cb)(void *data, notification_type_e type),
+	void *user_data, uid_t uid);
 
 /**
  * @brief This function will be removed.
@@ -608,7 +614,10 @@ NOTIFICATION_DEPRECATED_API int notification_get_execute_option(notification_h n
  * @endcode
  */
 int notification_insert(notification_h noti,
-					 int *priv_id);
+		int *priv_id);
+
+int notification_insert_for_uid(notification_h noti,
+		int *priv_id, uid_t uid);
 
 /**
  * @internal
@@ -643,6 +652,8 @@ int notification_insert(notification_h noti,
  */
 int notification_update_async(notification_h noti,
 		void (*result_cb)(int priv_id, int result, void *data), void *user_data);
+int notification_update_async_for_uid(notification_h noti,
+		void (*result_cb)(int priv_id, int result, void *data), void *user_data, uid_t uid);
 
 /**
  * @internal
@@ -674,6 +685,9 @@ int notification_update_async(notification_h noti,
 int notification_register_detailed_changed_cb(
 		void (*detailed_changed_cb)(void *data, notification_type_e type, notification_op *op_list, int num_op),
 		void *user_data);
+int notification_register_detailed_changed_cb_for_uid(
+		void (*detailed_changed_cb)(void *data, notification_type_e type, notification_op *op_list, int num_op),
+		void *user_data, uid_t uid);
 
 /**
  * @internal
@@ -711,6 +725,13 @@ int notification_unregister_detailed_changed_cb(
  * @see notification_create()
  */
 int notification_translate_localized_text(notification_h noti);
+int notification_set_uid(notification_h noti, uid_t uid);
+int notification_get_uid(notification_h noti, uid_t *uid);
+int notification_post_for_uid(notification_h noti, uid_t uid);
+int notification_update_for_uid(notification_h noti, uid_t uid);
+int notification_delete_for_uid(notification_h noti, uid_t uid);
+int notification_delete_all_for_uid(notification_type_e type, uid_t uid);
+notification_h notification_load_by_tag_for_uid(const char *tag, uid_t uid);
 
 /**
  * @}

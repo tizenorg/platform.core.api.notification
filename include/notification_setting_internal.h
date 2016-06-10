@@ -45,8 +45,8 @@ int notification_setting_set_allow_to_notify(notification_setting_h setting, boo
 int notification_setting_get_do_not_disturb_except(notification_setting_h setting, bool *value);
 int notification_setting_set_do_not_disturb_except(notification_setting_h setting, bool value);
 
-int notification_setting_insert_package(const char *package_id);
-int notification_setting_delete_package(const char *package_id);
+int notification_setting_insert_package_for_uid(const char *package_id, uid_t uid);
+int notification_setting_delete_package_for_uid(const char *package_id, uid_t uid);
 
 /* System setting */
 typedef struct notification_system_setting *notification_system_setting_h;

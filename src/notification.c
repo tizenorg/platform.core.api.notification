@@ -1484,77 +1484,22 @@ EXPORT_API int notification_get_type(notification_h noti,
 
 EXPORT_API int notification_post(notification_h noti)
 {
-	int ret = 0;
-	int id = 0;
-
-	/* Check noti is vaild data */
-	if (noti == NULL)
-		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-
-	/* Check noti type is valid type */
-	if (noti->type <= NOTIFICATION_TYPE_NONE
-	    || noti->type >= NOTIFICATION_TYPE_MAX)
-		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-
-	/* Save insert time */
-	noti->insert_time = time(NULL);
-
-	ret = notification_ipc_request_insert(noti, &id);
-	if (ret != NOTIFICATION_ERROR_NONE)
-		return ret;
-
-	noti->priv_id = id;
-	NOTIFICATION_DBG("from master:%d", id);
-
-	return NOTIFICATION_ERROR_NONE;
+	return notification_post_for_uid(noti, getuid());
 }
-
-
 
 EXPORT_API int notification_update(notification_h noti)
 {
-	int ret = 0;
-
-	/* Check noti is valid data */
-	if (noti != NULL) {
-		/* Update insert time ? */
-		noti->insert_time = time(NULL);
-		ret = notification_ipc_request_update(noti);
-	} else {
-		notification_ipc_request_refresh();
-		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
-	return ret;
+	return notification_update_for_uid(noti, getuid());
 }
 
 EXPORT_API int notification_delete_all(notification_type_e type)
 {
-	int ret = 0;
-	char *caller_pkgname = NULL;
-
-	if (type <= NOTIFICATION_TYPE_NONE || type >= NOTIFICATION_TYPE_MAX)
-		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-
-	caller_pkgname = notification_get_pkgname_by_pid();
-
-	ret = notification_ipc_request_delete_multiple(type, caller_pkgname);
-
-	if (caller_pkgname)
-		free(caller_pkgname);
-
-	return ret;
+	return notification_delete_all_for_uid(type, getuid());
 }
 
 EXPORT_API int notification_delete(notification_h noti)
 {
-	int ret = 0;
-
-	if (noti == NULL)
-		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-
-	ret = notification_ipc_request_delete_single(NOTIFICATION_TYPE_NONE, noti->caller_pkgname, noti->priv_id);
-
-	return ret;
+	return notification_delete_for_uid(noti, getuid());
 }
 
 static notification_h _notification_create(notification_type_e type)
@@ -1589,7 +1534,6 @@ static notification_h _notification_create(notification_type_e type)
 
 	noti->caller_pkgname = notification_get_pkgname_by_pid();
 	noti->group_id = NOTIFICATION_GROUP_ID_NONE;
-	noti->priv_id = NOTIFICATION_PRIV_ID_NONE;
 	noti->sound_type = NOTIFICATION_SOUND_TYPE_NONE;
 	noti->vibration_type = NOTIFICATION_VIBRATION_TYPE_NONE;
 	noti->led_operation = NOTIFICATION_LED_OP_OFF;
@@ -1660,42 +1604,7 @@ EXPORT_API notification_h notification_create(notification_type_e type)
 
 EXPORT_API notification_h  notification_load_by_tag(const char *tag)
 {
-	int ret = 0;
-	notification_h noti = NULL;
-	char *caller_pkgname = NULL;
-
-	if (tag == NULL) {
-		NOTIFICATION_ERR("Invalid parameter");
-		set_last_result(NOTIFICATION_ERROR_INVALID_PARAMETER);
-		return NULL;
-	}
-
-	caller_pkgname = notification_get_pkgname_by_pid();
-	if (!caller_pkgname) {
-		NOTIFICATION_ERR("Failed to get a package name");
-		set_last_result(NOTIFICATION_ERROR_OUT_OF_MEMORY);
-		return NULL;
-	}
-
-	noti = (notification_h)calloc(1, sizeof(struct _notification));
-	if (noti == NULL) {
-		NOTIFICATION_ERR("Failed to alloc a new notification");
-		set_last_result(NOTIFICATION_ERROR_OUT_OF_MEMORY);
-		free(caller_pkgname);
-
-		return NULL;
-	}
-
-	ret = notification_ipc_request_load_noti_by_tag(noti, caller_pkgname, (char *)tag);
-	free(caller_pkgname);
-
-	set_last_result(ret);
-	if (ret != NOTIFICATION_ERROR_NONE) {
-		notification_free(noti);
-		return NULL;
-	}
-
-	return noti;
+	return notification_load_by_tag_for_uid(tag, getuid());
 }
 
 EXPORT_API int notification_clone(notification_h noti, notification_h *clone)

@@ -39,7 +39,7 @@ create	table if not exists noti_list ( \
 			image_path TEXT, \
 			group_id INTEGER default 0,  \
 			internal_group_id INTEGER default 0,  \
-			priv_id INTERGER NOT NULL,  \
+			priv_id INTEGER PRIMARY KEY AUTOINCREMENT,  \
 			title_key TEXT, \
 			b_text TEXT, \
 			b_key TEXT, \
@@ -77,10 +77,9 @@ create	table if not exists noti_list ( \
 			display_applist INTEGER, \
 			progress_size DOUBLE default 0, \
 			progress_percentage DOUBLE default 0, \
-			rowid INTEGER PRIMARY KEY AUTOINCREMENT, \
 			ongoing_flag INTEGER default 0, \
 			auto_remove INTEGER default 1, \
-			UNIQUE (caller_pkgname, priv_id)  \
+			uid INTEGER \
 		); \
 		create table if not exists noti_group_data ( \
 			caller_pkgname TEXT NOT NULL, \
@@ -119,20 +118,19 @@ create	table if not exists noti_list ( \
 			UNIQUE (caller_pkgname, priv_id) \
 		); \
 		CREATE TABLE IF NOT EXISTS notification_setting ( \
-			priv_id INTEGER PRIMARY KEY AUTOINCREMENT, \
+			uid INTEGER, \
 			package_name TEXT NOT NULL, \
 			allow_to_notify INTEGER DEFAULT 1, \
 			do_not_disturb_except INTEGER DEFAULT 0, \
 			visibility_class INTEGER DEFAULT 0, \
-			UNIQUE (priv_id, package_name) \
+			UNIQUE (uid, package_name) \
 		); \
 		CREATE TABLE IF NOT EXISTS notification_system_setting ( \
-			priv_id INTERGER PRIMARY KEY, \
+			uid INTEGER, \
 			do_not_disturb INTEGER DEFAULT 0, \
-			visibility_class INTEGER DEFAULT 0 \
-		); \
-		INSERT OR IGNORE INTO notification_system_setting (priv_id, do_not_disturb, visibility_class) VALUES (0, 0, 0); \
-		CREATE UNIQUE INDEX IF NOT EXISTS package_name_idx1 ON notification_setting (package_name);"
+			visibility_class INTEGER DEFAULT 0, \
+			UNIQUE (uid) \
+		);"
 
 EXPORT_API int notification_db_init()
 {
@@ -140,6 +138,7 @@ EXPORT_API int notification_db_init()
 	sqlite3 *db = NULL;
 	char *errmsg = NULL;
 	char defname[FILENAME_MAX];
+	char *query = NULL;
 	const char *db_path = tzplatform_getenv(TZ_SYS_DB);
 	if (db_path == NULL) {
 		NOTIFICATION_ERR("fail to get db_path");
@@ -154,8 +153,12 @@ EXPORT_API int notification_db_init()
 		NOTIFICATION_ERR("fail to open notification db %d", r);
 		return NOTIFICATION_ERROR_IO_ERROR;
 	}
+	query = sqlite3_mprintf(CREATE_NOTIFICATION_TABLE, tzplatform_getuid(TZ_SYS_DEFAULT_USER));
+	NOTIFICATION_DBG("@@@ query : %s", query);
 
 	r = sqlite3_exec(db, CREATE_NOTIFICATION_TABLE, NULL, NULL, &errmsg);
+	if (query)
+		sqlite3_free(query);
 	if (r != SQLITE_OK) {
 		NOTIFICATION_ERR("query error(%d)(%s)", r, errmsg);
 		sqlite3_free(errmsg);

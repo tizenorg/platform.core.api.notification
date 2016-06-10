@@ -40,5 +40,5 @@ SET(CMAKE_EXE_LINKER_FLAGS "-Wl,--as-needed -pie")
 ADD_EXECUTABLE(notification-test-app ${TEST-APP-SRCS})
 TARGET_LINK_LIBRARIES(notification-test-app ${test_app_pkgs_LDFLAGS} notification)
 
-# INSTALL(TARGETS notification-test-app DESTINATION bin)
+#INSTALL(TARGETS notification-test-app DESTINATION bin)
 

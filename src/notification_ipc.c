@@ -63,7 +63,7 @@ struct _task_list {
 
 static task_list *g_task_list;
 
-static int _ipc_monitor_register(void);
+static int _ipc_monitor_register(uid_t uid);
 static int _ipc_monitor_deregister(void);
 static void _do_deffered_task(void);
 
@@ -664,7 +664,6 @@ int notification_ipc_request_insert(notification_h noti, int *priv_id)
 	}
 
 	/* Initialize private ID */
-	noti->priv_id = NOTIFICATION_PRIV_ID_NONE;
 	noti->group_id = NOTIFICATION_GROUP_ID_NONE;
 	noti->internal_group_id = NOTIFICATION_GROUP_ID_NONE;
 
@@ -767,7 +766,7 @@ int notification_ipc_request_update_async(notification_h noti,
 	return result;
 }
 
-int notification_ipc_request_refresh(void)
+int notification_ipc_request_refresh(uid_t uid)
 {
 	int result;
 	GDBusMessage *reply = NULL;
@@ -779,7 +778,7 @@ int notification_ipc_request_refresh(void)
 		return result;
 	}
 
-	body = g_variant_new("(i)", NOTIFICATION_OP_REFRESH);
+	body = g_variant_new("(i)", uid);
 	result = _send_sync_noti(body, &reply, "refresh_noti");
 
 	if (reply)
@@ -789,7 +788,7 @@ int notification_ipc_request_refresh(void)
 	return result;
 }
 
-int notification_ipc_request_delete_single(notification_type_e type, char *pkgname, int priv_id)
+int notification_ipc_request_delete_single(notification_type_e type, char *pkgname, int priv_id, uid_t uid)
 {
 	int result;
 	int id;
@@ -803,7 +802,7 @@ int notification_ipc_request_delete_single(notification_type_e type, char *pkgna
 		return result;
 	}
 
-	body = g_variant_new("(si)", pkgname, priv_id);
+	body = g_variant_new("(sii)", pkgname, priv_id, uid);
 	result = _send_sync_noti(body, &reply, "del_noti_single");
 
 	if (result == NOTIFICATION_ERROR_NONE) {
@@ -818,7 +817,7 @@ int notification_ipc_request_delete_single(notification_type_e type, char *pkgna
 	return result;
 }
 
-int notification_ipc_request_delete_multiple(notification_type_e type, char *pkgname)
+int notification_ipc_request_delete_multiple(notification_type_e type, char *pkgname, uid_t uid)
 {
 	int result;
 	int num_deleted;
@@ -835,7 +834,7 @@ int notification_ipc_request_delete_multiple(notification_type_e type, char *pkg
 	if (!pkgname)
 		pkgname = "";
 
-	body = g_variant_new("(si)", pkgname, type);
+	body = g_variant_new("(sii)", pkgname, type, uid);
 	result = _send_sync_noti(body, &reply, "del_noti_multiple");
 
 	if (result == NOTIFICATION_ERROR_NONE) {
@@ -850,7 +849,7 @@ int notification_ipc_request_delete_multiple(notification_type_e type, char *pkg
 	return result;
 }
 
-int notification_ipc_request_load_noti_by_tag(notification_h noti, const char *pkgname, const char *tag)
+int notification_ipc_request_load_noti_by_tag(notification_h noti, const char *pkgname, const char *tag, uid_t uid)
 {
 	int result;
 	GDBusMessage *reply = NULL;
@@ -867,7 +866,7 @@ int notification_ipc_request_load_noti_by_tag(notification_h noti, const char *p
 	if (!pkgname)
 		pkgname = "";
 
-	body = g_variant_new("(ss)", pkgname, tag);
+	body = g_variant_new("(ssi)", pkgname, tag, uid);
 	result = _send_sync_noti(body, &reply, "load_noti_by_tag");
 
 	if (result == NOTIFICATION_ERROR_NONE) {
@@ -887,7 +886,7 @@ int notification_ipc_request_load_noti_by_tag(notification_h noti, const char *p
 	return result;
 }
 
-int notification_ipc_request_load_noti_by_priv_id(notification_h noti, const char *pkgname, int priv_id)
+int notification_ipc_request_load_noti_by_priv_id(notification_h noti, const char *pkgname, int priv_id, uid_t uid)
 {
 	int result;
 	GDBusMessage *reply = NULL;
@@ -904,7 +903,7 @@ int notification_ipc_request_load_noti_by_priv_id(notification_h noti, const cha
 	if (!pkgname)
 		pkgname = "";
 
-	body = g_variant_new("(si)", pkgname, priv_id);
+	body = g_variant_new("(sii)", pkgname, priv_id, uid);
 	result = _send_sync_noti(body, &reply, "load_noti_by_priv_id");
 
 	if (result == NOTIFICATION_ERROR_NONE) {
@@ -924,7 +923,7 @@ int notification_ipc_request_load_noti_by_priv_id(notification_h noti, const cha
 }
 
 int notification_ipc_request_get_count(notification_type_e type,
-		    const char *pkgname, int group_id, int priv_id, int *count)
+		    const char *pkgname, int group_id, int priv_id, int *count, uid_t uid)
 {
 	int result;
 	GDBusMessage *reply = NULL;
@@ -941,7 +940,7 @@ int notification_ipc_request_get_count(notification_type_e type,
 	if (!pkgname)
 		pkgname = "";
 
-	body = g_variant_new("(isii)", type, pkgname, group_id, priv_id);
+	body = g_variant_new("(isiii)", type, pkgname, group_id, priv_id, uid);
 	result = _send_sync_noti(body, &reply, "get_noti_count");
 
 	if (result == NOTIFICATION_ERROR_NONE) {
@@ -960,7 +959,7 @@ int notification_ipc_request_get_count(notification_type_e type,
 }
 
 int notification_ipc_request_load_noti_grouping_list(notification_type_e type, int count,
-		notification_list_h *list)
+		notification_list_h *list, uid_t uid)
 {
 	int result;
 	GDBusMessage *reply = NULL;
@@ -977,7 +976,7 @@ int notification_ipc_request_load_noti_grouping_list(notification_type_e type, i
 		return result;
 	}
 
-	body = g_variant_new("(ii)", type, count);
+	body = g_variant_new("(iii)", type, count, uid);
 	result = _send_sync_noti(body, &reply, "load_noti_grouping_list");
 
 	if (result == NOTIFICATION_ERROR_NONE) {
@@ -988,7 +987,6 @@ int notification_ipc_request_load_noti_grouping_list(notification_type_e type, i
 			noti = notification_create(NOTIFICATION_TYPE_NOTI);
 			g_variant_get(iter_body, "(v)", &noti_body);
 			notification_ipc_make_noti_from_gvariant(noti, noti_body);
-			_print_noti(noti);
 			*list = notification_list_append(*list, noti);
 		}
 		g_variant_iter_free(iter);
@@ -1005,7 +1003,8 @@ int notification_ipc_request_load_noti_detail_list(const char *pkgname,
 		int group_id,
 		int priv_id,
 		int count,
-		notification_list_h *list)
+		notification_list_h *list,
+		uid_t uid)
 {
 	int result;
 	GDBusMessage *reply = NULL;
@@ -1022,7 +1021,7 @@ int notification_ipc_request_load_noti_detail_list(const char *pkgname,
 		return result;
 	}
 
-	body = g_variant_new("(siii)", pkgname, group_id, priv_id, count);
+	body = g_variant_new("(siiii)", pkgname, group_id, priv_id, count, uid);
 	result = _send_sync_noti(body, &reply, "load_noti_detail_list");
 
 	if (result == NOTIFICATION_ERROR_NONE) {
@@ -1033,7 +1032,6 @@ int notification_ipc_request_load_noti_detail_list(const char *pkgname,
 			noti = notification_create(NOTIFICATION_TYPE_NOTI);
 			g_variant_get(iter_body, "(v)", &noti_body);
 			notification_ipc_make_noti_from_gvariant(noti, noti_body);
-			_print_noti(noti);
 			*list = notification_list_append(*list, noti);
 		}
 		g_variant_iter_free(iter);
@@ -1048,7 +1046,8 @@ int notification_ipc_request_load_noti_detail_list(const char *pkgname,
 
 int notification_ipc_request_get_setting_array(
 		notification_setting_h *setting_array,
-		int *count)
+		int *count,
+		uid_t uid)
 {
 	int result;
 	GDBusMessage *reply = NULL;
@@ -1066,7 +1065,7 @@ int notification_ipc_request_get_setting_array(
 		return result;
 	}
 
-	result = _send_sync_noti(NULL, &reply, "get_setting_array");
+	result = _send_sync_noti(g_variant_new("(i)", uid), &reply, "get_setting_array");
 
 	if (result == NOTIFICATION_ERROR_NONE) {
 		reply_body = g_dbus_message_get_body(reply);
@@ -1101,7 +1100,7 @@ int notification_ipc_request_get_setting_array(
 }
 
 int notification_ipc_request_get_setting_by_package_name(
-		const char *package_name, notification_setting_h *setting)
+		const char *package_name, notification_setting_h *setting, uid_t uid)
 {
 	int result;
 	GDBusMessage *reply = NULL;
@@ -1116,7 +1115,7 @@ int notification_ipc_request_get_setting_by_package_name(
 		return result;
 	}
 
-	body = g_variant_new("(s)", package_name);
+	body = g_variant_new("(si)", package_name, uid);
 	result = _send_sync_noti(body, &reply, "get_setting_by_package_name");
 
 	if (result == NOTIFICATION_ERROR_NONE) {
@@ -1143,7 +1142,7 @@ int notification_ipc_request_get_setting_by_package_name(
 	return result;
 }
 
-int notification_ipc_request_load_system_setting(notification_system_setting_h *setting)
+int notification_ipc_request_load_system_setting(notification_system_setting_h *setting, uid_t uid)
 {
 	int result;
 	GDBusMessage *reply = NULL;
@@ -1157,7 +1156,7 @@ int notification_ipc_request_load_system_setting(notification_system_setting_h *
 		return result;
 	}
 
-	result = _send_sync_noti(NULL, &reply, "load_system_setting");
+	result = _send_sync_noti(g_variant_new("(i)", uid), &reply, "load_system_setting");
 
 	if (result == NOTIFICATION_ERROR_NONE) {
 		reply_body = g_dbus_message_get_body(reply);
@@ -1182,7 +1181,7 @@ int notification_ipc_request_load_system_setting(notification_system_setting_h *
 	return result;
 }
 
-int notification_ipc_update_setting(notification_setting_h setting)
+int notification_ipc_update_setting(notification_setting_h setting, uid_t uid)
 {
 	int result;
 	GDBusMessage *reply = NULL;
@@ -1194,11 +1193,12 @@ int notification_ipc_update_setting(notification_setting_h setting)
 		return result;
 	}
 
-	body = g_variant_new("(siii)",
+	body = g_variant_new("(siiii)",
 			setting->package_name,
 			(int)(setting->allow_to_notify),
 			(int)(setting->do_not_disturb_except),
-			(int)(setting->visibility_class));
+			(int)(setting->visibility_class),
+			uid);
 
 	result = _send_sync_noti(body, &reply, "update_noti_setting");
 
@@ -1209,7 +1209,7 @@ int notification_ipc_update_setting(notification_setting_h setting)
 	return result;
 }
 
-int notification_ipc_update_system_setting(notification_system_setting_h system_setting)
+int notification_ipc_update_system_setting(notification_system_setting_h system_setting, uid_t uid)
 {
 	int result;
 	GDBusMessage *reply = NULL;
@@ -1221,9 +1221,10 @@ int notification_ipc_update_system_setting(notification_system_setting_h system_
 		return result;
 	}
 
-	body = g_variant_new("(ii)",
+	body = g_variant_new("(iii)",
 			(int)(system_setting->do_not_disturb),
-			(int)(system_setting->visibility_class));
+			(int)(system_setting->visibility_class),
+			uid);
 
 	result = _send_sync_noti(body, &reply, "update_noti_sys_setting");
 
@@ -1428,6 +1429,7 @@ EXPORT_API GVariant *notification_ipc_make_gvariant_from_noti(notification_h not
 	g_variant_builder_add(&builder, "{iv}", NOTIFICATION_DATA_TYPE_ONGOING_FLAG, g_variant_new_int32(noti->ongoing_flag));
 
 	g_variant_builder_add(&builder, "{iv}", NOTIFICATION_DATA_TYPE_AUTO_REMOVE, g_variant_new_int32(noti->auto_remove));
+	g_variant_builder_add(&builder, "{iv}", NOTIFICATION_DATA_TYPE_UID, g_variant_new_int32(noti->uid));
 
 	result_body = g_variant_builder_end(&builder);
 	body = g_variant_new("(v)", result_body);
@@ -1574,6 +1576,7 @@ EXPORT_API int notification_ipc_make_noti_from_gvariant(notification_h noti,
 	_variant_dict_lookup(dict, NOTIFICATION_DATA_TYPE_TAG, "&s", &tag);
 	_variant_dict_lookup(dict, NOTIFICATION_DATA_TYPE_ONGOING_FLAG, "i", &noti->ongoing_flag);
 	_variant_dict_lookup(dict, NOTIFICATION_DATA_TYPE_AUTO_REMOVE, "i", &noti->auto_remove);
+	_variant_dict_lookup(dict, NOTIFICATION_DATA_TYPE_UID, "i", &noti->uid);
 
 	noti->caller_pkgname = _dup_string(caller_pkgname);
 	noti->launch_pkgname = _dup_string(launch_pkgname);
@@ -1691,14 +1694,14 @@ EXPORT_API int notification_ipc_make_setting_from_gvariant(struct notification_s
 	return NOTIFICATION_ERROR_NONE;
 }
 
-static int _send_service_register()
+static int _send_service_register(uid_t uid)
 {
 	NOTIFICATION_DBG("service register");
 	GDBusMessage *reply = NULL;
 	int result;
 	notification_op *noti_op = NULL;
 
-	result = _send_sync_noti(NULL, &reply, "noti_service_register");
+	result = _send_sync_noti(g_variant_new("(i)", uid), &reply, "noti_service_register");
 
 	if (reply)
 		g_object_unref(reply);
@@ -1713,11 +1716,11 @@ static int _send_service_register()
 	return result;
 }
 
-static int _ipc_monitor_register(void)
+static int _ipc_monitor_register(uid_t uid)
 {
 	NOTIFICATION_ERR("register a service\n");
 
-	return  _send_service_register();
+	return  _send_service_register(uid);
 }
 
 static void _on_name_appeared(GDBusConnection *connection,
@@ -1725,9 +1728,10 @@ static void _on_name_appeared(GDBusConnection *connection,
 		const gchar     *name_owner,
 		gpointer         user_data)
 {
-	NOTIFICATION_DBG("name appeared : %s", name);
+	int uid = GPOINTER_TO_INT(user_data);
+	NOTIFICATION_DBG("name appeared [%d] : %s", uid, name);
 	is_master_started = 1;
-	_ipc_monitor_register();
+	_ipc_monitor_register(uid);
 
 	/* TODO: dbus activation isn't enough ? */
 	_do_deffered_task();
@@ -1737,11 +1741,12 @@ static void _on_name_vanished(GDBusConnection *connection,
 		const gchar     *name,
 		gpointer         user_data)
 {
-	NOTIFICATION_DBG("name vanished : %s", name);
+	int uid = GPOINTER_TO_INT(user_data);
+	NOTIFICATION_DBG("name vanished [%d] : %s", uid, name);
 	is_master_started = 0;
 }
 
-int notification_ipc_monitor_init(void)
+int notification_ipc_monitor_init(uid_t uid)
 {
 	int ret;
 
@@ -1757,20 +1762,21 @@ int notification_ipc_monitor_init(void)
 		return ret;
 	}
 
-	ret = _ipc_monitor_register();
+	ret = _ipc_monitor_register(uid);
 	if (ret != NOTIFICATION_ERROR_NONE) {
 		NOTIFICATION_ERR("Can't init ipc_monitor_register %d", ret);
 		return ret;
 	}
 
 	if (provider_monitor_id == 0) {
+
 		provider_monitor_id = g_bus_watch_name_on_connection(
 				_gdbus_conn,
 				PROVIDER_BUS_NAME,
 				G_BUS_NAME_WATCHER_FLAGS_NONE,
 				_on_name_appeared,
 				_on_name_vanished,
-				NULL,
+				GINT_TO_POINTER((int)uid),
 				NULL);
 
 		if (provider_monitor_id == 0) {

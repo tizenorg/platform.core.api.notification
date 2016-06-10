@@ -88,6 +88,7 @@ struct _notification {
 	char *tag;
 	bool ongoing_flag;
 	bool auto_remove;
+	uid_t uid;
 };
 
 struct notification_system_setting {
@@ -145,6 +146,7 @@ typedef enum notification_data_type {
 	NOTIFICATION_DATA_TYPE_TAG,
 	NOTIFICATION_DATA_TYPE_ONGOING_FLAG,
 	NOTIFICATION_DATA_TYPE_AUTO_REMOVE,
+	NOTIFICATION_DATA_TYPE_UID,
 } notification_data_type_e;
 
 void notification_call_changed_cb(notification_op *op_list, int op_num);

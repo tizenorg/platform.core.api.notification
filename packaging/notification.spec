@@ -88,6 +88,9 @@ fi
 %defattr(-,root,root,-)
 %{_libdir}/libnotification.so*
 %{TZ_SYS_SHARE}/license/%{name}
+%attr(755,root,root) %{_sysconfdir}/gumd/useradd.d/11_notification-add.post
+%{_bindir}/notification_init
+#%{_bindir}/notification-test-app
 
 %files devel
 %defattr(-,root,root,-)

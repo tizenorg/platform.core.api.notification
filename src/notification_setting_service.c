@@ -83,7 +83,7 @@ out:
 	return ret;
 }
 
-EXPORT_API int noti_setting_service_get_setting_by_package_name(const char *package_name, notification_setting_h *setting)
+EXPORT_API int noti_setting_service_get_setting_by_package_name(const char *package_name, notification_setting_h *setting, uid_t uid)
 {
 	int err = NOTIFICATION_ERROR_NONE;
 	sqlite3 *local_db_handle = NULL;
@@ -112,7 +112,7 @@ EXPORT_API int noti_setting_service_get_setting_by_package_name(const char *pack
 
 	sql_query = sqlite3_mprintf("SELECT package_name, allow_to_notify, do_not_disturb_except, visibility_class "
 			"FROM %s "
-			"WHERE package_name = %Q ", NOTIFICATION_SETTING_DB_TABLE, package_name);
+			"WHERE package_name = %Q AND uid = %d", NOTIFICATION_SETTING_DB_TABLE, package_name, uid);
 
 	if (!sql_query) {
 		NOTIFICATION_ERR("fail to alloc query");
@@ -171,7 +171,7 @@ out:
 
 
 
-EXPORT_API int noti_setting_get_setting_array(notification_setting_h *setting_array, int *count)
+EXPORT_API int noti_setting_get_setting_array(notification_setting_h *setting_array, int *count, uid_t uid)
 {
 	int err = NOTIFICATION_ERROR_NONE;
 	sqlite3 *local_db_handle = NULL;
@@ -199,8 +199,8 @@ EXPORT_API int noti_setting_get_setting_array(notification_setting_h *setting_ar
 	}
 
 	sql_query = sqlite3_mprintf("SELECT package_name, allow_to_notify, do_not_disturb_except, visibility_class "
-			"FROM %s "
-			"ORDER BY package_name", NOTIFICATION_SETTING_DB_TABLE);
+			"FROM %s WHERE uid = %d "
+			"ORDER BY package_name", NOTIFICATION_SETTING_DB_TABLE, uid);
 
 	if (!sql_query) {
 		NOTIFICATION_ERR("fail to alloc query");
@@ -258,7 +258,7 @@ out:
 }
 
 
-EXPORT_API int noti_system_setting_load_system_setting(notification_system_setting_h *system_setting)
+EXPORT_API int noti_system_setting_load_system_setting(notification_system_setting_h *system_setting, uid_t uid)
 {
 	int err = NOTIFICATION_ERROR_NONE;
 	sqlite3 *local_db_handle = NULL;
@@ -285,7 +285,7 @@ EXPORT_API int noti_system_setting_load_system_setting(notification_system_setti
 	}
 
 	sql_query = sqlite3_mprintf("SELECT do_not_disturb, visibility_class "
-			"FROM %s ", NOTIFICATION_SYSTEM_SETTING_DB_TABLE);
+			"FROM %s WHERE uid = %d", NOTIFICATION_SYSTEM_SETTING_DB_TABLE, uid);
 
 	if (!sql_query) {
 		NOTIFICATION_ERR("fail to alloc query");
@@ -301,29 +301,25 @@ EXPORT_API int noti_system_setting_load_system_setting(notification_system_setti
 		goto out;
 	}
 
-	if (!row_count) {
-		NOTIFICATION_DBG("No setting found...");
-		err = NOTIFICATION_ERROR_NOT_EXIST_ID;
-		goto out;
-	}
-
 	NOTIFICATION_DBG("row_count [%d] column_count [%d]", row_count, column_count);
-
-	row_count = 1;
-
 	if (!(result_system_setting = (struct notification_system_setting *)malloc(sizeof(struct notification_system_setting)))) {
 		NOTIFICATION_ERR("malloc failed...");
 		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
 		goto out;
 	}
 
-	col_index = column_count;
-
-	_get_table_field_data_int(query_result, (int *)&(result_system_setting->do_not_disturb), col_index++);
-	_get_table_field_data_int(query_result, &(result_system_setting->visibility_class), col_index++);
+	/* no system setting record. allow everyting */
+	if (!row_count) {
+		NOTIFICATION_DBG("No setting found...");
+		result_system_setting->do_not_disturb = 0;
+		result_system_setting->visibility_class = 0;
+	} else {
+		col_index = column_count;
+		_get_table_field_data_int(query_result, (int *)&(result_system_setting->do_not_disturb), col_index++);
+		_get_table_field_data_int(query_result, &(result_system_setting->visibility_class), col_index++);
+	}
 
 	*system_setting = result_system_setting;
-
 out:
 	if (query_result)
 			sqlite3_free_table(query_result);

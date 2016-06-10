@@ -43,7 +43,7 @@ int notification_ipc_make_system_setting_from_gvariant(
 		GVariant *variant);
 
 int notification_dbus_init();
-int notification_ipc_monitor_init(void);
+int notification_ipc_monitor_init(uid_t uid);
 int notification_ipc_monitor_fini(void);
 
 int notification_ipc_is_master_ready(void);
@@ -55,32 +55,32 @@ int notification_ipc_request_update(notification_h noti);
 int notification_ipc_request_update_async(notification_h noti,
 		void (*result_cb)(int priv_id, int result, void *data),
 		void *user_data);
-int notification_ipc_request_refresh(void);
+int notification_ipc_request_refresh(uid_t uid);
 int notification_ipc_request_delete_multiple(notification_type_e type,
-		char *pkgname);
+		char *pkgname, uid_t uid);
 int notification_ipc_request_delete_single(notification_type_e type,
-		char *pkgname, int priv_id);
-int notification_ipc_update_setting(notification_setting_h setting);
+		char *pkgname, int priv_id, uid_t uid);
+int notification_ipc_update_setting(notification_setting_h setting, uid_t uid);
 int notification_ipc_update_system_setting(
-		notification_system_setting_h system_setting);
+		notification_system_setting_h system_setting, uid_t uid);
 int notification_ipc_request_load_noti_by_tag(notification_h noti,
-		const char *pkgname, const char *tag);
+		const char *pkgname, const char *tag, uid_t uid);
 int notification_ipc_request_load_noti_grouping_list(notification_type_e type,
 		int count,
-		notification_list_h *list);
+		notification_list_h *list, uid_t uid);
 int notification_ipc_request_get_setting_array(
-		notification_setting_h *setting_array, int *count);
+		notification_setting_h *setting_array, int *count, uid_t uid);
 int notification_ipc_request_get_setting_by_package_name(
-		const char *package_name, notification_setting_h *setting);
+		const char *package_name, notification_setting_h *setting, uid_t uid);
 int notification_ipc_request_load_system_setting(
-		notification_system_setting_h *setting);
+		notification_system_setting_h *setting, uid_t uid);
 int notification_ipc_request_get_count(notification_type_e type,
-		const char *pkgname, int group_id, int priv_id, int *count);
+		const char *pkgname, int group_id, int priv_id, int *count, uid_t uid);
 int notification_ipc_request_load_noti_by_priv_id(notification_h noti,
-		const char *pkgname, int priv_id);
+		const char *pkgname, int priv_id, uid_t uid);
 int notification_ipc_request_load_noti_detail_list(const char *pkgname,
 		int group_id, int priv_id, int count,
-		notification_list_h *list);
+		notification_list_h *list, uid_t uid);
 
 #ifdef __cplusplus
 }

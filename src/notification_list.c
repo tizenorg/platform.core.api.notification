@@ -138,7 +138,7 @@ EXPORT_API notification_h notification_list_get_data(notification_list_h list)
 }
 
 EXPORT_API notification_list_h notification_list_append(notification_list_h list,
-							notification_h noti)
+		notification_h noti)
 {
 	notification_list_h new_list = NULL;
 	notification_list_h cur_list = NULL;
@@ -180,7 +180,7 @@ EXPORT_API notification_list_h notification_list_append(notification_list_h list
 }
 
 EXPORT_API notification_list_h notification_list_remove(notification_list_h list,
-							notification_h noti)
+		notification_h noti)
 {
 	notification_list_h cur_list = NULL;
 	notification_list_h prev_list = NULL;
@@ -220,9 +220,9 @@ EXPORT_API notification_list_h notification_list_remove(notification_list_h list
 	return NULL;
 }
 
-EXPORT_API int notification_get_list(notification_type_e type,
-						      int count,
-						      notification_list_h *list)
+EXPORT_API int notification_get_list_for_uid(notification_type_e type,
+		int count,
+		notification_list_h *list, uid_t uid)
 {
 	notification_list_h get_list = NULL;
 	int ret = 0;
@@ -230,7 +230,38 @@ EXPORT_API int notification_get_list(notification_type_e type,
 	if (list == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	ret = notification_ipc_request_load_noti_grouping_list(type, count, &get_list);
+	ret = notification_ipc_request_load_noti_grouping_list(type, count, &get_list, uid);
+	if (ret != NOTIFICATION_ERROR_NONE)
+		return ret;
+
+	if (get_list != NULL)
+		*list = notification_list_get_head(get_list);
+
+	return NOTIFICATION_ERROR_NONE;
+}
+
+EXPORT_API int notification_get_list(notification_type_e type,
+		int count,
+		notification_list_h *list)
+{
+	return notification_get_list_for_uid(type, count, list, getuid());
+}
+
+EXPORT_API int notification_get_detail_list_for_uid(const char *pkgname,
+		int group_id,
+		int priv_id,
+		int count,
+		notification_list_h *list,
+		uid_t uid)
+{
+	notification_list_h get_list = NULL;
+	int ret = 0;
+
+	if (list == NULL || pkgname == NULL)
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
+
+	ret = notification_ipc_request_load_noti_detail_list(pkgname, group_id, priv_id, count,
+			&get_list, uid);
 	if (ret != NOTIFICATION_ERROR_NONE)
 		return ret;
 
@@ -241,27 +272,13 @@ EXPORT_API int notification_get_list(notification_type_e type,
 }
 
 EXPORT_API int notification_get_detail_list(const char *pkgname,
-							     int group_id,
-							     int priv_id,
-							     int count,
-							     notification_list_h *list)
+		int group_id,
+		int priv_id,
+		int count,
+		notification_list_h *list)
 {
-	notification_list_h get_list = NULL;
-	int ret = 0;
-
-	if (list == NULL || pkgname == NULL)
-		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-
-	ret =
-	    notification_ipc_request_load_noti_detail_list(pkgname, group_id, priv_id, count,
-					      &get_list);
-	if (ret != NOTIFICATION_ERROR_NONE)
-		return ret;
-
-	if (get_list != NULL)
-		*list = notification_list_get_head(get_list);
-
-	return NOTIFICATION_ERROR_NONE;
+	return notification_get_detail_list_for_uid(pkgname, group_id,
+			priv_id, count, list, getuid());
 }
 
 EXPORT_API int notification_free_list(notification_list_h list)

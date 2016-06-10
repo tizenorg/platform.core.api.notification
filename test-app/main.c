@@ -154,6 +154,7 @@ void testapp_show_menu(testapp_menu_type_e menu)
 		testapp_print(" 7.  Post a notification with domain text\n");
 		testapp_print(" 8.  Load by tag\n");
 		testapp_print(" 9.  Get list\n");
+		testapp_print(" 10. Post noti to 5002 \n");
 		testapp_print("------------------------------------------\n");
 		break;
 	case TESTAPP_MENU_TYPE_SETTING_TEST_MENU:
@@ -171,6 +172,49 @@ void testapp_show_menu(testapp_menu_type_e menu)
 	}
 }
 /* Common { ------------------------------------------------------------------*/
+
+
+static int testapp_add_a_notification_to_bob()
+{
+	notification_h noti_handle = NULL;
+	int noti_err = NOTIFICATION_ERROR_NONE;
+
+	noti_handle = notification_create(NOTIFICATION_TYPE_NOTI);
+
+	if (noti_handle == NULL) {
+		testapp_print("notification_create failed");
+		goto FINISH_OFF;
+	}
+
+	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_TITLE, "I'm Title", "TITLE", NOTIFICATION_VARIABLE_TYPE_NONE);
+	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_CONTENT, "I'm Content", "CONTENT", NOTIFICATION_VARIABLE_TYPE_NONE);
+	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_EVENT_COUNT, "3", "3", NOTIFICATION_VARIABLE_TYPE_NONE);
+	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_INFO_1, "I'm Info 1", "INFO_1", NOTIFICATION_VARIABLE_TYPE_NONE);
+	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_INFO_SUB_1, "I'm Info Sub 1", "INFO_SUB_1", NOTIFICATION_VARIABLE_TYPE_NONE);
+	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_INFO_2, "I'm Info 2", "INFO_2", NOTIFICATION_VARIABLE_TYPE_NONE);
+	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_INFO_SUB_2, "I'm Info Sub 2", "INFO_SUB_2", NOTIFICATION_VARIABLE_TYPE_NONE);
+	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_INFO_3, "I'm Info 3", "INFO_3", NOTIFICATION_VARIABLE_TYPE_NONE);
+	noti_err  = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_INFO_SUB_3, "I'm Info Sub 3", "INFO_SUB_3", NOTIFICATION_VARIABLE_TYPE_NONE);
+
+	noti_err  = notification_set_ongoing_flag(noti_handle, true);
+	noti_err  = notification_set_auto_remove(noti_handle, false);
+
+	noti_err = notification_set_display_applist(noti_handle, NOTIFICATION_DISPLAY_APP_INDICATOR | NOTIFICATION_DISPLAY_APP_NOTIFICATION_TRAY | NOTIFICATION_DISPLAY_APP_TICKER);
+
+	noti_err  = notification_post_for_uid(noti_handle, 5002);
+
+	if (noti_err != NOTIFICATION_ERROR_NONE) {
+		testapp_print("notification_post failed[%d]", noti_err);
+		goto FINISH_OFF;
+	}
+
+FINISH_OFF:
+	if (noti_handle)
+		notification_free(noti_handle);
+
+	return noti_err;
+}
+
 
 static int testapp_add_a_notification()
 {
@@ -587,6 +631,9 @@ static gboolean testapp_interpret_command_basic_test(int selected_number)
 	case 9:
 		testapp_test_get_list();
 		break;
+	case 10:
+		testapp_add_a_notification_to_bob();
+		break;
 
 	case 0:
 		go_to_loop = FALSE;
@@ -711,7 +758,7 @@ out:
 static int testapp_test_refresh_setting_table()
 {
 	int err = NOTIFICATION_ERROR_NONE;
-	err = notification_setting_refresh_setting_table();
+	err = notification_setting_refresh_setting_table(tzplatform_getuid(TZ_SYS_DEFAULT_USER));
 
 	if (err != NOTIFICATION_ERROR_NONE) {
 		testapp_print("notification_setting_refresh_setting_table failed [%d]\n", err);

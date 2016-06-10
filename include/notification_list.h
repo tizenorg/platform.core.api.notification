@@ -72,8 +72,12 @@ typedef struct _notification_list *notification_list_h;
  * @endcode
  */
 int notification_get_list(notification_type_e type,
-					   int count,
-					   notification_list_h *list);
+		int count,
+		notification_list_h *list);
+
+int notification_get_list_for_uid(notification_type_e type,
+		int count,
+		notification_list_h *list, uid_t uid);
 
 /**
  * @brief Returns the notification detail list handle of grouping data.
@@ -108,10 +112,17 @@ int notification_get_list(notification_type_e type,
  * @endcode
  */
 int notification_get_detail_list(const char *pkgname,
-						  int group_id,
-						  int priv_id,
-						  int count,
-						  notification_list_h *list);
+		int group_id,
+		int priv_id,
+		int count,
+		notification_list_h *list);
+
+int notification_get_detail_list_for_uid(const char *pkgname,
+		int group_id,
+		int priv_id,
+		int count,
+		notification_list_h *list,
+		uid_t uid);
 
 /**
  * @brief Frees a notification list.

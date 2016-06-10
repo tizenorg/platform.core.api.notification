@@ -35,26 +35,41 @@
 
 #define NOTIFICATION_PRIVILEGE "http://tizen.org/privilege/notification"
 
-EXPORT_API int notification_setting_get_setting_array(notification_setting_h *setting_array, int *count)
+typedef struct {
+	uid_t uid;
+	sqlite3 *db;
+} setting_local_info;
+
+EXPORT_API int notification_setting_get_setting_array_for_uid(notification_setting_h *setting_array, int *count, uid_t uid)
 {
 	int ret = NOTIFICATION_ERROR_NONE;
 	if (setting_array == NULL || count == NULL) {
 		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
-	ret = notification_ipc_request_get_setting_array(setting_array, count);
+	ret = notification_ipc_request_get_setting_array(setting_array, count, uid);
 	return ret;
 }
 
-EXPORT_API int notification_setting_get_setting_by_package_name(const char *package_name, notification_setting_h *setting)
+EXPORT_API int notification_setting_get_setting_array(notification_setting_h *setting_array, int *count)
+{
+	return notification_setting_get_setting_array_for_uid(setting_array, count, getuid());
+}
+
+EXPORT_API int notification_setting_get_setting_by_package_name_for_uid(const char *package_name, notification_setting_h *setting, uid_t uid)
 {
 	int ret = NOTIFICATION_ERROR_NONE;
 	if (package_name == NULL || setting == NULL) {
 		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
-	ret = notification_ipc_request_get_setting_by_package_name(package_name, setting);
+	ret = notification_ipc_request_get_setting_by_package_name(package_name, setting, uid);
 	return ret;
+}
+
+EXPORT_API int notification_setting_get_setting_by_package_name(const char *package_name, notification_setting_h *setting)
+{
+	return notification_setting_get_setting_by_package_name_for_uid(package_name, setting, getuid());
 }
 
 EXPORT_API int notification_setting_get_setting(notification_setting_h *setting)
@@ -219,7 +234,7 @@ out:
 	return err;
 }
 
-EXPORT_API int notification_setting_update_setting(notification_setting_h setting)
+EXPORT_API int notification_setting_update_setting_for_uid(notification_setting_h setting, uid_t uid)
 {
 	int err = NOTIFICATION_ERROR_NONE;
 
@@ -229,7 +244,7 @@ EXPORT_API int notification_setting_update_setting(notification_setting_h settin
 		goto out;
 	}
 
-	err = notification_ipc_update_setting(setting);
+	err = notification_ipc_update_setting(setting, uid);
 	if (err != NOTIFICATION_ERROR_NONE) {
 		NOTIFICATION_ERR("notification_setting_update_setting returns[%d]\n", err);
 		goto out;
@@ -237,6 +252,11 @@ EXPORT_API int notification_setting_update_setting(notification_setting_h settin
 
 out:
 	return err;
+}
+
+EXPORT_API int notification_setting_update_setting(notification_setting_h setting)
+{
+	return notification_setting_update_setting_for_uid(setting, getuid());
 }
 
 EXPORT_API int notification_setting_free_notification(notification_setting_h setting)
@@ -259,7 +279,7 @@ out:
 	return err;
 }
 
-EXPORT_API int notification_setting_db_update(const char *package_name, int allow_to_notify, int do_not_disturb_except, int visibility_class)
+EXPORT_API int notification_setting_db_update(const char *package_name, int allow_to_notify, int do_not_disturb_except, int visibility_class, uid_t uid)
 {
 	int err = NOTIFICATION_ERROR_NONE;
 	sqlite3 *db = NULL;
@@ -276,8 +296,8 @@ EXPORT_API int notification_setting_db_update(const char *package_name, int allo
 	}
 
 	sqlbuf = sqlite3_mprintf("UPDATE %s SET allow_to_notify = %d, do_not_disturb_except = %d, visibility_class = %d " \
-			"WHERE package_name = %Q",
-			NOTIFICATION_SETTING_DB_TABLE, allow_to_notify, do_not_disturb_except, visibility_class, package_name);
+			"WHERE package_name = %Q AND uid = %d",
+			NOTIFICATION_SETTING_DB_TABLE, allow_to_notify, do_not_disturb_except, visibility_class, package_name, uid);
 	if (!sqlbuf) {
 		NOTIFICATION_ERR("fail to alloc query");
 		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
@@ -297,14 +317,14 @@ return_close_db:
 	return err;
 }
 
-static bool _is_package_in_setting_table(sqlite3 *db, const char *package_name)
+static bool _is_package_in_setting_table(sqlite3 *db, const char *package_name, uid_t uid)
 {
 	sqlite3_stmt *db_statement = NULL;
 	int sqlite3_ret = SQLITE_OK;
 	bool err = true;
 	int field_index = 1;
 
-	sqlite3_ret = sqlite3_prepare_v2(db, "SELECT package_name FROM notification_setting WHERE package_name = ?", -1, &db_statement, NULL);
+	sqlite3_ret = sqlite3_prepare_v2(db, "SELECT package_name FROM notification_setting WHERE uid = ? AND package_name = ?", -1, &db_statement, NULL);
 
 	if (sqlite3_ret != SQLITE_OK) {
 		NOTIFICATION_ERR("sqlite3_prepare_v2 failed [%d][%s]", sqlite3_ret, sqlite3_errmsg(db));
@@ -312,6 +332,7 @@ static bool _is_package_in_setting_table(sqlite3 *db, const char *package_name)
 		goto out;
 	}
 
+	sqlite3_bind_int(db_statement, field_index++, uid);
 	sqlite3_bind_text(db_statement, field_index++, package_name, -1, SQLITE_TRANSIENT);
 
 	sqlite3_ret = sqlite3_step(db_statement);
@@ -336,7 +357,8 @@ out:
 
 static int foreach_package_info_callback(const pkgmgrinfo_pkginfo_h package_info, void *user_data)
 {
-	sqlite3 *db = user_data;
+	setting_local_info *info = (setting_local_info *)user_data;
+	sqlite3 *db = info->db;
 	sqlite3_stmt *db_statement = NULL;
 	char *package_name = NULL;
 	int pkgmgr_ret = PACKAGE_MANAGER_ERROR_NONE;
@@ -350,14 +372,13 @@ static int foreach_package_info_callback(const pkgmgrinfo_pkginfo_h package_info
 		goto out;
 	}
 
-	if (_is_package_in_setting_table(db, package_name) == true) {
-		NOTIFICATION_INFO("[%s] is exist", package_name);
+	if (_is_package_in_setting_table(db, package_name, info->uid) == true) {
+		NOTIFICATION_INFO("uid %d [%s] is exist", info->uid, package_name);
 		goto out;
 	}
 
-	NOTIFICATION_INFO("[%s] will be inserted", package_name);
-
-	sqlite3_ret = sqlite3_prepare_v2(db, "INSERT INTO notification_setting (package_name) VALUES (?) ", -1, &db_statement, NULL);
+	NOTIFICATION_INFO("uid %d [%s] will be inserted", info->uid, package_name);
+	sqlite3_ret = sqlite3_prepare_v2(db, "INSERT INTO notification_setting (uid, package_name) VALUES (?, ?) ", -1, &db_statement, NULL);
 
 	if (sqlite3_ret != SQLITE_OK) {
 		NOTIFICATION_ERR("sqlite3_prepare_v2 failed [%d][%s]", sqlite3_ret, sqlite3_errmsg(db));
@@ -365,6 +386,7 @@ static int foreach_package_info_callback(const pkgmgrinfo_pkginfo_h package_info
 		goto out;
 	}
 
+	sqlite3_bind_int(db_statement, field_index++, info->uid);
 	sqlite3_bind_text(db_statement, field_index++, package_name, -1, SQLITE_TRANSIENT);
 
 	sqlite3_ret = sqlite3_step(db_statement);
@@ -384,14 +406,16 @@ out:
 	return err;
 }
 
-EXPORT_API int notification_setting_refresh_setting_table()
+EXPORT_API int notification_setting_refresh_setting_table(uid_t uid)
 {
 	int err = NOTIFICATION_ERROR_NONE;
 	sqlite3 *db = NULL;
 	int sqlite3_ret = SQLITE_OK;
 	int pkgmgr_ret = PACKAGE_MANAGER_ERROR_NONE;
 	pkgmgrinfo_pkginfo_filter_h filter;
+	setting_local_info info;
 
+	NOTIFICATION_ERR("refresh seeting table [%d]", uid);
 	sqlite3_ret = db_util_open(DBPATH, &db, 0);
 
 	if (sqlite3_ret != SQLITE_OK || db == NULL) {
@@ -416,11 +440,9 @@ EXPORT_API int notification_setting_refresh_setting_table()
 		goto out;
 	}
 
-	/*
-	 * DEFAULT_UID is owner's uid(5001)
-	 * currently this api do not support multi-user.
-	*/
-	pkgmgr_ret = pkgmgrinfo_pkginfo_usr_filter_foreach_pkginfo(filter, foreach_package_info_callback, db, tzplatform_getuid(TZ_SYS_DEFAULT_USER));
+	info.db = db;
+	info.uid = uid;
+	pkgmgr_ret = pkgmgrinfo_pkginfo_usr_filter_foreach_pkginfo(filter, foreach_package_info_callback, &info, uid);
 	if (pkgmgr_ret != PMINFO_R_OK) {
 		NOTIFICATION_ERR("pkgmgrinfo_pkginfo_usr_filter_foreach_pkginfo failed [%d]", pkgmgr_ret);
 		err = NOTIFICATION_ERROR_FROM_DB;
@@ -452,7 +474,7 @@ typedef enum {
 	OPERATION_TYPE_DELETE_RECORD = 1,
 } notification_setting_operation_type;
 
-static int _notification_setting_alter_package_list(notification_setting_operation_type operation_type, const char *package_name)
+static int _notification_setting_alter_package_list(notification_setting_operation_type operation_type, const char *package_name, uid_t uid)
 {
 	sqlite3 *db = NULL;
 	sqlite3_stmt *db_statement = NULL;
@@ -471,7 +493,7 @@ static int _notification_setting_alter_package_list(notification_setting_operati
 
 	sqlite3_exec(db, "BEGIN immediate;", NULL, NULL, NULL);
 
-	is_package_in_setting_table = _is_package_in_setting_table(db, package_name);
+	is_package_in_setting_table = _is_package_in_setting_table(db, package_name, uid);
 
 	switch (operation_type) {
 	case OPERATION_TYPE_INSERT_RECORD:
@@ -480,7 +502,7 @@ static int _notification_setting_alter_package_list(notification_setting_operati
 			goto out;
 		}
 		NOTIFICATION_INFO("[%s] will be inserted", package_name);
-		sqlite3_ret = sqlite3_prepare_v2(db, "INSERT INTO notification_setting (package_name) VALUES (?) ", -1, &db_statement, NULL);
+		sqlite3_ret = sqlite3_prepare_v2(db, "INSERT INTO notification_setting (uid, package_name) VALUES (?, ?) ", -1, &db_statement, NULL);
 		break;
 
 	case OPERATION_TYPE_DELETE_RECORD:
@@ -489,7 +511,7 @@ static int _notification_setting_alter_package_list(notification_setting_operati
 			goto out;
 		}
 		NOTIFICATION_INFO("[%s] will be removed", package_name);
-		sqlite3_ret = sqlite3_prepare_v2(db, "DELETE FROM notification_setting WHERE package_name = ? ", -1, &db_statement, NULL);
+		sqlite3_ret = sqlite3_prepare_v2(db, "DELETE FROM notification_setting WHERE uid = ? AND package_name = ? ", -1, &db_statement, NULL);
 		break;
 	default:
 		break;
@@ -501,6 +523,7 @@ static int _notification_setting_alter_package_list(notification_setting_operati
 		goto out;
 	}
 
+	sqlite3_bind_int(db_statement, field_index++, uid);
 	sqlite3_bind_text(db_statement, field_index++, package_name, -1, SQLITE_TRANSIENT);
 
 	sqlite3_ret = sqlite3_step(db_statement);
@@ -542,63 +565,39 @@ bool privilege_info_cb(const char *privilege_name, void *user_data)
 	return true;
 }
 
-static bool _has_privilege(const char *package_id)
-{
-	bool found = false;
-	int error_from_package_info = PACKAGE_MANAGER_ERROR_NONE;
-	package_info_h package_info = NULL;
-
-	error_from_package_info = package_info_create(package_id, &package_info);
-	if (error_from_package_info != PACKAGE_MANAGER_ERROR_NONE) {
-		NOTIFICATION_ERR("package_info_create failed [%d]", error_from_package_info);
-		goto out;
-	}
-
-	error_from_package_info = package_info_foreach_privilege_info(package_info, privilege_info_cb, &found);
-
-	if (error_from_package_info != PACKAGE_MANAGER_ERROR_NONE) {
-		NOTIFICATION_ERR("package_info_foreach_privilege_info failed [%d]", error_from_package_info);
-		goto out;
-	}
-
-out:
-
-	if (package_info)
-		package_info_destroy(package_info);
-
-	return found;
-}
-
-EXPORT_API int notification_setting_insert_package(const char *package_id)
+EXPORT_API int notification_setting_insert_package_for_uid(const char *package_id, uid_t uid)
 {
 	int err = NOTIFICATION_ERROR_NONE;
-
-	if (_has_privilege(package_id) == true)
-		err = _notification_setting_alter_package_list(OPERATION_TYPE_INSERT_RECORD, package_id);
+	err = _notification_setting_alter_package_list(OPERATION_TYPE_INSERT_RECORD, package_id, uid);
 
 	return err;
 }
 
-EXPORT_API int notification_setting_delete_package(const char *package_id)
+EXPORT_API int notification_setting_delete_package_for_uid(const char *package_id, uid_t uid)
 {
-	return _notification_setting_alter_package_list(OPERATION_TYPE_DELETE_RECORD, package_id);
+	return _notification_setting_alter_package_list(OPERATION_TYPE_DELETE_RECORD, package_id, uid);
 }
 
 /* system setting --------------------------------*/
 
-EXPORT_API int notification_system_setting_load_system_setting(notification_system_setting_h *system_setting)
+EXPORT_API int notification_system_setting_load_system_setting_for_uid(notification_system_setting_h *system_setting, uid_t uid)
 {
 	int ret = NOTIFICATION_ERROR_NONE;
 	if (system_setting == NULL) {
 		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
-	ret = notification_ipc_request_load_system_setting(system_setting);
+	ret = notification_ipc_request_load_system_setting(system_setting, uid);
 
 	return ret;
 }
 
-EXPORT_API int notification_system_setting_update_system_setting(notification_system_setting_h system_setting)
+EXPORT_API int notification_system_setting_load_system_setting(notification_system_setting_h *system_setting)
+{
+	return notification_system_setting_load_system_setting_for_uid(system_setting, getuid());
+}
+
+EXPORT_API int notification_system_setting_update_system_setting_for_uid(notification_system_setting_h system_setting, uid_t uid)
 {
 	int err = NOTIFICATION_ERROR_NONE;
 
@@ -608,7 +607,7 @@ EXPORT_API int notification_system_setting_update_system_setting(notification_sy
 		goto out;
 	}
 
-	err = notification_ipc_update_system_setting(system_setting);
+	err = notification_ipc_update_system_setting(system_setting, uid);
 	if (err != NOTIFICATION_ERROR_NONE) {
 		NOTIFICATION_ERR("notification_ipc_update_system_setting returns[%d]\n", err);
 		goto out;
@@ -616,6 +615,11 @@ EXPORT_API int notification_system_setting_update_system_setting(notification_sy
 
 out:
 	return err;
+}
+
+EXPORT_API int notification_system_setting_update_system_setting(notification_system_setting_h system_setting)
+{
+	return notification_system_setting_update_system_setting_for_uid(system_setting, getuid());
 }
 
 EXPORT_API int notification_system_setting_free_system_setting(notification_system_setting_h system_setting)
@@ -706,7 +710,7 @@ out:
 }
 
 
-EXPORT_API int notification_setting_db_update_system_setting(int do_not_disturb, int visibility_class)
+EXPORT_API int notification_setting_db_update_system_setting(int do_not_disturb, int visibility_class, uid_t uid)
 {
 	int err = NOTIFICATION_ERROR_NONE;
 	int sqlret;
@@ -724,7 +728,7 @@ EXPORT_API int notification_setting_db_update_system_setting(int do_not_disturb,
 
 	sqlite3_exec(db, "BEGIN immediate;", NULL, NULL, NULL);
 
-	sqlret = sqlite3_prepare_v2(db, "UPDATE notification_system_setting SET do_not_disturb = ?, visibility_class = ?;", -1, &db_statement, NULL);
+	sqlret = sqlite3_prepare_v2(db, "INSERT OR REPLACE notification_system_setting SET do_not_disturb = ?, visibility_class = ? WHERE uid = ?;", -1, &db_statement, NULL);
 
 	if (sqlret != SQLITE_OK) {
 		NOTIFICATION_ERR("sqlite3_prepare_v2 failed [%d][%s]", sqlret, sqlite3_errmsg(db));
@@ -734,6 +738,7 @@ EXPORT_API int notification_setting_db_update_system_setting(int do_not_disturb,
 
 	sqlite3_bind_int(db_statement, field_index++, do_not_disturb);
 	sqlite3_bind_int(db_statement, field_index++, visibility_class);
+	sqlite3_bind_int(db_statement, field_index++, uid);
 
 	sqlret = sqlite3_step(db_statement);
 

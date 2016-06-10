@@ -23,6 +23,7 @@
 #include <package_manager.h>
 
 #include <notification.h>
+#include <notification_internal.h>
 #include <notification_db.h>
 #include <notification_list.h>
 #include <notification_noti.h>
@@ -249,7 +250,7 @@ static int _insertion_query_create(notification_h noti, char **query)
 		"layout, "
 		"caller_pkgname, launch_pkgname, "
 		"image_path, "
-		"group_id, internal_group_id, priv_id, "
+		"group_id, internal_group_id,"
 		"title_key, "
 		"b_text, b_key, tag, b_format_args, num_format_args, "
 		"text_domain, text_dir, "
@@ -262,12 +263,12 @@ static int _insertion_query_create(notification_h noti, char **query)
 		"b_event_handler_click_on_icon, b_event_handler_click_on_thumbnail, "
 		"sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb, led_on_ms, led_off_ms, "
 		"flags_for_property, flag_simmode, display_applist, "
-		"progress_size, progress_percentage, ongoing_flag, auto_remove) values ("
+		"progress_size, progress_percentage, ongoing_flag, auto_remove, uid) values ("
 		"%d, "
 		"%d, "
 		"'%s', '%s', "
 		"'%s', "
-		"%d, %d, %d, "
+		"%d, %d,"
 		"$title_key, "
 		"'%s', '%s', $tag, '%s', %d, "
 		"'%s', '%s', "
@@ -280,13 +281,13 @@ static int _insertion_query_create(notification_h noti, char **query)
 		"'%s', '%s', "
 		"%d, '%s', %d, '%s', %d, %d, %d, %d,"
 		"%d, %d, %d, "
-		"$progress_size, $progress_percentage, %d, %d)",
+		"$progress_size, $progress_percentage, %d, %d, %d)",
 		noti->type,
 		noti->layout,
 		NOTIFICATION_CHECK_STR(noti->caller_pkgname),
 		NOTIFICATION_CHECK_STR(noti->launch_pkgname),
 		NOTIFICATION_CHECK_STR(b_image_path), noti->group_id,
-		noti->internal_group_id, noti->priv_id,
+		noti->internal_group_id,
 		NOTIFICATION_CHECK_STR(b_text), NOTIFICATION_CHECK_STR(b_key),
 		NOTIFICATION_CHECK_STR(b_format_args), noti->num_format_args,
 		NOTIFICATION_CHECK_STR(noti->domain),
@@ -314,7 +315,8 @@ static int _insertion_query_create(notification_h noti, char **query)
 		noti->led_off_ms,
 		noti->flags_for_property, flag_simmode, noti->display_applist,
 		noti->ongoing_flag,
-		noti->auto_remove);
+		noti->auto_remove,
+		noti->uid);
 
 	/* Free decoded data */
 	if (args)
@@ -728,14 +730,14 @@ out:
 	return err;
 }
 
-static bool _is_allowed_to_notify(const char *caller_package_name)
+static bool _is_allowed_to_notify(const char *caller_package_name, uid_t uid)
 {
 	notification_setting_h setting = NULL;
 	int err;
 	char *package_id = NULL;
 	bool ret = true;
 
-	err = noti_setting_service_get_setting_by_package_name(caller_package_name, &setting);
+	err = noti_setting_service_get_setting_by_package_name(caller_package_name, &setting, uid);
 	if (err != NOTIFICATION_ERROR_NONE) {
 		/* Retry with package id */
 		err = _get_package_id_by_app_id(caller_package_name, &package_id);
@@ -744,7 +746,7 @@ static bool _is_allowed_to_notify(const char *caller_package_name)
 			NOTIFICATION_ERR("_get_package_id_by_app_id failed [%d]", err);
 			goto out;
 		} else {
-			err = noti_setting_service_get_setting_by_package_name(package_id, &setting);
+			err = noti_setting_service_get_setting_by_package_name(package_id, &setting, uid);
 			if (err != NOTIFICATION_ERROR_NONE) {
 				NOTIFICATION_ERR("noti_setting_service_get_setting_by_package_name failed [%d]", err);
 				goto out;
@@ -787,7 +789,7 @@ static int _handle_do_not_disturb_option(notification_h noti)
 	}
 
 	/* Get system setting */
-	if ((err = noti_system_setting_load_system_setting(&system_setting)) != NOTIFICATION_ERROR_NONE) {
+	if ((err = noti_system_setting_load_system_setting(&system_setting, noti->uid)) != NOTIFICATION_ERROR_NONE) {
 		NOTIFICATION_ERR("noti_system_setting_load_system_setting failed [%d]", err);
 		goto out;
 	}
@@ -801,7 +803,7 @@ static int _handle_do_not_disturb_option(notification_h noti)
 
 	if (do_not_disturb) {
 		/* Check exception option of the caller package */
-		err = noti_setting_service_get_setting_by_package_name(noti->caller_pkgname, &setting);
+		err = noti_setting_service_get_setting_by_package_name(noti->caller_pkgname, &setting, noti->uid);
 
 		if (err != NOTIFICATION_ERROR_NONE) {
 			/* Retry with package id */
@@ -811,7 +813,7 @@ static int _handle_do_not_disturb_option(notification_h noti)
 				NOTIFICATION_ERR("_get_package_id_by_app_id failed [%d]", err);
 				goto out;
 			} else {
-				err = noti_setting_service_get_setting_by_package_name(package_id, &setting);
+				err = noti_setting_service_get_setting_by_package_name(package_id, &setting, noti->uid);
 				if (err != NOTIFICATION_ERROR_NONE) {
 					NOTIFICATION_ERR("noti_setting_service_get_setting_by_package_name failed [%d]", err);
 					goto out;
@@ -868,7 +870,7 @@ EXPORT_API int notification_noti_insert(notification_h noti)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 
-	if (_is_allowed_to_notify((const char *)noti->caller_pkgname) == false) {
+	if (_is_allowed_to_notify((const char *)noti->caller_pkgname, noti->uid) == false) {
 		NOTIFICATION_DBG("[%s] is not allowed to notify", noti->caller_pkgname);
 		return NOTIFICATION_ERROR_PERMISSION_DENIED;
 	}
@@ -883,7 +885,6 @@ EXPORT_API int notification_noti_insert(notification_h noti)
 		return get_last_result();
 
 	/* Initialize private ID */
-	noti->priv_id = NOTIFICATION_PRIV_ID_NONE;
 	noti->group_id = NOTIFICATION_GROUP_ID_NONE;
 	noti->internal_group_id = NOTIFICATION_GROUP_ID_NONE;
 
@@ -967,7 +968,7 @@ err:
 	return ret;
 }
 
-EXPORT_API int notification_noti_get_by_priv_id(notification_h noti, char *pkgname, int priv_id)
+EXPORT_API int notification_noti_get_by_priv_id(notification_h noti, char *pkgname, int priv_id, uid_t uid)
 {
 	int ret = 0;
 	char *query = NULL;
@@ -997,10 +998,10 @@ EXPORT_API int notification_noti_get_by_priv_id(notification_h noti, char *pkgna
 			 "from noti_list ";
 
 	if (pkgname != NULL && strlen(pkgname) != 0)
-		query = sqlite3_mprintf("%s where caller_pkgname = '%s' and priv_id = %d",
-				base_query, pkgname, priv_id);
+		query = sqlite3_mprintf("%s where caller_pkgname = '%s' and priv_id = %d and uid = %d",
+				base_query, pkgname, priv_id, uid);
 	else
-		query = sqlite3_mprintf("%s where priv_id = %d", base_query,  priv_id);
+		query = sqlite3_mprintf("%s where priv_id = %d and uid = %d", base_query,  priv_id, uid);
 
 	if (query == NULL) {
 		ret = NOTIFICATION_ERROR_OUT_OF_MEMORY;
@@ -1038,7 +1039,7 @@ err:
 	return ret;
 }
 
-EXPORT_API int notification_noti_get_by_tag(notification_h noti, char *pkgname, char* tag)
+EXPORT_API int notification_noti_get_by_tag(notification_h noti, char *pkgname, char* tag, uid_t uid)
 {
 	int ret = 0;
 	sqlite3 *db = NULL;
@@ -1065,7 +1066,7 @@ EXPORT_API int notification_noti_get_by_tag(notification_h noti, char *pkgname, 
 			 "b_event_handler_click_on_icon, b_event_handler_click_on_thumbnail, "
 			 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb, led_on_ms, led_off_ms, "
 			 "flags_for_property, display_applist, progress_size, progress_percentage, ongoing_flag, auto_remove "
-			 "from noti_list where caller_pkgname = ? and tag = ?", -1, &stmt, NULL);
+			 "from noti_list where caller_pkgname = ? and tag = ? and uid = ?", -1, &stmt, NULL);
 		if (ret != SQLITE_OK) {
 			NOTIFICATION_ERR("Error: %s\n", sqlite3_errmsg(db));
 			return NOTIFICATION_ERROR_OUT_OF_MEMORY;
@@ -1082,6 +1083,13 @@ EXPORT_API int notification_noti_get_by_tag(notification_h noti, char *pkgname, 
 			NOTIFICATION_ERR("Error: %s\n", sqlite3_errmsg(db));
 			goto err;
 		}
+
+		ret = sqlite3_bind_int(stmt, 3, uid);
+		if (ret != SQLITE_OK) {
+			NOTIFICATION_ERR("Error: %s\n", sqlite3_errmsg(db));
+			goto err;
+		}
+
 	} else {
 		ret = sqlite3_prepare_v2(db, "select "
 			 "type, layout, caller_pkgname, launch_pkgname, image_path, group_id, priv_id, "
@@ -1093,13 +1101,19 @@ EXPORT_API int notification_noti_get_by_tag(notification_h noti, char *pkgname, 
 			 "b_event_handler_click_on_icon, b_event_handler_click_on_thumbnail, "
 			 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb, led_on_ms, led_off_ms, "
 			 "flags_for_property, display_applist, progress_size, progress_percentage, ongoing_flag, auto_remove "
-			 "from noti_list where  tag = ?", -1, &stmt, NULL);
+			 "from noti_list where  tag = ? and uid = ?", -1, &stmt, NULL);
 		if (ret != SQLITE_OK) {
 			NOTIFICATION_ERR("Error: %s\n", sqlite3_errmsg(db));
 			return NOTIFICATION_ERROR_OUT_OF_MEMORY;
 		}
 
 		ret = sqlite3_bind_text(stmt, 1, tag, -1, SQLITE_TRANSIENT);
+		if (ret != SQLITE_OK) {
+			NOTIFICATION_ERR("Error: %s\n", sqlite3_errmsg(db));
+			goto err;
+		}
+
+		ret = sqlite3_bind_int(stmt, 2, uid);
 		if (ret != SQLITE_OK) {
 			NOTIFICATION_ERR("Error: %s\n", sqlite3_errmsg(db));
 			goto err;
@@ -1138,7 +1152,7 @@ EXPORT_API int notification_noti_update(notification_h noti)
 	if (!db)
 		return get_last_result();
 
-	if (_is_allowed_to_notify((const char *)noti->caller_pkgname) == false) {
+	if (_is_allowed_to_notify((const char *)noti->caller_pkgname, noti->uid) == false) {
 		NOTIFICATION_DBG("[%s] is not allowed to notify", noti->caller_pkgname);
 		return NOTIFICATION_ERROR_PERMISSION_DENIED;
 	}
@@ -1205,7 +1219,7 @@ err:
 	return ret;
 }
 
-EXPORT_API int notification_noti_delete_all(notification_type_e type, const char *pkgname, int *num_deleted, int **list_deleted_rowid)
+EXPORT_API int notification_noti_delete_all(notification_type_e type, const char *pkgname, int *num_deleted, int **list_deleted_rowid, uid_t uid)
 {
 	int ret = NOTIFICATION_ERROR_NONE;
 	int ret_tmp = NOTIFICATION_ERROR_NONE;
@@ -1226,16 +1240,16 @@ EXPORT_API int notification_noti_delete_all(notification_type_e type, const char
 	if (pkgname == NULL || strlen(pkgname) == 0) {
 		if (type != NOTIFICATION_TYPE_NONE)
 			snprintf(query_where, sizeof(query_where),
-				 "where type = %d ", type);
+				 "where type = %d and uid = %d", type, uid);
 
 	} else {
 		if (type == NOTIFICATION_TYPE_NONE)
 			snprintf(query_where, sizeof(query_where),
-				 "where caller_pkgname = '%s' ", pkgname);
+				 "where caller_pkgname = '%s' and uid = %d", pkgname, uid);
 		else
 			snprintf(query_where, sizeof(query_where),
-				 "where caller_pkgname = '%s' and type = %d ",
-				 pkgname, type);
+				 "where caller_pkgname = '%s' and type = %d and uid = %d",
+				 pkgname, type, uid);
 
 	}
 
@@ -1337,153 +1351,6 @@ err:
 	return ret;
 }
 
-int notification_noti_delete_group_by_group_id(const char *pkgname,
-					       int group_id, int *num_deleted, int **list_deleted_rowid)
-{
-	int ret = NOTIFICATION_ERROR_NONE;
-	int ret_tmp = NOTIFICATION_ERROR_NONE;
-	sqlite3 *db = NULL;
-	int i = 0, data_cnt = 0;
-	sqlite3_stmt *stmt = NULL;
-	char buf[128] = { 0, };
-	char query[NOTIFICATION_QUERY_MAX] = { 0, };
-	char query_base[NOTIFICATION_QUERY_MAX] = { 0, };
-	char query_where[NOTIFICATION_QUERY_MAX] = { 0, };
-
-	/* Check pkgname is valid */
-	if (pkgname == NULL)
-		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-
-	snprintf(query_where, sizeof(query_where),
-			"where caller_pkgname = '%s' and group_id = %d", pkgname, group_id);
-
-	/* Open DB */
-	db = notification_db_open(DBPATH);
-	if (!db)
-		return get_last_result();
-
-	if (num_deleted != NULL)
-		*num_deleted = 0;
-
-	if (list_deleted_rowid != NULL) {
-		*list_deleted_rowid = NULL;
-		snprintf(query, sizeof(query),
-				"select priv_id from noti_list %s ", query_where);
-
-		ret = sqlite3_prepare(db, query, strlen(query), &stmt, NULL);
-		if (ret != SQLITE_OK) {
-			NOTIFICATION_ERR("Select Query : %s", query);
-			NOTIFICATION_ERR("Select DB error(%d) : %s", ret,
-					 sqlite3_errmsg(db));
-
-			ret = NOTIFICATION_ERROR_FROM_DB;
-			goto err;
-		}
-
-		while (sqlite3_step(stmt) == SQLITE_ROW) {
-			if (data_cnt % 8 == 0) {
-				int *tmp;
-				tmp = (int *)realloc(*list_deleted_rowid, sizeof(int) * (data_cnt + 8 + 1));
-				if (tmp) {
-					*list_deleted_rowid = tmp;
-				} else {
-					free(*list_deleted_rowid);
-					*list_deleted_rowid = NULL;
-					ret = NOTIFICATION_ERROR_OUT_OF_MEMORY;
-					goto err;
-				}
-			}
-			*((*list_deleted_rowid) + data_cnt) = sqlite3_column_int(stmt, 0);
-			data_cnt++;
-		}
-
-		if (stmt) {
-			sqlite3_finalize(stmt);
-			stmt = NULL;
-		}
-
-		if (data_cnt > 0) {
-			query_where[0] = '\0';
-			snprintf(query_base, sizeof(query_base) - 1, "delete from noti_list");
-			for (i = 0; i < data_cnt ; i++) {
-				if (i % NOTI_BURST_DELETE_UNIT == 0 && i != 0) {
-					snprintf(query, sizeof(query) - 1, "%s where priv_id in (%s)", query_base, query_where);
-					ret_tmp = notification_db_exec(db, query, NULL);
-					query_where[0] = '\0';
-					if (ret == NOTIFICATION_ERROR_NONE)
-						ret = ret_tmp;
-				}
-				snprintf(buf, sizeof(buf) - 1, "%s%d", (i % NOTI_BURST_DELETE_UNIT == 0) ? "" : ",", *((*list_deleted_rowid) + i));
-				strncat(query_where, buf, sizeof(query_where) - strlen(query_where) - 1);
-			}
-			if ((i <= NOTI_BURST_DELETE_UNIT) || ((i % NOTI_BURST_DELETE_UNIT) > 0)) {
-				snprintf(query, sizeof(query) - 1, "%s where priv_id in (%s)", query_base, query_where);
-				ret_tmp = notification_db_exec(db, query, NULL);
-				if (ret == NOTIFICATION_ERROR_NONE)
-					ret = ret_tmp;
-			}
-		} else {
-			free(*list_deleted_rowid);
-			*list_deleted_rowid = NULL;
-		}
-
-		if (num_deleted != NULL)
-			*num_deleted = data_cnt;
-
-	} else {
-		/* Make query */
-		snprintf(query, sizeof(query), "delete from noti_list %s", query_where);
-
-		/* execute DB */
-		ret = notification_db_exec(db, query, NULL);
-	}
-
-err:
-	if (stmt)
-		sqlite3_finalize(stmt);
-
-	/* Close DB */
-	if (db)
-		notification_db_close(&db);
-
-	return ret;
-}
-
-int notification_noti_delete_group_by_priv_id(const char *pkgname, int priv_id)
-{
-	sqlite3 *db = NULL;
-	char query[NOTIFICATION_QUERY_MAX] = { 0, };
-	int internal_group_id = 0;
-	int ret;
-
-	/* Check pkgname is valid */
-	if (pkgname == NULL)
-		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-
-	/* Open DB */
-	db = notification_db_open(DBPATH);
-	if (!db)
-		return get_last_result();
-
-	/* Get internal group id using priv id */
-	internal_group_id =
-	    _notification_noti_get_internal_group_id_by_priv_id(pkgname,
-								priv_id, db);
-
-	/* Make query */
-	snprintf(query, sizeof(query), "delete from noti_list "
-		 "where caller_pkgname = '%s' and internal_group_id = %d",
-		 pkgname, internal_group_id);
-
-	/* execute DB */
-	ret = notification_db_exec(db, query, NULL);
-
-	/* Close DB */
-	notification_db_close(&db);
-
-	return ret;
-}
-
 EXPORT_API int notification_noti_delete_by_priv_id(const char *pkgname, int priv_id)
 {
 	sqlite3 *db = NULL;
@@ -1514,7 +1381,7 @@ EXPORT_API int notification_noti_delete_by_priv_id(const char *pkgname, int priv
 	return ret;
 }
 
-EXPORT_API int notification_noti_delete_by_priv_id_get_changes(const char *pkgname, int priv_id, int *num_changes)
+EXPORT_API int notification_noti_delete_by_priv_id_get_changes(const char *pkgname, int priv_id, int *num_changes, uid_t uid)
 {
 	sqlite3 *db = NULL;
 	char query[NOTIFICATION_QUERY_MAX] = {0, };
@@ -1531,8 +1398,8 @@ EXPORT_API int notification_noti_delete_by_priv_id_get_changes(const char *pkgna
 
 	/* Make query */
 	snprintf(query, sizeof(query), "delete from noti_list "
-		 "where caller_pkgname = '%s' and priv_id = %d", pkgname,
-		 priv_id);
+		 "where caller_pkgname = '%s' and priv_id = %d and uid = %d", pkgname,
+		 priv_id, uid);
 	NOTIFICATION_DBG("%s", query);
 
 	/* execute DB */
@@ -1548,10 +1415,11 @@ EXPORT_API int notification_noti_delete_by_priv_id_get_changes(const char *pkgna
 	return ret;
 }
 
+/* todo refactoring */
 EXPORT_API int notification_noti_get_count(notification_type_e type,
 						 const char *pkgname,
 						 int group_id, int priv_id,
-						 int *count)
+						 int *count, uid_t uid)
 {
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
@@ -1562,7 +1430,6 @@ EXPORT_API int notification_noti_get_count(notification_type_e type,
 
 	int ret = 0, get_count = 0, internal_group_id = 0;
 	int status = VCONFKEY_TELEPHONY_SIM_UNKNOWN;
-	int flag_where = 0;
 	int flag_where_more = 0;
 	int ret_vconf = 0;
 
@@ -1582,35 +1449,32 @@ EXPORT_API int notification_noti_get_count(notification_type_e type,
 		if (group_id == NOTIFICATION_GROUP_ID_NONE) {
 			if (priv_id == NOTIFICATION_PRIV_ID_NONE) {
 				snprintf(query_where, sizeof(query_where),
-					 "where caller_pkgname = '%s' ",
-					 pkgname);
-				flag_where = 1;
+					 "where caller_pkgname = '%s' and uid = %d ",
+					 pkgname, uid);
 			} else {
 				internal_group_id =
 				    _notification_noti_get_internal_group_id_by_priv_id
 				    (pkgname, priv_id, db);
 				snprintf(query_where, sizeof(query_where),
-					 "where caller_pkgname = '%s' and internal_group_id = %d ",
-					 pkgname, internal_group_id);
-				flag_where = 1;
+					 "where caller_pkgname = '%s' and internal_group_id = %d and uid = %d ",
+					 pkgname, internal_group_id, uid);
 			}
 		} else {
 			if (priv_id == NOTIFICATION_PRIV_ID_NONE) {
 				snprintf(query_where, sizeof(query_where),
-					 "where caller_pkgname = '%s' and group_id = %d ",
-					 pkgname, group_id);
-				flag_where = 1;
+					 "where caller_pkgname = '%s' and group_id = %d and uid = %d ",
+					 pkgname, group_id, uid);
 			} else {
 				internal_group_id =
 				    _notification_noti_get_internal_group_id_by_priv_id
 				    (pkgname, priv_id, db);
 				snprintf(query_where, sizeof(query_where),
-					 "where caller_pkgname = '%s' and internal_group_id = %d ",
-					 pkgname, internal_group_id);
-				flag_where = 1;
+					 "where caller_pkgname = '%s' and internal_group_id = %d and uid = %d ",
+					 pkgname, internal_group_id, uid);
 			}
 		}
-
+	} else {
+		snprintf(query_where, sizeof(query_where), "where uid = %d", uid);
 	}
 
 	if (ret_vconf == 0 && status == VCONFKEY_TELEPHONY_SIM_INSERTED) {
@@ -1631,22 +1495,12 @@ EXPORT_API int notification_noti_get_count(notification_type_e type,
 		}
 	}
 
-	if (flag_where == 1) {
-		if (flag_where_more == 1) {
-			snprintf(query, sizeof(query), "%s %s and %s",
-				 query_base, query_where, query_where_more);
-		} else {
-			snprintf(query, sizeof(query), "%s %s", query_base,
-				 query_where);
-		}
-
+	if (flag_where_more == 1) {
+		snprintf(query, sizeof(query), "%s %s and %s",
+			 query_base, query_where, query_where_more);
 	} else {
-		if (flag_where_more == 1) {
-			snprintf(query, sizeof(query), "%s where %s",
-				 query_base, query_where_more);
-		} else {
-			snprintf(query, sizeof(query), "%s", query_base);
-		}
+		snprintf(query, sizeof(query), "%s %s", query_base,
+			 query_where);
 	}
 
 	ret = sqlite3_prepare(db, query, strlen(query), &stmt, NULL);
@@ -1681,13 +1535,14 @@ err:
 
 EXPORT_API int notification_noti_get_grouping_list(notification_type_e type,
 							 int count,
-							 notification_list_h *
-							 list)
+							 notification_list_h *list,
+							 uid_t uid)
 {
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
 	char query[NOTIFICATION_QUERY_MAX] = { 0, };
 	char query_base[NOTIFICATION_QUERY_MAX] = { 0, };
+	char query_uid[NOTIFICATION_QUERY_MAX] = { 0, };
 	char query_where[NOTIFICATION_QUERY_MAX] = { 0, };
 
 	int ret = 0;
@@ -1715,25 +1570,28 @@ EXPORT_API int notification_noti_get_grouping_list(notification_type_e type,
 		 "b_event_handler_click_on_icon, b_event_handler_click_on_thumbnail, "
 		 "sound_type, sound_path, vibration_type, vibration_path, led_operation, led_argb, led_on_ms, led_off_ms, "
 		 "flags_for_property, display_applist, progress_size, progress_percentage, ongoing_flag, auto_remove "
-		 "from noti_list ");
+		 "from noti_list where 1 > 0 ");
 
 	if (status == VCONFKEY_TELEPHONY_SIM_INSERTED) {
 		if (type != NOTIFICATION_TYPE_NONE)
 			snprintf(query_where, sizeof(query_where),
-				 "where type = %d ", type);
+				 " and type = %d ", type);
 	} else {
 		if (type != NOTIFICATION_TYPE_NONE)
 			snprintf(query_where, sizeof(query_where),
-				 "where type = %d and flag_simmode = 0 ", type);
+				 " and type = %d and flag_simmode = 0 ", type);
 		else
 			snprintf(query_where, sizeof(query_where),
-				 "where flag_simmode = 0 ");
+				 " and flag_simmode = 0 ");
 	}
 
+	if (uid != NOTIFICATION_GLOBAL_UID)
+		snprintf(query_uid, sizeof(query_uid), " and uid = %d ", uid);
+
 	snprintf(query, sizeof(query),
-		 "%s %s "
+		 "%s %s %s "
 		 "group by internal_group_id "
-		 "order by rowid desc, time desc", query_base, query_where);
+		 "order by rowid desc, time desc", query_base, query_where, query_uid);
 
 	ret = sqlite3_prepare(db, query, strlen(query), &stmt, NULL);
 	if (ret != SQLITE_OK) {
@@ -1774,14 +1632,14 @@ err:
 
 	if (get_list != NULL)
 		*list = notification_list_get_head(get_list);
-
 	return ret;
 }
 
 EXPORT_API int notification_noti_get_detail_list(const char *pkgname,
 						       int group_id,
 						       int priv_id, int count,
-						       notification_list_h *list)
+						       notification_list_h *list,
+						       uid_t uid)
 {
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
@@ -1820,10 +1678,10 @@ EXPORT_API int notification_noti_get_detail_list(const char *pkgname,
 	if (priv_id == NOTIFICATION_PRIV_ID_NONE && group_id == NOTIFICATION_GROUP_ID_NONE) {
 		if (status == VCONFKEY_TELEPHONY_SIM_INSERTED)
 			snprintf(query_where, sizeof(query_where),
-				 "where  caller_pkgname = '%s' ", pkgname);
+				 "where  caller_pkgname = '%s' and uid = %d ", pkgname, uid);
 		else
 			snprintf(query_where, sizeof(query_where),
-				 "where  caller_pkgname = '%s' and flag_simmode = 0 ", pkgname);
+				 "where  caller_pkgname = '%s' and flag_simmode = 0 and uid = %d ", pkgname, uid);
 
 	} else {
 		internal_group_id =
@@ -1832,12 +1690,12 @@ EXPORT_API int notification_noti_get_detail_list(const char *pkgname,
 
 		if (status == VCONFKEY_TELEPHONY_SIM_INSERTED)
 			snprintf(query_where, sizeof(query_where),
-				 "where  caller_pkgname = '%s' and internal_group_id = %d ",
-				 pkgname, internal_group_id);
+				 "where  caller_pkgname = '%s' and internal_group_id = %d and uid = %d ",
+				 pkgname, internal_group_id, uid);
 		else
 			snprintf(query_where, sizeof(query_where),
-				 "where  caller_pkgname = '%s' and internal_group_id = %d and flag_simmode = 0 ",
-				 pkgname, internal_group_id);
+				 "where  caller_pkgname = '%s' and internal_group_id = %d and flag_simmode = 0 and uid = %d ",
+				 pkgname, internal_group_id, uid);
 	}
 
 	snprintf(query, sizeof(query),
