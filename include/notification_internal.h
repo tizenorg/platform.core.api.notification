@@ -17,6 +17,8 @@
 #ifndef __NOTIFICATION_INTERNAL_H__
 #define __NOTIFICATION_INTERNAL_H__
 #include <glib.h>
+#include <sys/types.h>
+
 #include <notification_error.h>
 #include <notification_type.h>
 #include <notification_list.h>

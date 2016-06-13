@@ -18,6 +18,8 @@
 #define __NOTIFICATION_SETTING_H__
 
 #include <stdbool.h>
+#include <sys/types.h>
+
 #include "notification.h"
 
 #ifdef __cplusplus

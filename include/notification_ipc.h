@@ -18,6 +18,8 @@
 #define __NOTIFICATION_IPC_H__
 
 #include <gio/gio.h>
+#include <sys/types.h>
+
 #include <notification.h>
 #include <notification_setting.h>
 #include <notification_setting_internal.h>

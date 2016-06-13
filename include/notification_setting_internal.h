@@ -17,6 +17,7 @@
 #ifndef __NOTIFICATION_SETTING_INTERNAL_H__
 #define __NOTIFICATION_SETTING_INTERNAL_H__
 
+#include <sys/types.h>
 #include <stdbool.h>
 #include "notification.h"
 #include "notification_setting.h"

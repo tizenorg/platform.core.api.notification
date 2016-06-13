@@ -17,6 +17,7 @@
 #ifndef __NOTIFICATION_SETTING_SERVICE_H__
 #define __NOTIFICATION_SETTING_SERVICE_H__
 
+#include <sys/types.h>
 #include <notification.h>
 
 #ifdef __cplusplus

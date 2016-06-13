@@ -17,6 +17,8 @@
 #ifndef __NOTIFICATION_NOTI_H__
 #define __NOTIFICATION_NOTI_H__
 
+#include <sys/types.h>
+
 #include <notification.h>
 #include <notification_list.h>
 

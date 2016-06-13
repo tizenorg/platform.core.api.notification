@@ -16,6 +16,7 @@
 
 #ifndef __NOTIFICATION_PRIVATE_H__
 #define __NOTIFICATION_PRIVATE_H__
+#include <sys/types.h>
 
 #ifndef EXPORT_API
 #define EXPORT_API __attribute__ ((visibility("default")))
