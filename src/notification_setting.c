@@ -727,7 +727,7 @@ EXPORT_API int notification_setting_db_update_system_setting(int do_not_disturb,
 
 	sqlite3_exec(db, "BEGIN immediate;", NULL, NULL, NULL);
 
-	sqlret = sqlite3_prepare_v2(db, "INSERT OR REPLACE notification_system_setting SET do_not_disturb = ?, visibility_class = ? WHERE uid = ?;", -1, &db_statement, NULL);
+	sqlret = sqlite3_prepare_v2(db, "INSERT OR REPLACE INTO notification_system_setting (uid, do_not_disturb, visibility_class) values(?, ?, ?);", -1, &db_statement, NULL);
 
 	if (sqlret != SQLITE_OK) {
 		NOTIFICATION_ERR("sqlite3_prepare_v2 failed [%d][%s]", sqlret, sqlite3_errmsg(db));
@@ -735,12 +735,11 @@ EXPORT_API int notification_setting_db_update_system_setting(int do_not_disturb,
 		goto return_close_db;
 	}
 
+	sqlite3_bind_int(db_statement, field_index++, uid);
 	sqlite3_bind_int(db_statement, field_index++, do_not_disturb);
 	sqlite3_bind_int(db_statement, field_index++, visibility_class);
-	sqlite3_bind_int(db_statement, field_index++, uid);
 
 	sqlret = sqlite3_step(db_statement);
-
 	if (sqlret != SQLITE_OK && sqlret != SQLITE_DONE) {
 		NOTIFICATION_ERR("sqlite3_step failed [%d][%s]", sqlret, sqlite3_errmsg(db));
 		err =  NOTIFICATION_ERROR_FROM_DB;
