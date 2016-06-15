@@ -35,7 +35,10 @@ struct notification_setting {
 };
 
 int notification_setting_get_setting_array(notification_setting_h *setting_array, int *count);
+int notification_setting_get_setting_array_for_uid(notification_setting_h *setting_array, int *count, uid_t uid);
+
 int notification_setting_get_setting_by_package_name(const char *package_name, notification_setting_h *setting);
+int notification_setting_get_setting_by_package_name_for_uid(const char *package_name, notification_setting_h *setting, uid_t uid);
 
 int notification_setting_get_package_name(notification_setting_h setting, char **value);
 int notification_setting_set_package_name(notification_setting_h setting, char *value);
@@ -49,11 +52,17 @@ int notification_setting_set_do_not_disturb_except(notification_setting_h settin
 int notification_setting_insert_package_for_uid(const char *package_id, uid_t uid);
 int notification_setting_delete_package_for_uid(const char *package_id, uid_t uid);
 
+int notification_setting_update_setting_for_uid(notification_setting_h setting, uid_t uid);
+
 /* System setting */
 typedef struct notification_system_setting *notification_system_setting_h;
 
 int notification_system_setting_load_system_setting(notification_system_setting_h *system_setting);
+int notification_system_setting_load_system_setting_for_uid(notification_system_setting_h *system_setting, uid_t uid);
+
 int notification_system_setting_update_system_setting(notification_system_setting_h system_setting);
+int notification_system_setting_update_system_setting_for_uid(notification_system_setting_h system_setting, uid_t uid);
+
 int notification_system_setting_free_system_setting(notification_system_setting_h system_setting);
 
 int notification_system_setting_get_do_not_disturb(notification_system_setting_h system_setting, bool *value);
