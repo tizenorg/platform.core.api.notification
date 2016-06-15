@@ -416,8 +416,7 @@ EXPORT_API int notification_setting_refresh_setting_table(uid_t uid)
 	setting_local_info info;
 
 	NOTIFICATION_ERR("refresh seeting table [%d]", uid);
-	sqlite3_ret = db_util_open(DBPATH, &db, 0);
-
+	sqlite3_ret = sqlite3_open_v2(DBPATH, &db, SQLITE_OPEN_READWRITE, NULL);
 	if (sqlite3_ret != SQLITE_OK || db == NULL) {
 		NOTIFICATION_ERR("db_util_open failed [%s][%d]", DBPATH, sqlite3_ret);
 		err = NOTIFICATION_ERROR_FROM_DB;
