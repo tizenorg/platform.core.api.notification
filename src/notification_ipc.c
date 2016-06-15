@@ -985,6 +985,12 @@ int notification_ipc_request_load_noti_grouping_list(notification_type_e type, i
 
 		while (g_variant_iter_loop(iter, "(v)", &iter_body)) {
 			noti = notification_create(NOTIFICATION_TYPE_NOTI);
+			if (!noti) {
+				result = NOTIFICATION_ERROR_OUT_OF_MEMORY;
+				NOTIFICATION_ERR("failed to create a notification");
+				notification_free_list(*list);
+				break;
+			}
 			g_variant_get(iter_body, "(v)", &noti_body);
 			notification_ipc_make_noti_from_gvariant(noti, noti_body);
 			*list = notification_list_append(*list, noti);
@@ -1030,6 +1036,12 @@ int notification_ipc_request_load_noti_detail_list(const char *pkgname,
 
 		while (g_variant_iter_loop(iter, "(v)", &iter_body)) {
 			noti = notification_create(NOTIFICATION_TYPE_NOTI);
+			if (!noti) {
+				result = NOTIFICATION_ERROR_OUT_OF_MEMORY;
+				NOTIFICATION_ERR("failed to create a notification");
+				notification_free_list(*list);
+				break;
+			}
 			g_variant_get(iter_body, "(v)", &noti_body);
 			notification_ipc_make_noti_from_gvariant(noti, noti_body);
 			*list = notification_list_append(*list, noti);
