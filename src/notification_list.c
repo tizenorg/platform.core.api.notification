@@ -39,8 +39,10 @@ notification_list_h _notification_list_create(void)
 
 	list = (notification_list_h) malloc(sizeof(struct _notification_list));
 	if (list == NULL) {
+		/* LCOV_EXCL_START */
 		NOTIFICATION_ERR("NO MEMORY");
 		return NULL;
+		/* LCOV_EXCL_STOP */
 	}
 
 	list->prev = NULL;
@@ -154,9 +156,11 @@ EXPORT_API notification_list_h notification_list_append(notification_list_h list
 
 		new_list = _notification_list_create();
 		if (new_list == NULL) {
+			/* LCOV_EXCL_START */
 			NOTIFICATION_ERR("NO MEMORY");
 			set_last_result(NOTIFICATION_ERROR_OUT_OF_MEMORY);
 			return NULL;
+			/* LCOV_EXCL_STOP */
 		}
 
 		cur_list->next = new_list;
@@ -166,9 +170,11 @@ EXPORT_API notification_list_h notification_list_append(notification_list_h list
 	} else {
 		cur_list = _notification_list_create();
 		if (cur_list == NULL) {
+			/* LCOV_EXCL_START */
 			NOTIFICATION_ERR("NO MEMORY");
 			set_last_result(NOTIFICATION_ERROR_OUT_OF_MEMORY);
 			return NULL;
+			/* LCOV_EXCL_STOP */
 		}
 
 		new_list = cur_list;

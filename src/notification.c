@@ -1856,11 +1856,13 @@ EXPORT_API int notification_get_tag(notification_h noti, const char **tag)
 	return NOTIFICATION_ERROR_NONE;
 }
 
+/* LCOV_EXCL_START */
 void notification_call_posted_toast_cb(const char *message)
 {
 	if (posted_toast_message_cb != NULL)
 		posted_toast_message_cb((void *)message);
 }
+/* LCOV_EXCL_STOP */
 
 EXPORT_API int notification_set_ongoing_flag(notification_h noti, bool ongoing_flag)
 {

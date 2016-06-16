@@ -67,11 +67,14 @@ EXPORT_API int notification_setting_get_setting_by_package_name_for_uid(const ch
 	return ret;
 }
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_setting_get_setting_by_package_name(const char *package_name, notification_setting_h *setting)
 {
 	return notification_setting_get_setting_by_package_name_for_uid(package_name, setting, getuid());
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_setting_get_setting(notification_setting_h *setting)
 {
 	int ret;
@@ -88,6 +91,7 @@ EXPORT_API int notification_setting_get_setting(notification_setting_h *setting)
 
 	return ret;
 }
+/* LCOV_EXCL_STOP */
 
 EXPORT_API int notification_setting_get_package_name(notification_setting_h setting, char **value)
 {
@@ -552,6 +556,7 @@ out:
 	return err;
 }
 
+/* LCOV_EXCL_START */
 bool privilege_info_cb(const char *privilege_name, void *user_data)
 {
 	bool *found = user_data;
@@ -563,6 +568,7 @@ bool privilege_info_cb(const char *privilege_name, void *user_data)
 
 	return true;
 }
+/* LCOV_EXCL_STOP */
 
 EXPORT_API int notification_setting_insert_package_for_uid(const char *package_id, uid_t uid)
 {
@@ -726,7 +732,6 @@ EXPORT_API int notification_setting_db_update_system_setting(int do_not_disturb,
 	}
 
 	sqlite3_exec(db, "BEGIN immediate;", NULL, NULL, NULL);
-
 	sqlret = sqlite3_prepare_v2(db, "INSERT OR REPLACE INTO notification_system_setting (uid, do_not_disturb, visibility_class) values(?, ?, ?);", -1, &db_statement, NULL);
 
 	if (sqlret != SQLITE_OK) {

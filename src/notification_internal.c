@@ -971,11 +971,13 @@ notification_h notification_load_for_uid(char *pkgname,
 }
 /* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API notification_h notification_load(char *pkgname,
 		int priv_id)
 {
 	return notification_load_for_uid(pkgname, priv_id, getuid());
 }
+/* LCOV_EXCL_STOP */
 
 /* LCOV_EXCL_START */
 EXPORT_API notification_h notification_new(notification_type_e type,
@@ -1228,10 +1230,12 @@ EXPORT_API int notification_unregister_detailed_changed_cb(
 	return NOTIFICATION_ERROR_INVALID_PARAMETER;
 }
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_is_service_ready(void)
 {
 	return notification_ipc_is_master_ready();
 }
+/* LCOV_EXCL_STOP */
 
 EXPORT_API int notification_set_uid(notification_h noti,
 		uid_t uid)
@@ -1343,18 +1347,22 @@ EXPORT_API notification_h notification_load_by_tag_for_uid(const char *tag, uid_
 
 	caller_pkgname = notification_get_pkgname_by_pid();
 	if (!caller_pkgname) {
+		/* LCOV_EXCL_START */
 		NOTIFICATION_ERR("Failed to get a package name");
 		set_last_result(NOTIFICATION_ERROR_OUT_OF_MEMORY);
 		return NULL;
+		/* LCOV_EXCL_STOP */
 	}
 
 	noti = (notification_h)calloc(1, sizeof(struct _notification));
 	if (noti == NULL) {
+		/* LCOV_EXCL_START */
 		NOTIFICATION_ERR("Failed to alloc a new notification");
 		set_last_result(NOTIFICATION_ERROR_OUT_OF_MEMORY);
 		free(caller_pkgname);
 
 		return NULL;
+		/* LCOV_EXCL_STOP */
 	}
 
 	ret = notification_ipc_request_load_noti_by_tag(noti, caller_pkgname, (char *)tag, uid);

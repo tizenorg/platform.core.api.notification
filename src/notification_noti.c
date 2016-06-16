@@ -968,6 +968,7 @@ err:
 	return ret;
 }
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_noti_get_by_priv_id(notification_h noti, char *pkgname, int priv_id, uid_t uid)
 {
 	int ret = 0;
@@ -1038,6 +1039,7 @@ err:
 
 	return ret;
 }
+/* LCOV_EXCL_STOP */
 
 EXPORT_API int notification_noti_get_by_tag(notification_h noti, char *pkgname, char* tag, uid_t uid)
 {
@@ -1351,6 +1353,7 @@ err:
 	return ret;
 }
 
+/* LCOV_EXCL_START */
 EXPORT_API int notification_noti_delete_by_priv_id(const char *pkgname, int priv_id)
 {
 	sqlite3 *db = NULL;
@@ -1380,6 +1383,7 @@ EXPORT_API int notification_noti_delete_by_priv_id(const char *pkgname, int priv
 
 	return ret;
 }
+/* LCOV_EXCL_STOP */
 
 EXPORT_API int notification_noti_delete_by_priv_id_get_changes(const char *pkgname, int priv_id, int *num_changes, uid_t uid)
 {
@@ -1416,6 +1420,7 @@ EXPORT_API int notification_noti_delete_by_priv_id_get_changes(const char *pkgna
 }
 
 /* todo refactoring */
+/* LCOV_EXCL_START */
 EXPORT_API int notification_noti_get_count(notification_type_e type,
 						 const char *pkgname,
 						 int group_id, int priv_id,
@@ -1532,6 +1537,7 @@ err:
 
 	return ret;
 }
+/* LCOV_EXCL_STOP */
 
 EXPORT_API int notification_noti_get_grouping_list(notification_type_e type,
 							 int count,

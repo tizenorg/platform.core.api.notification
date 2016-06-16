@@ -141,7 +141,7 @@ EXPORT_API int notification_db_init()
 	char *query = NULL;
 	const char *db_path = tzplatform_getenv(TZ_SYS_DB);
 	if (db_path == NULL) {
-		NOTIFICATION_ERR("fail to get db_path");
+		NOTIFICATION_ERR("fail to get db_path"); /* LCOV_EXCL_LINE */
 		return NOTIFICATION_ERROR_OUT_OF_MEMORY;
 	}
 	snprintf(defname, sizeof(defname), "%s/%s", db_path, NOTIFICATION_DB_NAME);
@@ -149,9 +149,11 @@ EXPORT_API int notification_db_init()
 	NOTIFICATION_DBG("db path : %s", defname);
 	r = sqlite3_open_v2(defname, &db, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE, NULL);
 	if (r) {
+		/* LCOV_EXCL_START */
 		db_util_close(db);
 		NOTIFICATION_ERR("fail to open notification db %d", r);
 		return NOTIFICATION_ERROR_IO_ERROR;
+		/* LCOV_EXCL_STOP */
 	}
 	query = sqlite3_mprintf(CREATE_NOTIFICATION_TABLE, tzplatform_getuid(TZ_SYS_DEFAULT_USER));
 	NOTIFICATION_DBG("@@@ query : %s", query);
@@ -160,10 +162,12 @@ EXPORT_API int notification_db_init()
 	if (query)
 		sqlite3_free(query);
 	if (r != SQLITE_OK) {
+		/* LCOV_EXCL_START */
 		NOTIFICATION_ERR("query error(%d)(%s)", r, errmsg);
 		sqlite3_free(errmsg);
 		db_util_close(db);
 		return NOTIFICATION_ERROR_IO_ERROR;
+		/* LCOV_EXCL_STOP */
 	}
 
 	db_util_close(db);
@@ -177,12 +181,14 @@ sqlite3 *notification_db_open(const char *dbfile)
 
 	ret = db_util_open(dbfile, &db, 0);
 	if (ret != SQLITE_OK) {
+		/* LCOV_EXCL_START */
 		if (ret == SQLITE_PERM)
 			set_last_result(NOTIFICATION_ERROR_PERMISSION_DENIED);
 		else
 			set_last_result(NOTIFICATION_ERROR_FROM_DB);
 
 		return NULL;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return db;
@@ -197,8 +203,10 @@ int notification_db_close(sqlite3 **db)
 
 	ret = db_util_close(*db);
 	if (ret != SQLITE_OK) {
+		/* LCOV_EXCL_START */
 		NOTIFICATION_ERR("DB close error(%d)", ret);
 		return NOTIFICATION_ERROR_FROM_DB;
+		/* LCOV_EXCL_STOP */
 	}
 
 	*db = NULL;
@@ -219,9 +227,11 @@ int notification_db_exec(sqlite3 *db, const char *query, int *num_changes)
 
 	ret = sqlite3_prepare_v2(db, query, strlen(query), &stmt, NULL);
 	if (ret != SQLITE_OK) {
+		/* LCOV_EXCL_START */
 		NOTIFICATION_ERR("DB err(%d) : %s", ret,
 				 sqlite3_errmsg(db));
 		return NOTIFICATION_ERROR_FROM_DB;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (stmt != NULL) {
@@ -232,10 +242,12 @@ int notification_db_exec(sqlite3 *db, const char *query, int *num_changes)
 
 			sqlite3_finalize(stmt);
 		} else {
+			/* LCOV_EXCL_START */
 			NOTIFICATION_ERR("DB err(%d) : %s", ret,
 					 sqlite3_errmsg(db));
 			sqlite3_finalize(stmt);
 			return NOTIFICATION_ERROR_FROM_DB;
+			/* LCOV_EXCL_STOP */
 		}
 	} else {
 			return NOTIFICATION_ERROR_FROM_DB;

@@ -58,8 +58,10 @@ static void __notification_ongoing_update_callback(GDBusConnection *connection,
 
 	info = calloc(1, sizeof(struct ongoing_info_s));
 	if (info == NULL) {
+		/* LCOV_EXCL_START */
 		NOTIFICATION_ERR("Out of memory");
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (g_strcmp0(signal_name, MEMBER_PROGRESS) == 0) {
@@ -75,9 +77,11 @@ static void __notification_ongoing_update_callback(GDBusConnection *connection,
 	}
 
 	if (pkgname == NULL) {
+		/* LCOV_EXCL_START */
 		NOTIFICATION_ERR("pkgname is null");
 		free(info);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 
 	info->pkgname = pkgname;
@@ -102,9 +106,11 @@ static int __send_ongoing_update_signal(const char *signal_name, GVariant *param
 
 	conn = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &err);
 	if (conn == NULL) {
+		/* LCOV_EXCL_START */
 		NOTIFICATION_ERR("g_bus_get_sync() failed: %s", err->message);
 		ret = NOTIFICATION_ERROR_FROM_DBUS;
 		goto end;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (g_dbus_connection_emit_signal(conn,
@@ -114,17 +120,21 @@ static int __send_ongoing_update_signal(const char *signal_name, GVariant *param
 					signal_name,
 					param,
 					&err) == FALSE) {
+		/* LCOV_EXCL_START */
 		NOTIFICATION_ERR("g_dbus_connection_emit_signal() failed: %s",
 					err->message);
 		ret = NOTIFICATION_ERROR_FROM_DBUS;
 		goto end;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (g_dbus_connection_flush_sync(conn, NULL, &err) == FALSE) {
+		/* LCOV_EXCL_START */
 		NOTIFICATION_ERR("g_dbus_connection_flush_sync() failed: %s",
 					err->message);
 		ret = NOTIFICATION_ERROR_FROM_DBUS;
 		goto end;
+		/* LCOV_EXCL_STOP */
 	}
 
 
@@ -151,10 +161,12 @@ int notification_ongoing_update_cb_set(notification_ongoing_update_cb callback,
 	if (od.conn == NULL) {
 		od.conn = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &error);
 		if (od.conn == NULL) {
+			/* LCOV_EXCL_START */
 			NOTIFICATION_ERR("Failed to connect to the D-BUS Daemon: %s",
 						error->message);
 			g_error_free(error);
 			return NOTIFICATION_ERROR_FROM_DBUS;
+			/* LCOV_EXCL_STOP */
 		}
 	}
 
@@ -170,9 +182,11 @@ int notification_ongoing_update_cb_set(notification_ongoing_update_cb callback,
 					NULL,
 					NULL);
 		if (od.subscribe_id == 0) {
+			/* LCOV_EXCL_START */
 			NOTIFICATION_ERR("g_dbus_connection_signal_subscribe() failed");
 			g_object_unref(od.conn);
 			return NOTIFICATION_ERROR_FROM_DBUS;
+			/* LCOV_EXCL_STOP */
 		}
 	}
 
@@ -211,9 +225,11 @@ int notification_ongoing_update_progress(const char *caller_pkgname,
 
 	ret = __send_ongoing_update_signal(MEMBER_PROGRESS, param);
 	if (ret != NOTIFICATION_ERROR_NONE) {
+		/* LCOV_EXCL_START */
 		NOTIFICATION_ERR("notification_ongoing_update_progress failed %d",
 					ret);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return NOTIFICATION_ERROR_NONE;
@@ -229,9 +245,11 @@ int notification_ongoing_update_size(const char *caller_pkgname,
 
 	ret = __send_ongoing_update_signal(MEMBER_SIZE, param);
 	if (ret != NOTIFICATION_ERROR_NONE) {
+		/* LCOV_EXCL_START */
 		NOTIFICATION_ERR("notification_ongoing_update_size failed %d",
 					ret);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return NOTIFICATION_ERROR_NONE;
@@ -247,9 +265,11 @@ int notification_ongoing_update_content(const char *caller_pkgname,
 
 	ret = __send_ongoing_update_signal(MEMBER_CONTENT, param);
 	if (ret != NOTIFICATION_ERROR_NONE) {
+		/* LCOV_EXCL_START */
 		NOTIFICATION_ERR("notification_ongoing_update_content failed %d",
 					ret);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	return NOTIFICATION_ERROR_NONE;
 }

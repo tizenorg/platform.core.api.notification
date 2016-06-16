@@ -36,8 +36,10 @@
 static int _get_table_field_data_int(char  **table, int *buf, int index)
 {
 	if ((table == NULL) || (buf == NULL) || (index < 0))  {
+		/* LCOV_EXCL_START */
 		NOTIFICATION_ERR("table[%p], buf[%p], index[%d]", table, buf, index);
 		return false;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (table[index] != NULL) {
@@ -45,8 +47,10 @@ static int _get_table_field_data_int(char  **table, int *buf, int index)
 		return true;
 	}
 
+	/* LCOV_EXCL_START */
 	*buf = 0;
 	return false;
+	/* LCOV_EXCL_STOP */
 }
 
 static int _get_table_field_data_string(char **table, char **buf, int ucs2, int index)
@@ -54,26 +58,28 @@ static int _get_table_field_data_string(char **table, char **buf, int ucs2, int 
 	int ret = false;
 
 	if ((table == NULL) || (buf == NULL) || (index < 0))  {
+		/* LCOV_EXCL_START */
 		NOTIFICATION_ERR("table[%p], buf[%p], index[%d]", table, buf, index);
 		return false;
+		/* LCOV_EXCL_STOP */
 	}
 
 	char *pTemp = table[index];
 	int sLen = 0;
 	if (pTemp == NULL) {
-		*buf = NULL;
+		*buf = NULL; /* LCOV_EXCL_LINE */
 	} else {
 		sLen = strlen(pTemp);
 		if (sLen) {
 			*buf = (char *) malloc(sLen + 1);
 			if (*buf == NULL) {
-				NOTIFICATION_ERR("malloc is failed");
+				NOTIFICATION_ERR("malloc is failed"); /* LCOV_EXCL_LINE */
 				goto out;
 			}
 			memset(*buf, 0, sLen + 1);
 			strncpy(*buf, pTemp, sLen);
 		} else {
-			*buf = NULL;
+			*buf = NULL; /* LCOV_EXCL_LINE */
 		}
 	}
 
@@ -97,7 +103,7 @@ EXPORT_API int noti_setting_service_get_setting_by_package_name(const char *pack
 	notification_setting_h result_setting_array = NULL;
 
 	if (package_name == NULL || setting == NULL) {
-		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
+		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER"); /* LCOV_EXCL_LINE */
 		err =  NOTIFICATION_ERROR_INVALID_PARAMETER;
 		goto out;
 	}
@@ -105,7 +111,7 @@ EXPORT_API int noti_setting_service_get_setting_by_package_name(const char *pack
 	sql_return = db_util_open(DBPATH, &local_db_handle, 0);
 
 	if (sql_return != SQLITE_OK || local_db_handle == NULL) {
-		NOTIFICATION_ERR("db_util_open failed [%d]", sql_return);
+		NOTIFICATION_ERR("db_util_open failed [%d]", sql_return); /* LCOV_EXCL_LINE */
 		err = NOTIFICATION_ERROR_FROM_DB;
 		goto out;
 	}
@@ -115,7 +121,7 @@ EXPORT_API int noti_setting_service_get_setting_by_package_name(const char *pack
 			"WHERE package_name = %Q AND uid = %d", NOTIFICATION_SETTING_DB_TABLE, package_name, uid);
 
 	if (!sql_query) {
-		NOTIFICATION_ERR("fail to alloc query");
+		NOTIFICATION_ERR("fail to alloc query"); /* LCOV_EXCL_LINE */
 		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
 		goto out;
 	}
@@ -123,13 +129,13 @@ EXPORT_API int noti_setting_service_get_setting_by_package_name(const char *pack
 	sql_return = sqlite3_get_table(local_db_handle, sql_query, &query_result, &row_count, &column_count, NULL);
 
 	if (sql_return != SQLITE_OK && sql_return != -1) {
-		NOTIFICATION_ERR("sqlite3_get_table failed [%d][%s]", sql_return, sql_query);
+		NOTIFICATION_ERR("sqlite3_get_table failed [%d][%s]", sql_return, sql_query); /* LCOV_EXCL_LINE */
 		err = NOTIFICATION_ERROR_FROM_DB;
 		goto out;
 	}
 
 	if (!row_count) {
-		NOTIFICATION_DBG("No setting found for [%s]", package_name);
+		NOTIFICATION_DBG("No setting found for [%s]", package_name); /* LCOV_EXCL_LINE */
 		err = NOTIFICATION_ERROR_NOT_EXIST_ID;
 		goto out;
 	}
@@ -139,7 +145,7 @@ EXPORT_API int noti_setting_service_get_setting_by_package_name(const char *pack
 	row_count = 1;
 
 	if (!(result_setting_array = (struct notification_setting *)malloc(sizeof(struct notification_setting) * row_count))) {
-		NOTIFICATION_ERR("malloc failed...");
+		NOTIFICATION_ERR("malloc failed..."); /* LCOV_EXCL_LINE */
 		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
 		goto out;
 	}
@@ -163,7 +169,7 @@ out:
 	if (local_db_handle) {
 		sql_return = db_util_close(local_db_handle);
 		if (sql_return != SQLITE_OK)
-			NOTIFICATION_WARN("fail to db_util_close - [%d]", sql_return);
+			NOTIFICATION_WARN("fail to db_util_close - [%d]", sql_return); /* LCOV_EXCL_LINE */
 	}
 
 	return err;
@@ -185,7 +191,7 @@ EXPORT_API int noti_setting_get_setting_array(notification_setting_h *setting_ar
 	notification_setting_h result_setting_array = NULL;
 
 	if (setting_array == NULL || count == NULL) {
-		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
+		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER"); /* LCOV_EXCL_LINE */
 		err =  NOTIFICATION_ERROR_INVALID_PARAMETER;
 		goto out;
 	}
@@ -193,7 +199,7 @@ EXPORT_API int noti_setting_get_setting_array(notification_setting_h *setting_ar
 	sql_return = db_util_open(DBPATH, &local_db_handle, 0);
 
 	if (sql_return != SQLITE_OK || local_db_handle == NULL) {
-		NOTIFICATION_ERR("db_util_open failed [%d]", sql_return);
+		NOTIFICATION_ERR("db_util_open failed [%d]", sql_return); /* LCOV_EXCL_LINE */
 		err = NOTIFICATION_ERROR_FROM_DB;
 		goto out;
 	}
@@ -203,7 +209,7 @@ EXPORT_API int noti_setting_get_setting_array(notification_setting_h *setting_ar
 			"ORDER BY package_name", NOTIFICATION_SETTING_DB_TABLE, uid);
 
 	if (!sql_query) {
-		NOTIFICATION_ERR("fail to alloc query");
+		NOTIFICATION_ERR("fail to alloc query"); /* LCOV_EXCL_LINE */
 		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
 		goto out;
 	}
@@ -211,20 +217,20 @@ EXPORT_API int noti_setting_get_setting_array(notification_setting_h *setting_ar
 	sql_return = sqlite3_get_table(local_db_handle, sql_query, &query_result, &row_count, &column_count, NULL);
 
 	if (sql_return != SQLITE_OK && sql_return != -1) {
-		NOTIFICATION_ERR("NOTIFICATION_ERROR_FROM_DB failed [%d][%s]", sql_return, sql_query);
+		NOTIFICATION_ERR("NOTIFICATION_ERROR_FROM_DB failed [%d][%s]", sql_return, sql_query);	/* LCOV_EXCL_LINE */
 		err = NOTIFICATION_ERROR_FROM_DB;
 		goto out;
 	}
 
 	if (!row_count) {
-		NOTIFICATION_DBG("No setting found...");
+		NOTIFICATION_DBG("No setting found..."); /* LCOV_EXCL_LINE */
 		err = NOTIFICATION_ERROR_NOT_EXIST_ID;
 		goto out;
 	}
 
 	NOTIFICATION_DBG("row_count [%d] column_count [%d]", row_count, column_count);
 	if (!(result_setting_array = (struct notification_setting *)malloc(sizeof(struct notification_setting) * row_count))) {
-		NOTIFICATION_ERR("malloc failed...");
+		NOTIFICATION_ERR("malloc failed..."); /* LCOV_EXCL_LINE */
 		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
 		goto out;
 	}
@@ -251,7 +257,7 @@ out:
 	if (local_db_handle) {
 		sql_return = db_util_close(local_db_handle);
 		if (sql_return != SQLITE_OK)
-			NOTIFICATION_WARN("fail to db_util_close - [%d]", sql_return);
+			NOTIFICATION_WARN("fail to db_util_close - [%d]", sql_return); /* LCOV_EXCL_LINE */
 	}
 
 	return err;
@@ -271,7 +277,7 @@ EXPORT_API int noti_system_setting_load_system_setting(notification_system_setti
 	notification_system_setting_h result_system_setting = NULL;
 
 	if (system_setting == NULL) {
-		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
+		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER"); /* LCOV_EXCL_LINE */
 		err =  NOTIFICATION_ERROR_INVALID_PARAMETER;
 		goto out;
 	}
@@ -279,7 +285,7 @@ EXPORT_API int noti_system_setting_load_system_setting(notification_system_setti
 	sql_return = db_util_open(DBPATH, &local_db_handle, 0);
 
 	if (sql_return != SQLITE_OK || local_db_handle == NULL) {
-		NOTIFICATION_ERR("db_util_open failed [%d]", sql_return);
+		NOTIFICATION_ERR("db_util_open failed [%d]", sql_return); /* LCOV_EXCL_LINE */
 		err = NOTIFICATION_ERROR_FROM_DB;
 		goto out;
 	}
@@ -288,7 +294,7 @@ EXPORT_API int noti_system_setting_load_system_setting(notification_system_setti
 			"FROM %s WHERE uid = %d", NOTIFICATION_SYSTEM_SETTING_DB_TABLE, uid);
 
 	if (!sql_query) {
-		NOTIFICATION_ERR("fail to alloc query");
+		NOTIFICATION_ERR("fail to alloc query"); /* LCOV_EXCL_LINE */
 		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
 		goto out;
 	}
@@ -296,27 +302,29 @@ EXPORT_API int noti_system_setting_load_system_setting(notification_system_setti
 	sql_return = sqlite3_get_table(local_db_handle, sql_query, &query_result, &row_count, &column_count, NULL);
 
 	if (sql_return != SQLITE_OK && sql_return != -1) {
-		NOTIFICATION_ERR("sqlite3_get_table failed [%d][%s]", sql_return, sql_query);
+		NOTIFICATION_ERR("sqlite3_get_table failed [%d][%s]", sql_return, sql_query); /* LCOV_EXCL_LINE */
 		err = NOTIFICATION_ERROR_FROM_DB;
 		goto out;
 	}
 
 	NOTIFICATION_DBG("row_count [%d] column_count [%d]", row_count, column_count);
 	if (!(result_system_setting = (struct notification_system_setting *)malloc(sizeof(struct notification_system_setting)))) {
-		NOTIFICATION_ERR("malloc failed...");
+		NOTIFICATION_ERR("malloc failed..."); /* LCOV_EXCL_LINE */
 		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
 		goto out;
 	}
 
 	/* no system setting record. allow everyting */
 	if (!row_count) {
-		NOTIFICATION_DBG("No setting found...");
+		NOTIFICATION_DBG("No setting found..."); /* LCOV_EXCL_LINE */
 		result_system_setting->do_not_disturb = 0;
 		result_system_setting->visibility_class = 0;
 	} else {
+		/* LCOV_EXCL_START */
 		col_index = column_count;
 		_get_table_field_data_int(query_result, (int *)&(result_system_setting->do_not_disturb), col_index++);
 		_get_table_field_data_int(query_result, &(result_system_setting->visibility_class), col_index++);
+		/* LCOV_EXCL_STOP */
 	}
 
 	*system_setting = result_system_setting;
@@ -330,7 +338,7 @@ out:
 	if (local_db_handle) {
 		sql_return = db_util_close(local_db_handle);
 		if (sql_return != SQLITE_OK)
-			NOTIFICATION_WARN("fail to db_util_close - [%d]", sql_return);
+			NOTIFICATION_WARN("fail to db_util_close - [%d]", sql_return); /* LCOV_EXCL_LINE */
 	}
 
 	return err;
