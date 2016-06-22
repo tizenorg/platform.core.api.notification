@@ -31,6 +31,7 @@
 #define NOTIFICATION_DB_NAME ".notification.db"
 #define CREATE_NOTIFICATION_TABLE " \
 PRAGMA journal_mode = PERSIST; \
+PRAGMA synchronous = FULL; \
 create	table if not exists noti_list ( \
 			type INTEGER NOT NULL, \
 			layout INTEGER NOT NULL default 0, \
