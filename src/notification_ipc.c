@@ -377,6 +377,7 @@ static void _add_noti_notify(GVariant *parameters)
 			free(noti_op);
 		}
 	}
+	g_variant_unref(body);
 	notification_free(noti);
 }
 /* LCOV_EXCL_STOP */
@@ -402,6 +403,7 @@ static void _update_noti_notify(GVariant *parameters)
 		notification_call_changed_cb(noti_op, 1);
 		free(noti_op);
 	}
+	g_variant_unref(body);
 	notification_free(noti);
 }
 /* LCOV_EXCL_STOP */
@@ -1038,6 +1040,8 @@ int notification_ipc_request_load_noti_grouping_list(notification_type_e type, i
 			g_variant_get(iter_body, "(v)", &noti_body);
 			notification_ipc_make_noti_from_gvariant(noti, noti_body);
 			*list = notification_list_append(*list, noti);
+			g_variant_unref(noti_body);
+			g_variant_unref(iter_body);
 		}
 		g_variant_iter_free(iter);
 	}
@@ -1089,6 +1093,8 @@ int notification_ipc_request_load_noti_detail_list(const char *pkgname,
 			g_variant_get(iter_body, "(v)", &noti_body);
 			notification_ipc_make_noti_from_gvariant(noti, noti_body);
 			*list = notification_list_append(*list, noti);
+			g_variant_unref(noti_body);
+			g_variant_unref(iter_body);
 		}
 		g_variant_iter_free(iter);
 	}
