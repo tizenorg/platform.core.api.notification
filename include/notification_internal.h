@@ -58,11 +58,6 @@ int notification_del_deferred_task(
 		void (*deferred_task_cb)(void *data));
 
 
-int
-notification_resister_changed_cb_for_uid(
-	void (*changed_cb)(void *data, notification_type_e type),
-	void *user_data, uid_t uid);
-
 /**
  * @brief This function will be removed.
  * @see notification_unresister_changed_cb()
@@ -72,6 +67,10 @@ notification_resister_changed_cb(
 	void (*changed_cb)(void *data, notification_type_e type),
 	void *user_data);
 
+int
+notification_resister_changed_cb_for_uid(
+	void (*changed_cb)(void *data, notification_type_e type),
+	void *user_data, uid_t uid);
 /**
  * @brief This function will be removed.
  * @see notification_resister_changed_cb()
@@ -79,6 +78,9 @@ notification_resister_changed_cb(
 int
 notification_unresister_changed_cb(
 	void (*changed_cb)(void *data, notification_type_e type));
+int
+notification_unresister_changed_cb_for_uid(
+	void (*changed_cb)(void *data, notification_type_e type), uid_t uid);
 
 /**
  * @brief Updates the progress of the inserted notification. This only works for the ongoing notification (NOTIFICATION_TYPE_ONGOING).
@@ -719,6 +721,9 @@ int notification_register_detailed_changed_cb_for_uid(
 int notification_unregister_detailed_changed_cb(
 		void (*detailed_changed_cb)(void *data, notification_type_e type, notification_op *op_list, int num_op),
 		void *user_data);
+int notification_unregister_detailed_changed_cb_for_uid(
+		void (*detailed_changed_cb)(void *data, notification_type_e type, notification_op *op_list, int num_op),
+		void *user_data, uid_t uid);
 
 /**
  * @brief This function translate localized texts

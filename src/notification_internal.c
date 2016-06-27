@@ -22,6 +22,7 @@
 #include <libintl.h>
 #include <dbus/dbus.h>
 #include <dbus/dbus-glib-lowlevel.h>
+#include <gio/gio.h>
 
 #include <app.h>
 #include <app_control_internal.h>
@@ -41,57 +42,68 @@
 #include <notification_ipc.h>
 #include <notification_internal.h>
 
-typedef struct _notification_cb_list notification_cb_list_s;
+typedef struct _notification_cb_info notification_cb_info_s;
 
 typedef enum __notification_cb_type {
 	NOTIFICATION_CB_NORMAL = 1,
 	NOTIFICATION_CB_DETAILED,
 } _notification_cb_type_e;
 
-struct _notification_cb_list {
-	notification_cb_list_s *prev;
-	notification_cb_list_s *next;
-
+struct _notification_cb_info {
 	_notification_cb_type_e cb_type;
 	void (*changed_cb) (void *data, notification_type_e type);
 	void (*detailed_changed_cb) (void *data, notification_type_e type, notification_op *op_list, int num_op);
 	void *data;
 };
 
-static notification_cb_list_s *g_notification_cb_list = NULL;
+static GHashTable *_noti_cb_hash = NULL;
 
-void notification_call_changed_cb(notification_op *op_list, int op_num)
+static void __free_changed_cb_info(gpointer data)
 {
-	notification_cb_list_s *noti_cb_list = NULL;
-	notification_type_e type = 0;
+	notification_cb_info_s *noti_cb_info = (notification_cb_info_s *)data;
+	if (noti_cb_info)
+		free(noti_cb_info);
+}
 
-	if (g_notification_cb_list == NULL)
+static void __free_changed_cb_hash(gpointer data)
+{
+	GList *changed_cb_list = (GList *)data;
+	if (changed_cb_list)
+		g_list_free_full(changed_cb_list, __free_changed_cb_info);
+}
+
+void notification_call_changed_cb_for_uid(notification_op *op_list, int op_num, uid_t uid)
+{
+	notification_type_e type = 0;
+	GList *noti_cb_list = NULL;
+	notification_cb_info_s *noti_cb_info = NULL;
+
+	if (_noti_cb_hash == NULL)
 		return;
 
-	noti_cb_list = g_notification_cb_list;
+	noti_cb_list = (GList *)g_hash_table_lookup(_noti_cb_hash, GUINT_TO_POINTER(uid));
 
-	while (noti_cb_list->prev != NULL)
-		noti_cb_list = noti_cb_list->prev;
-
+	if (noti_cb_list == NULL)
+		return;
 
 	if (op_list == NULL) {
 		NOTIFICATION_ERR("invalid data");
-		return ;
+		return;
 	}
 
+	noti_cb_list = g_list_first(noti_cb_list);
 	notification_get_type(op_list->noti, &type);
 
-	while (noti_cb_list != NULL) {
-		if (noti_cb_list->cb_type == NOTIFICATION_CB_NORMAL && noti_cb_list->changed_cb) {
-			noti_cb_list->changed_cb(noti_cb_list->data,
-					type);
+	for (; noti_cb_list != NULL; noti_cb_list = noti_cb_list->next) {
+		noti_cb_info = noti_cb_list->data;
+
+		if (noti_cb_info->cb_type == NOTIFICATION_CB_NORMAL && noti_cb_info->changed_cb) {
+			noti_cb_info->changed_cb(noti_cb_info->data, type);
 		}
-		if (noti_cb_list->cb_type == NOTIFICATION_CB_DETAILED && noti_cb_list->detailed_changed_cb) {
-			noti_cb_list->detailed_changed_cb(noti_cb_list->data,
+		if (noti_cb_info->cb_type == NOTIFICATION_CB_DETAILED && noti_cb_info->detailed_changed_cb) {
+			noti_cb_info->detailed_changed_cb(noti_cb_info->data,
 					type, op_list, op_num);
 		}
-
-		noti_cb_list = noti_cb_list->next;
 	}
 }
 
@@ -113,49 +125,40 @@ EXPORT_API int notification_del_deferred_task(
 	return notification_ipc_del_deffered_task(deferred_task_cb);
 }
 
-
 EXPORT_API int notification_resister_changed_cb_for_uid(
 		void (*changed_cb)(void *data, notification_type_e type),
 		void *user_data, uid_t uid)
 {
-	notification_cb_list_s *noti_cb_list_new = NULL;
-	notification_cb_list_s *noti_cb_list = NULL;
+	GList *noti_cb_list = NULL;
+	notification_cb_info_s *noti_cb_info_new = NULL;
 
 	if (changed_cb == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	noti_cb_list_new =
-		(notification_cb_list_s *) malloc(sizeof(notification_cb_list_s));
+	if (notification_ipc_monitor_init(uid) != NOTIFICATION_ERROR_NONE)
+		return NOTIFICATION_ERROR_IO_ERROR;
 
-	if (noti_cb_list_new == NULL) {
+	if (_noti_cb_hash == NULL)
+		_noti_cb_hash = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, __free_changed_cb_hash);
+
+	noti_cb_info_new = (notification_cb_info_s *)malloc(sizeof(notification_cb_info_s));
+	if (noti_cb_info_new == NULL) {
 		NOTIFICATION_ERR("malloc failed");
 		return NOTIFICATION_ERROR_OUT_OF_MEMORY;
 	}
 
-	noti_cb_list_new->next = NULL;
-	noti_cb_list_new->prev = NULL;
+	noti_cb_info_new->cb_type = NOTIFICATION_CB_NORMAL;
+	noti_cb_info_new->changed_cb = changed_cb;
+	noti_cb_info_new->detailed_changed_cb = NULL;
+	noti_cb_info_new->data = user_data;
 
-	noti_cb_list_new->cb_type = NOTIFICATION_CB_NORMAL;
-	noti_cb_list_new->changed_cb = changed_cb;
-	noti_cb_list_new->detailed_changed_cb = NULL;
-	noti_cb_list_new->data = user_data;
+	noti_cb_list = g_hash_table_lookup(_noti_cb_hash, GUINT_TO_POINTER(uid));
 
-	if (g_notification_cb_list == NULL) {
-		g_notification_cb_list = noti_cb_list_new;
+	if (noti_cb_list == NULL) {
+		noti_cb_list = g_list_append(noti_cb_list, noti_cb_info_new);
+		g_hash_table_insert(_noti_cb_hash, GUINT_TO_POINTER(uid), noti_cb_list);
 	} else {
-		noti_cb_list = g_notification_cb_list;
-
-		while (noti_cb_list->next != NULL)
-			noti_cb_list = noti_cb_list->next;
-
-
-		noti_cb_list->next = noti_cb_list_new;
-		noti_cb_list_new->prev = noti_cb_list;
-	}
-
-	if (notification_ipc_monitor_init(uid) != NOTIFICATION_ERROR_NONE) {
-		notification_unresister_changed_cb(changed_cb);
-		return NOTIFICATION_ERROR_IO_ERROR;
+		noti_cb_list = g_list_append(noti_cb_list, noti_cb_info_new);
 	}
 
 	return NOTIFICATION_ERROR_NONE;
@@ -165,58 +168,50 @@ EXPORT_API int notification_resister_changed_cb(
 		void (*changed_cb)(void *data, notification_type_e type),
 		void *user_data)
 {
-	return notification_resister_changed_cb_for_uid(
-			changed_cb, user_data, getuid());
+	return notification_resister_changed_cb_for_uid(changed_cb, user_data, getuid());
+}
+
+EXPORT_API int notification_unresister_changed_cb_for_uid(
+		void (*changed_cb)(void *data, notification_type_e type), uid_t uid)
+{
+	notification_cb_info_s *noti_cb_info = NULL;
+	GList *noti_cb_list = NULL;
+
+	if (changed_cb == NULL)
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
+
+	if (_noti_cb_hash == NULL)
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
+
+	noti_cb_list = (GList *)g_hash_table_lookup(_noti_cb_hash, GUINT_TO_POINTER(uid));
+
+	if (noti_cb_list == NULL)
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
+
+	noti_cb_list = g_list_first(noti_cb_list);
+
+	for (; noti_cb_list != NULL; noti_cb_list = noti_cb_list->next) {
+		noti_cb_info = noti_cb_list->data;
+		if (noti_cb_info->detailed_changed_cb == changed_cb) {
+			noti_cb_list = g_list_remove(g_list_first(noti_cb_list), noti_cb_info);
+
+			if (noti_cb_list == NULL)
+				g_hash_table_steal(_noti_cb_hash, GUINT_TO_POINTER(uid));
+
+			if (g_hash_table_size(_noti_cb_hash) == 0)
+				notification_ipc_monitor_fini();
+
+			return NOTIFICATION_ERROR_NONE;
+		}
+	}
+
+	return NOTIFICATION_ERROR_INVALID_PARAMETER;
 }
 
 EXPORT_API int notification_unresister_changed_cb(
 		void (*changed_cb)(void *data, notification_type_e type))
 {
-	notification_cb_list_s *noti_cb_list = NULL;
-	notification_cb_list_s *noti_cb_list_prev = NULL;
-	notification_cb_list_s *noti_cb_list_next = NULL;
-
-	noti_cb_list = g_notification_cb_list;
-
-	if (changed_cb == NULL)
-		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-
-	if (noti_cb_list == NULL)
-		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-
-	while (noti_cb_list->prev != NULL)
-		noti_cb_list = noti_cb_list->prev;
-
-
-	do {
-		if (noti_cb_list->changed_cb == changed_cb) {
-			noti_cb_list_prev = noti_cb_list->prev;
-			noti_cb_list_next = noti_cb_list->next;
-
-			if (noti_cb_list_prev == NULL)
-				g_notification_cb_list = noti_cb_list_next;
-			else
-				noti_cb_list_prev->next = noti_cb_list_next;
-
-			if (noti_cb_list_next == NULL) {
-				if (noti_cb_list_prev != NULL)
-					noti_cb_list_prev->next = NULL;
-
-			} else {
-				noti_cb_list_next->prev = noti_cb_list_prev;
-			}
-
-			free(noti_cb_list);
-
-			if (g_notification_cb_list == NULL)
-				notification_ipc_monitor_fini();
-
-			return NOTIFICATION_ERROR_NONE;
-		}
-		noti_cb_list = noti_cb_list->next;
-	} while (noti_cb_list != NULL);
-
-	return NOTIFICATION_ERROR_INVALID_PARAMETER;
+	return notification_unresister_changed_cb_for_uid(changed_cb, getuid());
 }
 
 EXPORT_API int notification_update_progress(notification_h noti,
@@ -1131,8 +1126,8 @@ EXPORT_API int notification_register_detailed_changed_cb_for_uid(
 		void (*detailed_changed_cb)(void *data, notification_type_e type, notification_op *op_list, int num_op),
 		void *user_data, uid_t uid)
 {
-	notification_cb_list_s *noti_cb_list_new = NULL;
-	notification_cb_list_s *noti_cb_list = NULL;
+	GList *noti_cb_list = NULL;
+	notification_cb_info_s *noti_cb_info_new = NULL;
 
 	if (detailed_changed_cb == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
@@ -1140,34 +1135,29 @@ EXPORT_API int notification_register_detailed_changed_cb_for_uid(
 	if (notification_ipc_monitor_init(uid) != NOTIFICATION_ERROR_NONE)
 		return NOTIFICATION_ERROR_IO_ERROR;
 
-	noti_cb_list_new =
-		(notification_cb_list_s *) malloc(sizeof(notification_cb_list_s));
+	if (_noti_cb_hash == NULL)
+		_noti_cb_hash = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, __free_changed_cb_hash);
 
-	if (noti_cb_list_new == NULL) {
+	noti_cb_info_new = (notification_cb_info_s *)malloc(sizeof(notification_cb_info_s));
+	if (noti_cb_info_new == NULL) {
 		NOTIFICATION_ERR("malloc failed");
 		return NOTIFICATION_ERROR_OUT_OF_MEMORY;
 	}
 
-	noti_cb_list_new->next = NULL;
-	noti_cb_list_new->prev = NULL;
+	noti_cb_info_new->cb_type = NOTIFICATION_CB_DETAILED;
+	noti_cb_info_new->changed_cb = NULL;
+	noti_cb_info_new->detailed_changed_cb = detailed_changed_cb;
+	noti_cb_info_new->data = user_data;
 
-	noti_cb_list_new->cb_type = NOTIFICATION_CB_DETAILED;
-	noti_cb_list_new->changed_cb = NULL;
-	noti_cb_list_new->detailed_changed_cb = detailed_changed_cb;
-	noti_cb_list_new->data = user_data;
+	noti_cb_list = g_hash_table_lookup(_noti_cb_hash, GUINT_TO_POINTER(uid));
 
-	if (g_notification_cb_list == NULL) {
-		g_notification_cb_list = noti_cb_list_new;
+	if (noti_cb_list == NULL) {
+		noti_cb_list = g_list_append(noti_cb_list, noti_cb_info_new);
+		g_hash_table_insert(_noti_cb_hash, GUINT_TO_POINTER(uid), noti_cb_list);
 	} else {
-		noti_cb_list = g_notification_cb_list;
-
-		while (noti_cb_list->next != NULL)
-			noti_cb_list = noti_cb_list->next;
-
-
-		noti_cb_list->next = noti_cb_list_new;
-		noti_cb_list_new->prev = noti_cb_list;
+		noti_cb_list = g_list_append(noti_cb_list, noti_cb_info_new);
 	}
+
 	return NOTIFICATION_ERROR_NONE;
 }
 
@@ -1178,56 +1168,49 @@ EXPORT_API int notification_register_detailed_changed_cb(
 	return notification_register_detailed_changed_cb_for_uid(detailed_changed_cb, user_data, getuid());
 }
 
-EXPORT_API int notification_unregister_detailed_changed_cb(
+EXPORT_API int notification_unregister_detailed_changed_cb_for_uid(
 		void (*detailed_changed_cb)(void *data, notification_type_e type, notification_op *op_list, int num_op),
-		void *user_data)
+		void *user_data, uid_t uid)
 {
-	notification_cb_list_s *noti_cb_list = NULL;
-	notification_cb_list_s *noti_cb_list_prev = NULL;
-	notification_cb_list_s *noti_cb_list_next = NULL;
-
-	noti_cb_list = g_notification_cb_list;
+	notification_cb_info_s *noti_cb_info = NULL;
+	GList *noti_cb_list = NULL;
 
 	if (detailed_changed_cb == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
+	if (_noti_cb_hash == NULL)
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
+
+	noti_cb_list = (GList *)g_hash_table_lookup(_noti_cb_hash, GUINT_TO_POINTER(uid));
+
 	if (noti_cb_list == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
+	noti_cb_list = g_list_first(noti_cb_list);
 
-	while (noti_cb_list->prev != NULL)
-		noti_cb_list = noti_cb_list->prev;
+	for (; noti_cb_list != NULL; noti_cb_list = noti_cb_list->next) {
+		noti_cb_info = noti_cb_list->data;
+		if (noti_cb_info->detailed_changed_cb == detailed_changed_cb) {
+			noti_cb_list = g_list_remove(g_list_first(noti_cb_list), noti_cb_info);
 
+			if (noti_cb_list == NULL)
+				g_hash_table_steal(_noti_cb_hash, GUINT_TO_POINTER(uid));
 
-	do {
-		if (noti_cb_list->detailed_changed_cb == detailed_changed_cb) {
-			noti_cb_list_prev = noti_cb_list->prev;
-			noti_cb_list_next = noti_cb_list->next;
-
-			if (noti_cb_list_prev == NULL)
-				g_notification_cb_list = noti_cb_list_next;
-			else
-				noti_cb_list_prev->next = noti_cb_list_next;
-
-			if (noti_cb_list_next == NULL) {
-				if (noti_cb_list_prev != NULL)
-					noti_cb_list_prev->next = NULL;
-
-			} else {
-				noti_cb_list_next->prev = noti_cb_list_prev;
-			}
-
-			free(noti_cb_list);
-
-			if (g_notification_cb_list == NULL)
+			if (g_hash_table_size(_noti_cb_hash) == 0)
 				notification_ipc_monitor_fini();
 
 			return NOTIFICATION_ERROR_NONE;
 		}
-		noti_cb_list = noti_cb_list->next;
-	} while (noti_cb_list != NULL);
+	}
 
 	return NOTIFICATION_ERROR_INVALID_PARAMETER;
+}
+
+EXPORT_API int notification_unregister_detailed_changed_cb(
+		void (*detailed_changed_cb)(void *data, notification_type_e type, notification_op *op_list, int num_op),
+		void *user_data)
+{
+	return notification_unregister_detailed_changed_cb_for_uid(detailed_changed_cb, user_data, getuid());
 }
 
 /* LCOV_EXCL_START */

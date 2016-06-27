@@ -351,9 +351,11 @@ static inline bundle *_create_bundle_from_bundle_raw(bundle_raw *string)
 /* LCOV_EXCL_START */
 static void _add_noti_notify(GVariant *parameters)
 {
+	int ret;
 	notification_h noti;
 	notification_op *noti_op;
 	GVariant *body = NULL;
+	uid_t uid;
 
 	NOTIFICATION_DBG("add noti notify");
 	noti = notification_create(NOTIFICATION_TYPE_NOTI);
@@ -371,9 +373,9 @@ static void _add_noti_notify(GVariant *parameters)
 	} else {
 		/* Enable changed cb */
 		noti_op = _ipc_create_op(NOTIFICATION_OP_INSERT, 1, &(noti->priv_id), 1, &noti);
-
-		if (noti_op != NULL) {
-			notification_call_changed_cb(noti_op, 1);
+		ret = notification_get_uid(noti, &uid);
+		if (noti_op != NULL && ret == NOTIFICATION_ERROR_NONE) {
+			notification_call_changed_cb_for_uid(noti_op, 1, uid);
 			free(noti_op);
 		}
 	}
@@ -385,9 +387,11 @@ static void _add_noti_notify(GVariant *parameters)
 /* LCOV_EXCL_START */
 static void _update_noti_notify(GVariant *parameters)
 {
+	int ret;
 	notification_h noti;
 	notification_op *noti_op;
 	GVariant *body = NULL;
+	uid_t uid;
 
 	noti = notification_create(NOTIFICATION_TYPE_NOTI);
 	if (!noti) {
@@ -399,8 +403,9 @@ static void _update_noti_notify(GVariant *parameters)
 	_print_noti(noti);
 
 	noti_op = _ipc_create_op(NOTIFICATION_OP_UPDATE, 1, &(noti->priv_id), 1, &noti);
-	if (noti_op != NULL) {
-		notification_call_changed_cb(noti_op, 1);
+	ret = notification_get_uid(noti, &uid);
+	if (noti_op != NULL && ret == NOTIFICATION_ERROR_NONE) {
+		notification_call_changed_cb_for_uid(noti_op, 1, uid);
 		free(noti_op);
 	}
 	g_variant_unref(body);
@@ -411,10 +416,13 @@ static void _update_noti_notify(GVariant *parameters)
 /* LCOV_EXCL_START */
 static void _refresh_noti_notify(GVariant *parameters)
 {
+	uid_t uid;
 	notification_op *noti_op = _ipc_create_op(NOTIFICATION_OP_REFRESH, 1, NULL, 0, NULL);
 
+	g_variant_get(parameters, "(i)", &uid);
+
 	if (noti_op != NULL) {
-		notification_call_changed_cb(noti_op, 1);
+		notification_call_changed_cb_for_uid(noti_op, 1, uid);
 		free(noti_op);
 	}
 }
@@ -426,13 +434,14 @@ static void _delete_single_notify(GVariant *parameters)
 	int num_deleted;
 	int priv_id;
 	notification_op *noti_op;
+	uid_t uid;
 
 	/* num_deleted ?? */
-	g_variant_get(parameters, "(ii)", &num_deleted, &priv_id);
+	g_variant_get(parameters, "(iii)", &num_deleted, &priv_id, &uid);
 
 	noti_op = _ipc_create_op(NOTIFICATION_OP_DELETE, 1, &priv_id, 1, NULL);
 	if (noti_op != NULL) {
-		notification_call_changed_cb(noti_op, 1);
+		notification_call_changed_cb_for_uid(noti_op, 1, uid);
 		free(noti_op);
 	}
 }
@@ -445,8 +454,9 @@ static void _delete_multiple_notify(GVariant *parameters)
 	int idx = 0;
 	notification_op *noti_op;
 	GVariantIter *iter;
+	uid_t uid;
 
-	g_variant_get(parameters, "(a(i))", &iter);
+	g_variant_get(parameters, "(a(i)i)", &iter, &uid);
 	while (g_variant_iter_loop(iter, "(i)", &buf[idx])) {
 		NOTIFICATION_DBG("delete_noti_multiple priv_id : %d", buf[idx]);
 		idx++;
@@ -460,7 +470,7 @@ static void _delete_multiple_notify(GVariant *parameters)
 		NOTIFICATION_ERR("_ipc_create_op failed");
 		return;
 	}
-	notification_call_changed_cb(noti_op, idx);
+	notification_call_changed_cb_for_uid(noti_op, idx, uid);
 	free(noti_op);
 }
 /* LCOV_EXCL_STOP */
@@ -474,7 +484,8 @@ static void _handle_noti_notify(GDBusConnection *connection,
 		GVariant        *parameters,
 		gpointer         user_data)
 {
-	NOTIFICATION_DBG("signal_name: %s", signal_name);
+	NOTIFICATION_DBG("own_name : %s signal_name: %s",
+			 g_dbus_connection_get_unique_name(connection), signal_name);
 
 	if (g_strcmp0(signal_name, "add_noti_notify") == 0)
 		_add_noti_notify(parameters);
@@ -488,7 +499,6 @@ static void _handle_noti_notify(GDBusConnection *connection,
 		_refresh_noti_notify(parameters);
 }
 /* LCOV_EXCL_STOP */
-
 
 static int _dbus_signal_init()
 {
@@ -1771,7 +1781,7 @@ static int _send_service_register(uid_t uid)
 	NOTIFICATION_DBG("_send_service_register done = %s, result = %d", _bus_name, result);
 	noti_op = _ipc_create_op(NOTIFICATION_OP_SERVICE_READY, 1, NULL, 1, NULL);
 	if (noti_op != NULL) {
-		notification_call_changed_cb(noti_op, 1);
+		notification_call_changed_cb_for_uid(noti_op, 1, uid);
 		free(noti_op);
 	}
 
@@ -1780,7 +1790,7 @@ static int _send_service_register(uid_t uid)
 
 static int _ipc_monitor_register(uid_t uid)
 {
-	NOTIFICATION_ERR("register a service\n");
+	NOTIFICATION_DBG("register a service\n");
 
 	return  _send_service_register(uid);
 }
@@ -1850,7 +1860,6 @@ int notification_ipc_monitor_init(uid_t uid)
 				_on_name_vanished,
 				GINT_TO_POINTER((int)uid),
 				NULL);
-
 		if (provider_monitor_id == 0) {
 			/* LCOV_EXCL_START */
 			g_dbus_connection_signal_unsubscribe(_gdbus_conn, monitor_id);
