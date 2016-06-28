@@ -1714,6 +1714,11 @@ EXPORT_API int notification_clone(notification_h noti, notification_h *clone)
 	else
 		new_noti->b_key = NULL;
 
+	if (noti->tag != NULL)
+		new_noti->tag = strdup(noti->tag);
+	else
+		new_noti->tag = NULL;
+
 	if (noti->b_format_args != NULL)
 		new_noti->b_format_args = bundle_dup(noti->b_format_args);
 	else
