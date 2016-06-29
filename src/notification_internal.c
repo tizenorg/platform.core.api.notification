@@ -192,7 +192,7 @@ EXPORT_API int notification_unresister_changed_cb_for_uid(
 
 	for (; noti_cb_list != NULL; noti_cb_list = noti_cb_list->next) {
 		noti_cb_info = noti_cb_list->data;
-		if (noti_cb_info->detailed_changed_cb == changed_cb) {
+		if (noti_cb_info->changed_cb == changed_cb) {
 			noti_cb_list = g_list_remove(g_list_first(noti_cb_list), noti_cb_info);
 
 			if (noti_cb_list == NULL)
