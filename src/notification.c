@@ -1742,6 +1742,7 @@ EXPORT_API int notification_clone(notification_h noti, notification_h *clone)
 
 	new_noti->ongoing_flag = noti->ongoing_flag;
 	new_noti->auto_remove = noti->auto_remove;
+	new_noti->uid = noti->uid;
 
 	new_noti->app_icon_path = NULL;
 	new_noti->app_name = NULL;
