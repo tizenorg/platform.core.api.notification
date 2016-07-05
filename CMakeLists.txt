@@ -67,6 +67,7 @@ pkg_check_modules(pkgs REQUIRED
 	libtzplatform-config
 	glib-2.0
 	gio-2.0
+	alarm-service
 )
 
 FOREACH(flag ${pkgs_CFLAGS})

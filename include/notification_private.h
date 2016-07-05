@@ -95,6 +95,12 @@ struct _notification {
 struct notification_system_setting {
 	bool do_not_disturb;
 	int  visibility_class;
+	bool dnd_schedule_enabled;
+	int dnd_schedule_day;
+	int dnd_start_hour;
+	int dnd_start_min;
+	int dnd_end_hour;
+	int dnd_end_min;
 };
 
 typedef enum notification_data_type {

@@ -1293,9 +1293,15 @@ int notification_ipc_update_system_setting(notification_system_setting_h system_
 		return result;
 	}
 
-	body = g_variant_new("(iii)",
+	body = g_variant_new("(iiiiiiiii)",
 			(int)(system_setting->do_not_disturb),
 			(int)(system_setting->visibility_class),
+			(int)(system_setting->dnd_schedule_enabled),
+			(int)(system_setting->dnd_schedule_day),
+			(int)(system_setting->dnd_start_hour),
+			(int)(system_setting->dnd_start_min),
+			(int)(system_setting->dnd_end_hour),
+			(int)(system_setting->dnd_end_min),
 			uid);
 
 	result = _send_sync_noti(body, &reply, "update_noti_sys_setting");
@@ -1687,9 +1693,15 @@ EXPORT_API int notification_ipc_make_noti_from_gvariant(notification_h noti,
 EXPORT_API GVariant *notification_ipc_make_gvariant_from_system_setting(struct notification_system_setting *noti_setting)
 {
 	GVariant *body = NULL;
-	body = g_variant_new("(ii)",
+	body = g_variant_new("(iiiiiiii)",
 			noti_setting->do_not_disturb,
-			noti_setting->visibility_class);
+			noti_setting->visibility_class,
+			noti_setting->dnd_schedule_enabled,
+			noti_setting->dnd_schedule_day,
+			noti_setting->dnd_start_hour,
+			noti_setting->dnd_start_min,
+			noti_setting->dnd_end_hour,
+			noti_setting->dnd_end_min);
 	return body;
 }
 
@@ -1698,24 +1710,47 @@ EXPORT_API int notification_ipc_make_system_setting_from_gvariant(struct notific
 {
 	int do_not_disturb;
 	int visibility_class;
+	int dnd_schedule_enabled;
+	int dnd_schedule_day;
+	int dnd_start_hour;
+	int dnd_start_min;
+	int dnd_end_hour;
+	int dnd_end_min;
 
 	if (noti_setting == NULL) {
 		NOTIFICATION_ERR("invalid data");
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
-	g_variant_get(variant,
-			"(ii)",
-			&do_not_disturb,
-			&visibility_class);
 
-	NOTIFICATION_DBG("system setting  #### %d, %d",
-			do_not_disturb, visibility_class);
+	g_variant_get(variant,
+			"(iiiiiiii)",
+			&do_not_disturb,
+			&visibility_class,
+			&dnd_schedule_enabled,
+			&dnd_schedule_day,
+			&dnd_start_hour,
+			&dnd_start_min,
+			&dnd_end_hour,
+			&dnd_end_min);
+
+	NOTIFICATION_DBG("system setting  #### %d, %d, %d, %d, [%d:%d] [%d:%d]",
+			do_not_disturb, visibility_class,
+			dnd_schedule_enabled, dnd_schedule_day,
+			dnd_start_hour, dnd_start_min, dnd_end_hour, dnd_end_min);
 
 	noti_setting->do_not_disturb = do_not_disturb;
 	noti_setting->visibility_class = visibility_class;
+	noti_setting->dnd_schedule_enabled = dnd_schedule_enabled;
+	noti_setting->dnd_schedule_day = dnd_schedule_day;
+	noti_setting->dnd_start_hour = dnd_start_hour;
+	noti_setting->dnd_start_min = dnd_start_min;
+	noti_setting->dnd_end_hour = dnd_end_hour;
+	noti_setting->dnd_end_min = dnd_end_min;
 
-	NOTIFICATION_DBG("system setting2  #### %d, %d",
-			noti_setting->do_not_disturb, noti_setting->visibility_class);
+	NOTIFICATION_DBG("system setting2  #### %d, %d, %d",
+			noti_setting->do_not_disturb,
+			noti_setting->visibility_class,
+			noti_setting->dnd_schedule_enabled);
 
 	return NOTIFICATION_ERROR_NONE;
 }

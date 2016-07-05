@@ -26,6 +26,20 @@
 extern "C" {
 #endif
 
+/**
+* @brief Enumeration for Week Flag, the days of the week.
+* @since_tizen 3.0
+*/
+typedef enum {
+	DND_SCHEDULE_WEEK_FLAG_SUNDAY = 0x01,		/**< Sunday */
+	DND_SCHEDULE_WEEK_FLAG_MONDAY = 0x02,		/**< Monday */
+	DND_SCHEDULE_WEEK_FLAG_TUESDAY = 0x04,		/**< Tuesday */
+	DND_SCHEDULE_WEEK_FLAG_WEDNESDAY = 0x08,	/**< Wednesday */
+	DND_SCHEDULE_WEEK_FLAG_THURSDAY = 0x10,		/**< Thursday */
+	DND_SCHEDULE_WEEK_FLAG_FRIDAY = 0x20,		/**< Friday */
+	DND_SCHEDULE_WEEK_FLAG_SATURDAY = 0x40,		/**< Saturday */
+} dnd_schedule_week_flag_e;
+
 /* Application setting */
 struct notification_setting {
 	char *package_name;
@@ -70,6 +84,18 @@ int notification_system_setting_set_do_not_disturb(notification_system_setting_h
 
 int notification_system_setting_get_visibility_class(notification_system_setting_h system_setting, int *value);
 int notification_system_setting_set_visibility_class(notification_system_setting_h system_setting, int value);
+
+int notification_system_setting_dnd_schedule_get_enabled(notification_system_setting_h system_setting, bool *enabled);
+int notification_system_setting_dnd_schedule_set_enabled(notification_system_setting_h system_setting, bool enabled);
+
+int notification_system_setting_dnd_schedule_get_day(notification_system_setting_h system_setting, int *day);
+int notification_system_setting_dnd_schedule_set_day(notification_system_setting_h system_setting, int day);
+
+int notification_system_setting_dnd_schedule_get_start_time(notification_system_setting_h system_setting, int *hour, int *min);
+int notification_system_setting_dnd_schedule_set_start_time(notification_system_setting_h system_setting, int hour, int min);
+
+int notification_system_setting_dnd_schedule_get_end_time(notification_system_setting_h system_setting, int *hour, int *min);
+int notification_system_setting_dnd_schedule_set_end_time(notification_system_setting_h system_setting, int hour, int min);
 
 /* OLD IMPLEMENTATION */
 int notification_setting_property_set(const char *pkgname, const char *property, const char *value) NOTIFICATION_DEPRECATED_API;

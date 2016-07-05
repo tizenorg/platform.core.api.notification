@@ -779,23 +779,25 @@ static int _handle_do_not_disturb_option(notification_h noti)
 	bool do_not_disturb = false;
 	bool do_not_disturb_exception = false;
 	char *package_id = NULL;
-	notification_system_setting_h system_setting = NULL;
 	notification_setting_h setting = NULL;
+	notification_system_setting_h system_setting = NULL;
+
 
 	if (noti == NULL) {
 		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
-		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
-		goto out;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 
 	/* Get system setting */
-	if ((err = noti_system_setting_load_system_setting(&system_setting, noti->uid)) != NOTIFICATION_ERROR_NONE) {
-		NOTIFICATION_ERR("noti_system_setting_load_system_setting failed [%d]", err);
+	err = noti_system_setting_load_system_setting(&system_setting, noti->uid);
+	if (err != NOTIFICATION_ERROR_NONE) {
+		NOTIFICATION_ERR("_load_system_setting failed [%d]", err);
 		goto out;
 	}
 
-	if ((err = notification_system_setting_get_do_not_disturb(system_setting, &do_not_disturb)) != NOTIFICATION_ERROR_NONE) {
-		NOTIFICATION_ERR("notification_system_setting_get_do_not_disturb failed [%d]", err);
+	err = notification_system_setting_get_do_not_disturb(system_setting, &do_not_disturb);
+	if (err != NOTIFICATION_ERROR_NONE) {
+		NOTIFICATION_ERR("_get_do_not_disturb failed [%d]", err);
 		goto out;
 	}
 
@@ -804,18 +806,16 @@ static int _handle_do_not_disturb_option(notification_h noti)
 	if (do_not_disturb) {
 		/* Check exception option of the caller package */
 		err = noti_setting_service_get_setting_by_package_name(noti->caller_pkgname, &setting, noti->uid);
-
 		if (err != NOTIFICATION_ERROR_NONE) {
 			/* Retry with package id */
 			err = _get_package_id_by_app_id(noti->caller_pkgname, &package_id);
-
 			if (err != NOTIFICATION_ERROR_NONE || package_id == NULL) {
 				NOTIFICATION_ERR("_get_package_id_by_app_id failed [%d]", err);
 				goto out;
 			} else {
 				err = noti_setting_service_get_setting_by_package_name(package_id, &setting, noti->uid);
 				if (err != NOTIFICATION_ERROR_NONE) {
-					NOTIFICATION_ERR("noti_setting_service_get_setting_by_package_name failed [%d]", err);
+					NOTIFICATION_ERR("_get_setting_by_package_name failed [%d]", err);
 					goto out;
 				}
 			}
@@ -841,7 +841,6 @@ static int _handle_do_not_disturb_option(notification_h noti)
 			noti->led_on_ms = 0;
 			noti->led_off_ms = 0;
 		}
-
 	}
 
 out:

@@ -23,6 +23,7 @@ BuildRequires: pkgconfig(pkgmgr-info)
 BuildRequires: pkgconfig(libtzplatform-config)
 BuildRequires: pkgconfig(gio-2.0)
 BuildRequires: pkgconfig(glib-2.0)
+BuildRequires: pkgconfig(alarm-service)
 
 BuildRequires: cmake
 Requires(post): /sbin/ldconfig

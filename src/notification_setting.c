@@ -283,44 +283,6 @@ out:
 	return err;
 }
 
-EXPORT_API int notification_setting_db_update(const char *package_name, int allow_to_notify, int do_not_disturb_except, int visibility_class, uid_t uid)
-{
-	int err = NOTIFICATION_ERROR_NONE;
-	sqlite3 *db = NULL;
-	char *sqlbuf = NULL;
-	int sqlret;
-
-	if (package_name == NULL || strlen(package_name) == 0)
-		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-
-	sqlret = db_util_open(DBPATH, &db, 0);
-	if (sqlret != SQLITE_OK || db == NULL) {
-		NOTIFICATION_ERR("db_util_open failed [%s][%d]", DBPATH, sqlret);
-		return NOTIFICATION_ERROR_FROM_DB;
-	}
-
-	sqlbuf = sqlite3_mprintf("UPDATE %s SET allow_to_notify = %d, do_not_disturb_except = %d, visibility_class = %d " \
-			"WHERE package_name = %Q AND uid = %d",
-			NOTIFICATION_SETTING_DB_TABLE, allow_to_notify, do_not_disturb_except, visibility_class, package_name, uid);
-	if (!sqlbuf) {
-		NOTIFICATION_ERR("fail to alloc query");
-		err = NOTIFICATION_ERROR_OUT_OF_MEMORY;
-		goto return_close_db;
-	}
-
-	err = notification_db_exec(db, sqlbuf, NULL);
-
-return_close_db:
-	if (sqlbuf)
-		sqlite3_free(sqlbuf);
-
-	sqlret = db_util_close(db);
-	if (sqlret != SQLITE_OK)
-		NOTIFICATION_WARN("fail to db_util_close - [%d]", sqlret);
-
-	return err;
-}
-
 static bool _is_package_in_setting_table(sqlite3 *db, const char *package_name, uid_t uid)
 {
 	sqlite3_stmt *db_statement = NULL;
@@ -714,66 +676,133 @@ out:
 	return err;
 }
 
-
-EXPORT_API int notification_setting_db_update_system_setting(int do_not_disturb, int visibility_class, uid_t uid)
+EXPORT_API int notification_system_setting_dnd_schedule_get_enabled(notification_system_setting_h system_setting, bool *enabled)
 {
 	int err = NOTIFICATION_ERROR_NONE;
-	int sqlret;
-	int field_index = 1;
-	sqlite3 *db = NULL;
-	sqlite3_stmt *db_statement = NULL;
 
-	sqlret = db_util_open(DBPATH, &db, 0);
-
-	if (sqlret != SQLITE_OK || db == NULL) {
-		NOTIFICATION_ERR("db_util_open failed [%s][%d][%s]", DBPATH, sqlret, sqlite3_errmsg(db));
-		err =  NOTIFICATION_ERROR_FROM_DB;
-		goto return_close_db;
+	if (system_setting == NULL || enabled == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
 	}
 
-	sqlite3_exec(db, "BEGIN immediate;", NULL, NULL, NULL);
-	sqlret = sqlite3_prepare_v2(db, "INSERT OR REPLACE INTO notification_system_setting (uid, do_not_disturb, visibility_class) values(?, ?, ?);", -1, &db_statement, NULL);
-
-	if (sqlret != SQLITE_OK) {
-		NOTIFICATION_ERR("sqlite3_prepare_v2 failed [%d][%s]", sqlret, sqlite3_errmsg(db));
-		err =  NOTIFICATION_ERROR_FROM_DB;
-		goto return_close_db;
-	}
-
-	sqlite3_bind_int(db_statement, field_index++, uid);
-	sqlite3_bind_int(db_statement, field_index++, do_not_disturb);
-	sqlite3_bind_int(db_statement, field_index++, visibility_class);
-
-	sqlret = sqlite3_step(db_statement);
-	if (sqlret != SQLITE_OK && sqlret != SQLITE_DONE) {
-		NOTIFICATION_ERR("sqlite3_step failed [%d][%s]", sqlret, sqlite3_errmsg(db));
-		err =  NOTIFICATION_ERROR_FROM_DB;
-		goto return_close_db;
-	}
-
-	sqlret = sqlite3_changes(db);
-
-	if (sqlret == 0)
-		NOTIFICATION_WARN("No changes on DB");
-
-
-return_close_db:
-	if (db_statement)
-		sqlite3_finalize(db_statement);
-
-
-	if (db) {
-		if (err == NOTIFICATION_ERROR_NONE)
-			sqlite3_exec(db, "END;", NULL, NULL, NULL);
-		else
-			sqlite3_exec(db, "ROLLBACK;", NULL, NULL, NULL);
-
-		sqlret = db_util_close(db);
-	}
-
-	if (sqlret != SQLITE_OK)
-		NOTIFICATION_WARN("fail to db_util_close - [%d]", sqlret);
-
+	*enabled = system_setting->dnd_schedule_enabled;
+out:
 	return err;
 }
 
+EXPORT_API int notification_system_setting_dnd_schedule_set_enabled(notification_system_setting_h system_setting, bool enabled)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (system_setting == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	system_setting->dnd_schedule_enabled = enabled;
+
+out:
+	return err;
+}
+
+EXPORT_API int notification_system_setting_dnd_schedule_get_day(notification_system_setting_h system_setting, int *day)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (system_setting == NULL || day == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	*day = system_setting->dnd_schedule_day;
+
+out:
+	return err;
+}
+
+EXPORT_API int notification_system_setting_dnd_schedule_set_day(notification_system_setting_h system_setting, int day)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (system_setting == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	system_setting->dnd_schedule_day = day;
+
+out:
+	return err;
+}
+
+EXPORT_API int notification_system_setting_dnd_schedule_get_start_time(notification_system_setting_h system_setting, int *hour, int *min)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (system_setting == NULL || hour == NULL || min == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	*hour = system_setting->dnd_start_hour;
+	*min = system_setting->dnd_start_min;
+
+out:
+	return err;
+}
+
+EXPORT_API int notification_system_setting_dnd_schedule_set_start_time(notification_system_setting_h system_setting, int hour, int min)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (system_setting == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	system_setting->dnd_start_hour = hour;
+	system_setting->dnd_start_min = min;
+
+out:
+	return err;
+}
+
+EXPORT_API int notification_system_setting_dnd_schedule_get_end_time(notification_system_setting_h system_setting, int *hour, int *min)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (system_setting == NULL || hour == NULL || min == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	*hour = system_setting->dnd_end_hour;
+	*min = system_setting->dnd_end_min;
+
+out:
+	return err;
+}
+
+EXPORT_API int notification_system_setting_dnd_schedule_set_end_time(notification_system_setting_h system_setting, int hour, int min)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (system_setting == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	system_setting->dnd_end_hour = hour;
+	system_setting->dnd_end_min = min;
+
+out:
+	return err;
+}
