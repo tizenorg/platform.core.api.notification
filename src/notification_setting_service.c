@@ -565,10 +565,12 @@ int noti_system_setting_set_alarm(int week_flag, int hour, int min, alarm_cb_t h
 		goto out;
 	}
 
-	err = alarmmgr_set_repeat_mode(alarm_info, ALARM_REPEAT_MODE_WEEKLY, week_flag);
-	if (err != ALARMMGR_RESULT_SUCCESS) {
-		NOTIFICATION_ERR("alarmmgr_set_repeat_mode failed (%d)", err);
-		goto out;
+	if (week_flag) {
+		err = alarmmgr_set_repeat_mode(alarm_info, ALARM_REPEAT_MODE_WEEKLY, week_flag);
+		if (err != ALARMMGR_RESULT_SUCCESS) {
+			NOTIFICATION_ERR("alarmmgr_set_repeat_mode failed (%d)", err);
+			goto out;
+		}
 	}
 
 	err = alarmmgr_set_type(alarm_info, ALARM_TYPE_VOLATILE);
