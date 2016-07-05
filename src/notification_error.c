@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <string.h>
 #include <gio/gio.h>
 #include "notification_error.h"
 
@@ -30,10 +31,26 @@ static const GDBusErrorEntry dbus_error_entries[] = {
 	{NOTIFICATION_ERROR_INVALID_OPERATION, "org.freedesktop.Notification.Error.INVALID_OPERATION"},
 };
 
+#define NOTIFICATION_ERROR_QUARK "notification-error-quark"
+
 EXPORT_API GQuark notification_error_quark(void)
 {
 	static volatile gsize quark_volatile = 0;
-	g_dbus_error_register_error_domain("notification-error-quark",
+	static const char *domain_name = NULL;
+
+	/* This is for preventing crash when notification api is used in ui-gadget     */
+	/* ui-gadget libraries can be unloaded when it is needed and the static string */
+	/* parameter to g_dbus_error_register_error_domain may cause crash.             */
+	GQuark quark = g_quark_try_string(NOTIFICATION_ERROR_QUARK);
+
+	if (quark == 0) {
+		if (domain_name == NULL)
+			domain_name = strdup(NOTIFICATION_ERROR_QUARK);
+	} else {
+		domain_name = NOTIFICATION_ERROR_QUARK;
+	}
+
+	g_dbus_error_register_error_domain(domain_name,
 			&quark_volatile,
 			dbus_error_entries,
 			G_N_ELEMENTS(dbus_error_entries));
