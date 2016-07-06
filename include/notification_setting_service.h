@@ -32,7 +32,8 @@ int notification_setting_db_update(const char *package_name, int allow_to_notify
 int notification_setting_db_update_system_setting(int do_not_disturb, int visibility_class,
 					int dnd_schedule_enabled, int dnd_schedule_day,
 					int dnd_start_hour, int dnd_start_min,
-					int dnd_end_hour, int dnd_end_min, uid_t uid);
+					int dnd_end_hour, int dnd_end_min,
+					int lock_screen_content_level, uid_t uid);
 int notification_setting_db_update_do_not_disturb(int do_not_disturb, uid_t uid);
 
 int noti_setting_service_get_setting_by_package_name(const char *package_name, notification_setting_h *setting, uid_t uid);

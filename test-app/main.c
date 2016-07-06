@@ -722,6 +722,8 @@ static int testapp_test_update_system_setting()
 	int err = NOTIFICATION_ERROR_NONE;
 	bool do_not_disturb;
 	int visibility_class;
+	bool dnd_schedule_enabled;
+	lock_screen_content_level_e lock_screen_content_level = SHOW_ALL_CONTENT;
 	notification_system_setting_h system_setting = NULL;
 
 	err = notification_system_setting_load_system_setting(&system_setting);
@@ -741,6 +743,15 @@ static int testapp_test_update_system_setting()
 	visibility_class = !visibility_class;
 	notification_system_setting_set_visibility_class(system_setting, visibility_class);
 
+	notification_system_setting_dnd_schedule_get_enabled(system_setting, &dnd_schedule_enabled);
+	testapp_print("dnd_schedule_enabled [%d]\n", dnd_schedule_enabled);
+	dnd_schedule_enabled = !dnd_schedule_enabled;
+	notification_system_setting_dnd_schedule_set_enabled(system_setting, dnd_schedule_enabled);
+
+	notification_system_setting_get_lock_screen_content(system_setting, &lock_screen_content_level);
+	testapp_print("lock_screen_content_level [%d]\n", lock_screen_content_level);
+	lock_screen_content_level = !lock_screen_content_level;
+	notification_system_setting_set_lock_screen_content(system_setting, lock_screen_content_level);
 	err = notification_system_setting_update_system_setting(system_setting);
 
 	if (err != NOTIFICATION_ERROR_NONE || system_setting == NULL) {

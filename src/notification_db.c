@@ -136,6 +136,7 @@ create	table if not exists noti_list ( \
 			dnd_start_min INTEGER DEFAULT 0, \
 			dnd_end_hour INTEGER DEFAULT 0, \
 			dnd_end_min INTEGER DEFAULT 0, \
+			lock_screen_content_level INTEGER DEFAULT 0, \
 			UNIQUE (uid) \
 		);"
 

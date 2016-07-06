@@ -1293,7 +1293,7 @@ int notification_ipc_update_system_setting(notification_system_setting_h system_
 		return result;
 	}
 
-	body = g_variant_new("(iiiiiiiii)",
+	body = g_variant_new("(iiiiiiiiii)",
 			(int)(system_setting->do_not_disturb),
 			(int)(system_setting->visibility_class),
 			(int)(system_setting->dnd_schedule_enabled),
@@ -1302,6 +1302,7 @@ int notification_ipc_update_system_setting(notification_system_setting_h system_
 			(int)(system_setting->dnd_start_min),
 			(int)(system_setting->dnd_end_hour),
 			(int)(system_setting->dnd_end_min),
+			(int)(system_setting->lock_screen_content_level),
 			uid);
 
 	result = _send_sync_noti(body, &reply, "update_noti_sys_setting");
@@ -1693,7 +1694,7 @@ EXPORT_API int notification_ipc_make_noti_from_gvariant(notification_h noti,
 EXPORT_API GVariant *notification_ipc_make_gvariant_from_system_setting(struct notification_system_setting *noti_setting)
 {
 	GVariant *body = NULL;
-	body = g_variant_new("(iiiiiiii)",
+	body = g_variant_new("(iiiiiiiii)",
 			noti_setting->do_not_disturb,
 			noti_setting->visibility_class,
 			noti_setting->dnd_schedule_enabled,
@@ -1701,7 +1702,8 @@ EXPORT_API GVariant *notification_ipc_make_gvariant_from_system_setting(struct n
 			noti_setting->dnd_start_hour,
 			noti_setting->dnd_start_min,
 			noti_setting->dnd_end_hour,
-			noti_setting->dnd_end_min);
+			noti_setting->dnd_end_min,
+			noti_setting->lock_screen_content_level);
 	return body;
 }
 
@@ -1716,6 +1718,7 @@ EXPORT_API int notification_ipc_make_system_setting_from_gvariant(struct notific
 	int dnd_start_min;
 	int dnd_end_hour;
 	int dnd_end_min;
+	int lock_screen_content_level;
 
 	if (noti_setting == NULL) {
 		NOTIFICATION_ERR("invalid data");
@@ -1723,7 +1726,7 @@ EXPORT_API int notification_ipc_make_system_setting_from_gvariant(struct notific
 	}
 
 	g_variant_get(variant,
-			"(iiiiiiii)",
+			"(iiiiiiiii)",
 			&do_not_disturb,
 			&visibility_class,
 			&dnd_schedule_enabled,
@@ -1731,12 +1734,13 @@ EXPORT_API int notification_ipc_make_system_setting_from_gvariant(struct notific
 			&dnd_start_hour,
 			&dnd_start_min,
 			&dnd_end_hour,
-			&dnd_end_min);
+			&dnd_end_min,
+			&lock_screen_content_level);
 
-	NOTIFICATION_DBG("system setting  #### %d, %d, %d, %d, [%d:%d] [%d:%d]",
-			do_not_disturb, visibility_class,
-			dnd_schedule_enabled, dnd_schedule_day,
-			dnd_start_hour, dnd_start_min, dnd_end_hour, dnd_end_min);
+	NOTIFICATION_DBG("system setting  #### %d, %d, %d, %d, [%d:%d] [%d:%d], %d",
+			do_not_disturb, visibility_class, dnd_schedule_enabled,
+			dnd_schedule_day, dnd_start_hour, dnd_start_min,
+			dnd_end_hour, dnd_end_min, lock_screen_content_level);
 
 	noti_setting->do_not_disturb = do_not_disturb;
 	noti_setting->visibility_class = visibility_class;
@@ -1746,11 +1750,7 @@ EXPORT_API int notification_ipc_make_system_setting_from_gvariant(struct notific
 	noti_setting->dnd_start_min = dnd_start_min;
 	noti_setting->dnd_end_hour = dnd_end_hour;
 	noti_setting->dnd_end_min = dnd_end_min;
-
-	NOTIFICATION_DBG("system setting2  #### %d, %d, %d",
-			noti_setting->do_not_disturb,
-			noti_setting->visibility_class,
-			noti_setting->dnd_schedule_enabled);
+	noti_setting->lock_screen_content_level = lock_screen_content_level;
 
 	return NOTIFICATION_ERROR_NONE;
 }

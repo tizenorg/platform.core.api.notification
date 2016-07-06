@@ -308,7 +308,8 @@ int noti_system_setting_load_system_setting(notification_system_setting_h *syste
 
 	sql_query = sqlite3_mprintf("SELECT do_not_disturb, visibility_class, "
 			"dnd_schedule_enabled, dnd_schedule_day, "
-			"dnd_start_hour, dnd_start_min, dnd_end_hour, dnd_end_min "
+			"dnd_start_hour, dnd_start_min, dnd_end_hour, dnd_end_min, "
+			"lock_screen_content_level "
 			"FROM %s WHERE uid = %d", NOTIFICATION_SYSTEM_SETTING_DB_TABLE, uid);
 
 	if (!sql_query) {
@@ -343,6 +344,7 @@ int noti_system_setting_load_system_setting(notification_system_setting_h *syste
 		result_system_setting->dnd_start_min = 0;
 		result_system_setting->dnd_end_hour = 0;
 		result_system_setting->dnd_end_min = 0;
+		result_system_setting->lock_screen_content_level = 0;
 	} else {
 		/* LCOV_EXCL_START */
 		col_index = column_count;
@@ -354,6 +356,7 @@ int noti_system_setting_load_system_setting(notification_system_setting_h *syste
 		_get_table_field_data_int(query_result, &(result_system_setting->dnd_start_min), col_index++);
 		_get_table_field_data_int(query_result, &(result_system_setting->dnd_end_hour), col_index++);
 		_get_table_field_data_int(query_result, &(result_system_setting->dnd_end_min), col_index++);
+		_get_table_field_data_int(query_result, &(result_system_setting->lock_screen_content_level), col_index++);
 		/* LCOV_EXCL_STOP */
 	}
 
@@ -417,7 +420,8 @@ EXPORT_API
 int notification_setting_db_update_system_setting(int do_not_disturb, int visibility_class,
 		int dnd_schedule_enabled, int dnd_schedule_day,
 		int dnd_start_hour, int dnd_start_min,
-		int dnd_end_hour, int dnd_end_min, uid_t uid)
+		int dnd_end_hour, int dnd_end_min,
+		int lock_screen_content_level, uid_t uid)
 {
 	int err = NOTIFICATION_ERROR_NONE;
 	int sqlret;
@@ -435,7 +439,7 @@ int notification_setting_db_update_system_setting(int do_not_disturb, int visibi
 
 	sqlite3_exec(db, "BEGIN immediate;", NULL, NULL, NULL);
 
-	sqlret = sqlite3_prepare_v2(db, "INSERT OR REPLACE INTO notification_system_setting (uid, do_not_disturb, visibility_class, dnd_schedule_enabled, dnd_schedule_day, dnd_start_hour, dnd_start_min, dnd_end_hour, dnd_end_min) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?) ", -1, &db_statement, NULL);
+	sqlret = sqlite3_prepare_v2(db, "INSERT OR REPLACE INTO notification_system_setting (uid, do_not_disturb, visibility_class, dnd_schedule_enabled, dnd_schedule_day, dnd_start_hour, dnd_start_min, dnd_end_hour, dnd_end_min, lock_screen_content_level) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ", -1, &db_statement, NULL);
 
 	if (sqlret != SQLITE_OK) {
 		NOTIFICATION_ERR("sqlite3_prepare_v2 failed [%d][%s]", sqlret, sqlite3_errmsg(db));
@@ -452,6 +456,7 @@ int notification_setting_db_update_system_setting(int do_not_disturb, int visibi
 	sqlite3_bind_int(db_statement, field_index++, dnd_start_min);
 	sqlite3_bind_int(db_statement, field_index++, dnd_end_hour);
 	sqlite3_bind_int(db_statement, field_index++, dnd_end_min);
+	sqlite3_bind_int(db_statement, field_index++, lock_screen_content_level);
 
 	sqlret = sqlite3_step(db_statement);
 	if (sqlret != SQLITE_OK && sqlret != SQLITE_DONE) {

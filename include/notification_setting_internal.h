@@ -40,12 +40,34 @@ typedef enum {
 	DND_SCHEDULE_WEEK_FLAG_SATURDAY = 0x40,		/**< Saturday */
 } dnd_schedule_week_flag_e;
 
+/**
+* @brief Enumeration for lock screen content.
+* @since_tizen 3.0
+*/
+typedef enum lock_screen_content_level {
+	SHOW_ALL_CONTENT = 0,
+	HIDE_SENSITIVE_CONTENT,
+	DO_NOT_SHOW_NOTIFICATIONS,
+} lock_screen_content_level_e;
+
 /* Application setting */
 struct notification_setting {
 	char *package_name;
 	bool  allow_to_notify;
 	bool  do_not_disturb_except;
 	int   visibility_class;
+};
+
+struct notification_system_setting {
+	bool do_not_disturb;
+	int visibility_class;
+	bool dnd_schedule_enabled;
+	int dnd_schedule_day;
+	int dnd_start_hour;
+	int dnd_start_min;
+	int dnd_end_hour;
+	int dnd_end_min;
+	lock_screen_content_level_e lock_screen_content_level;
 };
 
 int notification_setting_get_setting_array(notification_setting_h *setting_array, int *count);
@@ -96,6 +118,9 @@ int notification_system_setting_dnd_schedule_set_start_time(notification_system_
 
 int notification_system_setting_dnd_schedule_get_end_time(notification_system_setting_h system_setting, int *hour, int *min);
 int notification_system_setting_dnd_schedule_set_end_time(notification_system_setting_h system_setting, int hour, int min);
+
+int notification_system_setting_set_lock_screen_content(notification_system_setting_h system_setting, lock_screen_content_level_e level);
+int notification_system_setting_get_lock_screen_content(notification_system_setting_h system_setting, lock_screen_content_level_e *level);
 
 /* OLD IMPLEMENTATION */
 int notification_setting_property_set(const char *pkgname, const char *property, const char *value) NOTIFICATION_DEPRECATED_API;

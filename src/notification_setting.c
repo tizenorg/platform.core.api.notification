@@ -806,3 +806,35 @@ EXPORT_API int notification_system_setting_dnd_schedule_set_end_time(notificatio
 out:
 	return err;
 }
+
+EXPORT_API int notification_system_setting_get_lock_screen_content(notification_system_setting_h system_setting, lock_screen_content_level_e *level)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (system_setting == NULL || level == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	*level = system_setting->lock_screen_content_level;
+
+out:
+	return err;
+}
+
+EXPORT_API int notification_system_setting_set_lock_screen_content(notification_system_setting_h system_setting, lock_screen_content_level_e level)
+{
+	int err = NOTIFICATION_ERROR_NONE;
+
+	if (system_setting == NULL) {
+		NOTIFICATION_ERR("Invalid parameter\n");
+		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
+		goto out;
+	}
+
+	system_setting->lock_screen_content_level = level;
+
+out:
+	return err;
+}
