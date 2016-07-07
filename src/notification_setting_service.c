@@ -356,7 +356,7 @@ int noti_system_setting_load_system_setting(notification_system_setting_h *syste
 		_get_table_field_data_int(query_result, &(result_system_setting->dnd_start_min), col_index++);
 		_get_table_field_data_int(query_result, &(result_system_setting->dnd_end_hour), col_index++);
 		_get_table_field_data_int(query_result, &(result_system_setting->dnd_end_min), col_index++);
-		_get_table_field_data_int(query_result, &(result_system_setting->lock_screen_content_level), col_index++);
+		_get_table_field_data_int(query_result, (int *)&(result_system_setting->lock_screen_content_level), col_index++);
 		/* LCOV_EXCL_STOP */
 	}
 

@@ -518,20 +518,6 @@ out:
 	return err;
 }
 
-/* LCOV_EXCL_START */
-bool privilege_info_cb(const char *privilege_name, void *user_data)
-{
-	bool *found = user_data;
-
-	if (privilege_name && strcmp(NOTIFICATION_PRIVILEGE, privilege_name) == 0) {
-		*found = true;
-		return false;
-	}
-
-	return true;
-}
-/* LCOV_EXCL_STOP */
-
 EXPORT_API int notification_setting_insert_package_for_uid(const char *package_id, uid_t uid)
 {
 	int err = NOTIFICATION_ERROR_NONE;
@@ -544,8 +530,6 @@ EXPORT_API int notification_setting_delete_package_for_uid(const char *package_i
 {
 	return _notification_setting_alter_package_list(OPERATION_TYPE_DELETE_RECORD, package_id, uid);
 }
-
-/* system setting --------------------------------*/
 
 EXPORT_API int notification_system_setting_load_system_setting_for_uid(notification_system_setting_h *system_setting, uid_t uid)
 {
