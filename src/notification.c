@@ -100,42 +100,30 @@ EXPORT_API int notification_set_image(notification_h noti,
 	char buf_key[32] = { 0, };
 	char *ret_val = NULL;
 
-	/* Check noti and image_path are valid data */
 	if (noti == NULL || image_path == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Check image type is valid type */
 	if (type <= NOTIFICATION_IMAGE_TYPE_NONE
 	    || type >= NOTIFICATION_IMAGE_TYPE_MAX)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Check image path bundle is exist */
 	if (noti->b_image_path) {
-		/* If image path bundle is exist, store local bundle value */
 		b = noti->b_image_path;
 
-		/* Set image type to key as char string type */
 		snprintf(buf_key, sizeof(buf_key), "%d", type);
 
-		/* Get value using key */
 		bundle_get_str(b, buf_key, &ret_val);
 		if (ret_val != NULL)
-			/* If key is exist, remove this value to store new image path */
 			bundle_del(b, buf_key);
 
-		/* Add new image path with type key */
 		bundle_add_str(b, buf_key, image_path);
 	} else {
-		/* If image path bundle is not exist, create new one */
 		b = bundle_create();
 
-		/* Set image type to key as char string type */
 		snprintf(buf_key, sizeof(buf_key), "%d", type);
 
-		/* Add new image path with type key */
 		bundle_add_str(b, buf_key, image_path);
 
-		/* Save to image path bundle */
 		noti->b_image_path = b;
 	}
 
@@ -150,24 +138,18 @@ EXPORT_API int notification_get_image(notification_h noti,
 	char buf_key[32] = { 0, };
 	char *ret_val = NULL;
 
-	/* Check noti and image_path is valid data */
 	if (noti == NULL || image_path == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Check image type is valid data */
 	if (type <= NOTIFICATION_IMAGE_TYPE_NONE
 	    || type >= NOTIFICATION_IMAGE_TYPE_MAX)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Check image path bundle exist */
 	if (noti->b_image_path) {
-		/* If image path bundle exist, store local bundle data */
 		b = noti->b_image_path;
 
-		/* Set image type to key as char string type */
 		snprintf(buf_key, sizeof(buf_key), "%d", type);
 
-		/* Get value of key */
 		bundle_get_str(b, buf_key, &ret_val);
 
 		*image_path = ret_val;
@@ -179,9 +161,7 @@ EXPORT_API int notification_get_image(notification_h noti,
 	/* If image path is NULL and type is ICON, icon path set from AIL */
 	/* order : user icon -> launch_pkgname icon -> caller_pkgname icon -> service app icon */
 	if (*image_path == NULL && type == NOTIFICATION_IMAGE_TYPE_ICON) {
-		/* Check App icon path is already set */
 		if (noti->app_icon_path != NULL)
-			/* image path will be app icon path */
 			*image_path = noti->app_icon_path;
 		else
 			*image_path = NULL;
@@ -192,15 +172,12 @@ EXPORT_API int notification_get_image(notification_h noti,
 
 EXPORT_API int notification_set_time(notification_h noti, time_t input_time)
 {
-	/* Check noti is valid data */
 	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	if (input_time == 0)
-		/* If input time is 0, set current time */
 		noti->time = time(NULL);
 	else
-		/* save input time */
 		noti->time = input_time;
 
 	return NOTIFICATION_ERROR_NONE;
@@ -208,11 +185,9 @@ EXPORT_API int notification_set_time(notification_h noti, time_t input_time)
 
 EXPORT_API int notification_get_time(notification_h noti, time_t *ret_time)
 {
-	/* Check noti and time is valid data */
 	if (noti == NULL || ret_time == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Set time infomation */
 	*ret_time = noti->time;
 
 	return NOTIFICATION_ERROR_NONE;
@@ -221,11 +196,9 @@ EXPORT_API int notification_get_time(notification_h noti, time_t *ret_time)
 EXPORT_API int notification_get_insert_time(notification_h noti,
 		time_t *ret_time)
 {
-	/* Check noti and ret_time is valid data */
 	if (noti == NULL || ret_time == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Set insert time information */
 	*ret_time = noti->insert_time;
 
 	return NOTIFICATION_ERROR_NONE;
@@ -249,115 +222,81 @@ EXPORT_API int notification_set_text(notification_h noti,
 	notification_count_pos_type_e var_value_count =
 	    NOTIFICATION_COUNT_POS_NONE;
 
-	/* Check noti is valid data */
 	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Check text type is valid type */
 	if (type <= NOTIFICATION_TEXT_TYPE_NONE
 	    || type >= NOTIFICATION_TEXT_TYPE_MAX)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Check text bundle exist */
 	if (text != NULL) {
 		if (noti->b_text != NULL) {
-			/* If text bundle exist, store local bundle data */
 			b = noti->b_text;
 
-			/* Make type to key as char string */
 			snprintf(buf_key, sizeof(buf_key), "%d", type);
 
-			/* Get value using type key */
 			bundle_get_str(b, buf_key, &ret_val);
 
 			if (ret_val != NULL)
-				/* If value exist, remove this to add new value */
 				bundle_del(b, buf_key);
 
 			snprintf(buf_val, sizeof(buf_val), "%s", text);
 
-			/* Add new text value */
 			bundle_add_str(b, buf_key, buf_val);
 		} else {
-			/* If text bundle does not exist, create new one */
 			b = bundle_create();
 
-			/* Make type to key as char string */
 			snprintf(buf_key, sizeof(buf_key), "%d", type);
-
 			snprintf(buf_val, sizeof(buf_val), "%s", text);
 
-			/* Add new text value */
 			bundle_add_str(b, buf_key, buf_val);
 
-			/* Save text bundle */
 			noti->b_text = b;
 		}
 	} else {
-		/* Reset if text is NULL */
 		if (noti->b_text != NULL) {
-			/* If text bundle exist, store local bundle data */
 			b = noti->b_text;
 
-			/* Make type to key as char string */
 			snprintf(buf_key, sizeof(buf_key), "%d", type);
 
-			/* Get value using type key */
 			bundle_get_str(b, buf_key, &ret_val);
 			if (ret_val != NULL)
-				/* If value exist, remove this */
 				bundle_del(b, buf_key);
 		}
 	}
 
-	/* Save key if key is valid data */
 	if (key != NULL) {
-		/* Check key bundle exist */
 		if (noti->b_key != NULL) {
-			/* If key bundle exist,  store local bundle data */
 			b = noti->b_key;
 
-			/* Make type to key as char string */
 			snprintf(buf_key, sizeof(buf_key), "%d", type);
 
-			/* Get value using type key */
 			bundle_get_str(b, buf_key, &ret_val);
 			if (ret_val != NULL)
-				/* If value exist, remove this to add new value */
 				bundle_del(b, buf_key);
 
 			snprintf(buf_val, sizeof(buf_val), "%s", key);
 
-			/* Add new key value */
 			bundle_add_str(b, buf_key, buf_val);
 		} else {
-			/* If key bundle does not exist, create new one */
 			b = bundle_create();
 
-			/* Make type to key as char string */
 			snprintf(buf_key, sizeof(buf_key), "%d", type);
 
 			snprintf(buf_val, sizeof(buf_val), "%s", key);
 
-			/* Add new key value */
 			bundle_add_str(b, buf_key, buf_val);
 
-			/* Save key bundle */
 			noti->b_key = b;
 		}
 	} else {
-		/* Reset if key is NULL */
 		if (noti->b_key != NULL) {
-			/* If key bundle exist,  store local bundle data */
 			b = noti->b_key;
 
-			/* Make type to key as char string */
 			snprintf(buf_key, sizeof(buf_key), "%d", type);
 
-			/* Get value using type key */
 			bundle_get_str(b, buf_key, &ret_val);
 			if (ret_val != NULL)
-				/* If value exist, remove this */
 				bundle_del(b, buf_key);
 		}
 	}
@@ -488,7 +427,6 @@ EXPORT_API int notification_get_text(notification_h noti,
 	char *ret_val = NULL;
 	char *get_str = NULL;
 	notification_text_type_e check_type = NOTIFICATION_TEXT_TYPE_NONE;
-	/* int display_option_flag = 0; */
 
 	char *temp_str = NULL;
 	char *translated_str = NULL;
@@ -501,17 +439,14 @@ EXPORT_API int notification_get_text(notification_h noti,
 	int src_len = 0;
 	int max_len = 0;
 
-	/* Check noti is valid data */
 	if (noti == NULL || text == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Check text type is valid type */
 	if (type <= NOTIFICATION_TEXT_TYPE_NONE
 	    || type >= NOTIFICATION_TEXT_TYPE_MAX)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 
-	/* Check key */
 	if (noti->b_key != NULL) {
 		b = noti->b_key;
 
@@ -541,7 +476,7 @@ EXPORT_API int notification_get_text(notification_h noti,
 
 	if (get_str == NULL && noti->b_text != NULL) {
 		b = noti->b_text;
-		/* Get basic text */
+
 		snprintf(buf_key, sizeof(buf_key), "%d", type);
 
 		bundle_get_str(b, buf_key, &get_str);
@@ -874,24 +809,17 @@ EXPORT_API int notification_set_text_domain(notification_h noti,
 							     const char *domain,
 							     const char *dir)
 {
-	/* check noti and domain is valid data */
 	if (noti == NULL || domain == NULL || dir == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Check domain */
 	if (noti->domain)
-		/* Remove previous domain */
 		free(noti->domain);
 
-	/* Copy domain */
 	noti->domain = strdup(domain);
 
-	/* Check locale dir */
 	if (noti->dir)
-		/* Remove previous locale dir */
 		free(noti->dir);
 
-	/* Copy locale dir */
 	noti->dir = strdup(dir);
 
 	return NOTIFICATION_ERROR_NONE;
@@ -901,15 +829,12 @@ EXPORT_API int notification_get_text_domain(notification_h noti,
 							     char **domain,
 							     char **dir)
 {
-	/* Check noti is valid data */
 	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Get domain */
 	if (domain != NULL && noti->domain != NULL)
 		*domain = noti->domain;
 
-	/* Get locale dir */
 	if (dir != NULL && noti->dir != NULL)
 		*dir = noti->dir;
 
@@ -982,17 +907,13 @@ EXPORT_API int notification_set_sound(notification_h noti,
 						       notification_sound_type_e type,
 						       const char *path)
 {
-	/* Check noti is valid data */
 	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-
-	/* Check type is valid */
 	if (type < NOTIFICATION_SOUND_TYPE_NONE
 	    || type >= NOTIFICATION_SOUND_TYPE_MAX)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Save sound type */
 	noti->sound_type = type;
 
 	/* Save sound path if user data type */
@@ -1019,11 +940,9 @@ EXPORT_API int notification_get_sound(notification_h noti,
 						       notification_sound_type_e *type,
 						       const char **path)
 {
-	/* check noti and type is valid data */
 	if (noti == NULL || type == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Set sound type */
 	*type = noti->sound_type;
 
 	/* Set sound path if user data type */
@@ -1038,16 +957,13 @@ EXPORT_API int notification_set_vibration(notification_h noti,
 							   notification_vibration_type_e type,
 							   const char *path)
 {
-	/* Check noti is valid data */
 	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Check type is valid */
 	if (type < NOTIFICATION_VIBRATION_TYPE_NONE
 	    || type >= NOTIFICATION_VIBRATION_TYPE_MAX)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Save vibration type */
 	noti->vibration_type = type;
 
 	/* Save sound path if user data type */
@@ -1075,11 +991,9 @@ EXPORT_API int notification_get_vibration(notification_h noti,
 							   notification_vibration_type_e *type,
 							   const char **path)
 {
-	/* check noti and type is valid data */
 	if (noti == NULL || type == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Set vibration type */
 	*type = noti->vibration_type;
 
 	/* Set sound path if user data type */
@@ -1094,16 +1008,13 @@ EXPORT_API int notification_set_led(notification_h noti,
 							   notification_led_op_e operation,
 							   int led_argb)
 {
-	/* Check noti is valid data */
 	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Check operation is valid */
 	if (operation < NOTIFICATION_LED_OP_OFF
 	    || operation >= NOTIFICATION_LED_OP_MAX)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Save led operation */
 	noti->led_operation = operation;
 
 	/* Save led argb if operation is turning on LED with custom color */
@@ -1117,11 +1028,9 @@ EXPORT_API int notification_get_led(notification_h noti,
 							   notification_led_op_e *operation,
 							   int *led_argb)
 {
-	/* check noti and operation is valid data */
 	if (noti == NULL || operation == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Set led operation */
 	*operation = noti->led_operation;
 
 	/* Save led argb if operation is turning on LED with custom color */
@@ -1135,11 +1044,9 @@ EXPORT_API int notification_get_led(notification_h noti,
 EXPORT_API int notification_set_led_time_period(notification_h noti,
 									int on_ms, int off_ms)
 {
-	/* Check noti is valid data */
 	if (noti == NULL || on_ms < 0 || off_ms < 0)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Save led operation */
 	noti->led_on_ms = on_ms;
 	noti->led_off_ms = off_ms;
 
@@ -1149,7 +1056,6 @@ EXPORT_API int notification_set_led_time_period(notification_h noti,
 EXPORT_API int notification_get_led_time_period(notification_h noti,
 									int *on_ms, int *off_ms)
 {
-	/* check noti and operation is valid data */
 	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
@@ -1277,11 +1183,13 @@ EXPORT_API int notification_get_event_handler(notification_h noti, notification_
 		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
 		goto out;
 	}
+
 	if (event_handler == NULL) {
 		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
 		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
 		goto out;
 	}
+
 	if (event_type < NOTIFICATION_EVENT_TYPE_CLICK_ON_BUTTON_1
 		|| event_type > NOTIFICATION_EVENT_TYPE_CLICK_ON_THUMBNAIL) {
 		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
@@ -1290,7 +1198,6 @@ EXPORT_API int notification_get_event_handler(notification_h noti, notification_
 	}
 
 	b = noti->b_event_handler[event_type];
-
 	if (b == NULL) {
 		NOTIFICATION_DBG("No event handler\n");
 		err = NOTIFICATION_ERROR_NOT_EXIST_ID;
@@ -1329,11 +1236,9 @@ out:
 EXPORT_API int notification_set_property(notification_h noti,
 							  int flags)
 {
-	/* Check noti is valid data */
 	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Set flags */
 	noti->flags_for_property = flags;
 
 	return NOTIFICATION_ERROR_NONE;
@@ -1342,11 +1247,9 @@ EXPORT_API int notification_set_property(notification_h noti,
 EXPORT_API int notification_get_property(notification_h noti,
 							  int *flags)
 {
-	/* Check noti and flags are valid data */
 	if (noti == NULL || flags == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Set flags */
 	*flags = noti->flags_for_property;
 
 	return NOTIFICATION_ERROR_NONE;
@@ -1355,12 +1258,9 @@ EXPORT_API int notification_get_property(notification_h noti,
 EXPORT_API int notification_set_display_applist(notification_h noti,
 								 int applist)
 {
-	/* Check noti is valid data */
 	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-
-	/* Set app list */
 	if (applist == 0xffffffff) /* 0xffffffff means old NOTIFICATION_DISPLAY_APP_ALL */
 		applist = NOTIFICATION_DISPLAY_APP_ALL;
 
@@ -1372,11 +1272,9 @@ EXPORT_API int notification_set_display_applist(notification_h noti,
 EXPORT_API int notification_get_display_applist(notification_h noti,
 								 int *applist)
 {
-	/* Check noti and applist are valid data */
 	if (noti == NULL || applist == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Set app list */
 	*applist = noti->display_applist;
 
 	return NOTIFICATION_ERROR_NONE;
@@ -1385,11 +1283,9 @@ EXPORT_API int notification_get_display_applist(notification_h noti,
 EXPORT_API int notification_set_size(notification_h noti,
 						      double size)
 {
-	/* Check noti is valid data */
 	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Save progress size */
 	noti->progress_size = size;
 
 	return NOTIFICATION_ERROR_NONE;
@@ -1398,11 +1294,9 @@ EXPORT_API int notification_set_size(notification_h noti,
 EXPORT_API int notification_get_size(notification_h noti,
 						      double *size)
 {
-	/* Check noti and size is valid data */
 	if (noti == NULL || size == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Set progress size */
 	*size = noti->progress_size;
 
 	return NOTIFICATION_ERROR_NONE;
@@ -1411,11 +1305,9 @@ EXPORT_API int notification_get_size(notification_h noti,
 EXPORT_API int notification_set_progress(notification_h noti,
 							  double percentage)
 {
-	/* Check noti is valid data */
 	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Save progress percentage */
 	noti->progress_percentage = percentage;
 
 	return NOTIFICATION_ERROR_NONE;
@@ -1424,11 +1316,9 @@ EXPORT_API int notification_set_progress(notification_h noti,
 EXPORT_API int notification_get_progress(notification_h noti,
 							  double *percentage)
 {
-	/* Check noti and percentage are valid data */
 	if (noti == NULL || percentage == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Set progress percentage */
 	*percentage = noti->progress_percentage;
 
 	return NOTIFICATION_ERROR_NONE;
@@ -1437,11 +1327,9 @@ EXPORT_API int notification_get_progress(notification_h noti,
 EXPORT_API int notification_get_pkgname(notification_h noti,
 							 char **pkgname)
 {
-	/* Check noti and pkgname are valid data */
 	if (noti == NULL || pkgname == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Get caller pkgname */
 	if (noti->caller_pkgname)
 		*pkgname = noti->caller_pkgname;
 	else
@@ -1453,7 +1341,6 @@ EXPORT_API int notification_get_pkgname(notification_h noti,
 EXPORT_API int notification_set_layout(notification_h noti,
 		notification_ly_type_e layout)
 {
-	/* check noti and pkgname are valid data */
 	if (noti == NULL || (layout < NOTIFICATION_LY_NONE || layout >= NOTIFICATION_LY_MAX))
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
@@ -1465,7 +1352,6 @@ EXPORT_API int notification_set_layout(notification_h noti,
 EXPORT_API int notification_get_layout(notification_h noti,
 		notification_ly_type_e *layout)
 {
-	/* Check noti and pkgname are valid data */
 	if (noti == NULL || layout == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
@@ -1479,11 +1365,9 @@ EXPORT_API int notification_get_layout(notification_h noti,
 EXPORT_API int notification_get_type(notification_h noti,
 						      notification_type_e *type)
 {
-	/* Check noti and type is valid data */
 	if (noti == NULL || type == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Set noti type */
 	*type = noti->type;
 
 	return NOTIFICATION_ERROR_NONE;
@@ -1843,12 +1727,10 @@ EXPORT_API int notification_free(notification_h noti)
 
 EXPORT_API int notification_set_tag(notification_h noti, const char *tag)
 {
-	/* Check noti is valid data */
 	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	if (tag != NULL) {
-		/* save input TAG */
 		if (noti->tag != NULL)
 			free(noti->tag);
 
@@ -1861,7 +1743,6 @@ EXPORT_API int notification_set_tag(notification_h noti, const char *tag)
 
 EXPORT_API int notification_get_tag(notification_h noti, const char **tag)
 {
-	/* Check noti is valid data */
 	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 

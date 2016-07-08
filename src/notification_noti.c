@@ -58,8 +58,7 @@ static int _notification_noti_bind_query_text(sqlite3_stmt *stmt, const char *na
 		return NOTIFICATION_ERROR_FROM_DB;
 	}
 
-	ret =
-	    sqlite3_bind_text(stmt, index, NOTIFICATION_CHECK_STR(str), -1,
+	ret = sqlite3_bind_text(stmt, index, NOTIFICATION_CHECK_STR(str), -1,
 			      SQLITE_STATIC);
 	if (ret != SQLITE_OK) {
 		NOTIFICATION_ERR("Insert text : %s",
@@ -244,7 +243,6 @@ static int _insertion_query_create(notification_h noti, char **query)
 	if (noti->flags_for_property & NOTIFICATION_PROP_DISPLAY_ONLY_SIMMODE)
 		flag_simmode = 1;
 
-	/* Make query */
 	*query = sqlite3_mprintf("INSERT INTO noti_list ("
 		"type, "
 		"layout, "
@@ -423,7 +421,6 @@ static int _update_query_create(notification_h noti, char **query)
 	if (noti->flags_for_property & NOTIFICATION_PROP_DISPLAY_ONLY_SIMMODE)
 		flag_simmode = 1;
 
-	/* Make query */
 	*query = sqlite3_mprintf("UPDATE noti_list SET "
 		"type = %d, "
 		"layout = %d, "
@@ -532,7 +529,6 @@ static void _notification_noti_populate_from_stmt(sqlite3_stmt *stmt, notificati
 
 	if (stmt == NULL || noti == NULL)
 		return ;
-
 
 	noti->type = sqlite3_column_int(stmt, col++);
 	noti->layout = sqlite3_column_int(stmt, col++);
@@ -665,8 +661,8 @@ static int _notification_noti_update_priv_id(sqlite3 *db, int rowid)
 	char *query = NULL;
 
 	if (db == NULL) {
-		ret = NOTIFICATION_ERROR_INVALID_PARAMETER;
-		goto err;
+		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 
 	query = sqlite3_mprintf("UPDATE noti_list SET "
@@ -697,8 +693,7 @@ static int _get_package_id_by_app_id(const char *app_id, char **package_id)
 
 	if (app_id == NULL || package_id == NULL) {
 		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
-		err = NOTIFICATION_ERROR_INVALID_PARAMETER;
-		goto out;
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 
 	if ((retval = pkgmgrinfo_appinfo_get_appinfo(app_id, &pkgmgrinfo_appinfo)) != PMINFO_R_OK) {
@@ -781,7 +776,6 @@ static int _handle_do_not_disturb_option(notification_h noti)
 	char *package_id = NULL;
 	notification_setting_h setting = NULL;
 	notification_system_setting_h system_setting = NULL;
-
 
 	if (noti == NULL) {
 		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
@@ -878,7 +872,6 @@ EXPORT_API int notification_noti_insert(notification_h noti)
 		NOTIFICATION_WARN("_handle_do_not_disturb_option failed");
 
 
-	/* Open DB */
 	db = notification_db_open(DBPATH);
 	if (!db)
 		return get_last_result();
@@ -887,7 +880,6 @@ EXPORT_API int notification_noti_insert(notification_h noti)
 	noti->group_id = NOTIFICATION_GROUP_ID_NONE;
 	noti->internal_group_id = NOTIFICATION_GROUP_ID_NONE;
 
-	/* make query */
 	ret = _insertion_query_create(noti, &query);
 	if (ret != NOTIFICATION_ERROR_NONE)
 		goto err;
@@ -957,7 +949,6 @@ err:
 	if (stmt)
 		sqlite3_finalize(stmt);
 
-	/* Close DB */
 	if (db)
 		notification_db_close(&db);
 
@@ -980,7 +971,6 @@ EXPORT_API int notification_noti_get_by_priv_id(notification_h noti, char *pkgna
 		goto err;
 	}
 
-	/* Open DB */
 	db = notification_db_open(DBPATH);
 	if (!db)
 		return get_last_result();
@@ -1032,7 +1022,6 @@ err:
 	if (stmt)
 		sqlite3_finalize(stmt);
 
-	/* Close DB */
 	if (db != NULL)
 		notification_db_close(&db);
 
@@ -1047,11 +1036,10 @@ EXPORT_API int notification_noti_get_by_tag(notification_h noti, char *pkgname, 
 	sqlite3_stmt *stmt = NULL;
 
 	if (tag == NULL || noti == NULL) {
-		ret = NOTIFICATION_ERROR_INVALID_PARAMETER;
-		goto err;
+		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
+		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 
-	/* Open DB */
 	db = notification_db_open(DBPATH);
 	if (!db)
 		return get_last_result();
@@ -1134,7 +1122,6 @@ err:
 	if (stmt)
 		sqlite3_finalize(stmt);
 
-	/* Close DB */
 	if (db != NULL)
 		notification_db_close(&db);
 
@@ -1148,7 +1135,6 @@ EXPORT_API int notification_noti_update(notification_h noti)
 	sqlite3_stmt *stmt = NULL;
 	char *query = NULL;
 
-	/* Open DB */
 	db = notification_db_open(DBPATH);
 	if (!db)
 		return get_last_result();
@@ -1210,7 +1196,6 @@ err:
 	if (stmt)
 		sqlite3_finalize(stmt);
 
-	/* Close DB */
 	if (db)
 		notification_db_close(&db);
 
@@ -1233,7 +1218,6 @@ EXPORT_API int notification_noti_delete_all(notification_type_e type, const char
 	char query_where[NOTIFICATION_QUERY_MAX] = { 0, };
 	char err_buf[ERR_BUFFER_SIZE];
 
-	/* Open DB */
 	db = notification_db_open(DBPATH);
 	if (!db)
 		return get_last_result();
@@ -1251,7 +1235,6 @@ EXPORT_API int notification_noti_delete_all(notification_type_e type, const char
 			snprintf(query_where, sizeof(query_where),
 				 "where caller_pkgname = '%s' and type = %d and uid = %d",
 				 pkgname, type, uid);
-
 	}
 
 	if (num_deleted != NULL)
@@ -1345,7 +1328,6 @@ err:
 	if (stmt)
 		sqlite3_finalize(stmt);
 
-	/* Close DB */
 	if (db)
 		notification_db_close(&db);
 
@@ -1359,24 +1341,19 @@ EXPORT_API int notification_noti_delete_by_priv_id(const char *pkgname, int priv
 	char query[NOTIFICATION_QUERY_MAX] = { 0, };
 	int ret;
 
-	/* Check pkgname is valid */
 	if (pkgname == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Open DB */
 	db = notification_db_open(DBPATH);
 	if (!db)
 		return get_last_result();
 
-	/* Make query */
 	snprintf(query, sizeof(query), "delete from noti_list "
 		 "where caller_pkgname = '%s' and priv_id = %d", pkgname,
 		 priv_id);
 
-	/* execute DB */
 	ret = notification_db_exec(db, query, NULL);
 
-	/* Close DB */
 	if (db)
 		notification_db_close(&db);
 
@@ -1390,28 +1367,23 @@ EXPORT_API int notification_noti_delete_by_priv_id_get_changes(const char *pkgna
 	char query[NOTIFICATION_QUERY_MAX] = {0, };
 	int ret;
 
-	/* Check pkgname is valid */
 	if (pkgname == NULL || strlen(pkgname) == 0)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Open DB */
 	db = notification_db_open(DBPATH);
 	if (!db)
 		return get_last_result();
 
-	/* Make query */
 	snprintf(query, sizeof(query), "delete from noti_list "
 		 "where caller_pkgname = '%s' and priv_id = %d and uid = %d", pkgname,
 		 priv_id, uid);
 	NOTIFICATION_DBG("%s", query);
 
-	/* execute DB */
 	ret = notification_db_exec(db, query, num_changes);
 
 	if (num_changes != NULL)
 		NOTIFICATION_DBG("deleted num:%d", *num_changes);
 
-	/* Close DB */
 	if (db)
 		notification_db_close(&db);
 
@@ -1437,7 +1409,6 @@ EXPORT_API int notification_noti_get_count(notification_type_e type,
 	int flag_where_more = 0;
 	int ret_vconf = 0;
 
-	/* Open DB */
 	db = notification_db_open(DBPATH);
 	if (!db)
 		return get_last_result();
@@ -1445,7 +1416,6 @@ EXPORT_API int notification_noti_get_count(notification_type_e type,
 	/* Check current sim status */
 	ret_vconf = vconf_get_int(VCONFKEY_TELEPHONY_SIM_SLOT, &status);
 
-	/* Make query */
 	snprintf(query_base, sizeof(query_base),
 		 "select count(*) from noti_list ");
 
@@ -1528,7 +1498,6 @@ err:
 		sqlite3_finalize(stmt);
 
 
-	/* Close DB */
 	if (db)
 		notification_db_close(&db);
 
@@ -1556,7 +1525,6 @@ EXPORT_API int notification_noti_get_grouping_list(notification_type_e type,
 	int internal_count = 0;
 	int status;
 
-	/* Open DB */
 	db = notification_db_open(DBPATH);
 	if (!db)
 		return get_last_result();
@@ -1564,7 +1532,6 @@ EXPORT_API int notification_noti_get_grouping_list(notification_type_e type,
 	/* Check current sim status */
 	ret = vconf_get_int(VCONFKEY_TELEPHONY_SIM_SLOT, &status);
 
-	/* Make query */
 	snprintf(query_base, sizeof(query_base), "select "
 		 "type, layout, caller_pkgname, launch_pkgname, image_path, group_id, priv_id, "
 		 "tag, b_text, b_key, b_format_args, num_format_args, "
@@ -1631,12 +1598,12 @@ err:
 	if (stmt)
 		sqlite3_finalize(stmt);
 
-	/* Close DB */
 	if (db)
 		notification_db_close(&db);
 
 	if (get_list != NULL)
 		*list = notification_list_get_head(get_list);
+
 	return ret;
 }
 
@@ -1659,7 +1626,6 @@ EXPORT_API int notification_noti_get_detail_list(const char *pkgname,
 	int internal_group_id = 0;
 	int status = 0; /* If the vconf_get_int failed, the status will be the garbage value */
 
-	/* Open DB */
 	db = notification_db_open(DBPATH);
 	if (!db)
 		return get_last_result();
@@ -1667,7 +1633,6 @@ EXPORT_API int notification_noti_get_detail_list(const char *pkgname,
 	/* Check current sim status */
 	ret = vconf_get_int(VCONFKEY_TELEPHONY_SIM_SLOT, &status);
 
-	/* Make query */
 	snprintf(query_base, sizeof(query_base), "select "
 		 "type, layout, caller_pkgname, launch_pkgname, image_path, group_id, priv_id, "
 		 "tag, b_text, b_key, b_format_args, num_format_args, "
@@ -1740,7 +1705,6 @@ err:
 	if (stmt)
 		sqlite3_finalize(stmt);
 
-	/* Close DB */
 	if (db)
 		notification_db_close(&db);
 
@@ -1760,7 +1724,6 @@ EXPORT_API int notification_noti_check_tag(notification_h noti)
 	if (noti->tag == NULL)
 		return NOTIFICATION_ERROR_NOT_EXIST_ID;
 
-	/* Open DB */
 	db = notification_db_open(DBPATH);
 	if (!db)
 		return get_last_result();

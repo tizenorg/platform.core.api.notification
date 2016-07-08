@@ -332,13 +332,7 @@ EXPORT_API int notification_update_content(notification_h noti,
 EXPORT_API int notification_set_icon(notification_h noti,
 		const char *icon_path)
 {
-	int ret_err = NOTIFICATION_ERROR_NONE;
-
-	ret_err =
-		notification_set_image(noti, NOTIFICATION_IMAGE_TYPE_ICON,
-				icon_path);
-
-	return ret_err;
+	return notification_set_image(noti, NOTIFICATION_IMAGE_TYPE_ICON, icon_path);
 }
 /* LCOV_EXCL_STOP */
 
@@ -350,8 +344,7 @@ EXPORT_API int notification_get_icon(notification_h noti,
 	int ret_err = NOTIFICATION_ERROR_NONE;
 	char *ret_image_path = NULL;
 
-	ret_err =
-		notification_get_image(noti, NOTIFICATION_IMAGE_TYPE_ICON,
+	ret_err = notification_get_image(noti, NOTIFICATION_IMAGE_TYPE_ICON,
 				&ret_image_path);
 
 	if (ret_err == NOTIFICATION_ERROR_NONE && icon_path != NULL)
@@ -406,13 +399,9 @@ EXPORT_API int notification_set_title(notification_h noti,
 		const char *title,
 		const char *loc_title)
 {
-	int noti_err = NOTIFICATION_ERROR_NONE;
-
-	noti_err = notification_set_text(noti, NOTIFICATION_TEXT_TYPE_TITLE,
-			title, loc_title,
-			NOTIFICATION_VARIABLE_TYPE_NONE);
-
-	return noti_err;
+	return notification_set_text(noti, NOTIFICATION_TEXT_TYPE_TITLE,
+				title, loc_title,
+				NOTIFICATION_VARIABLE_TYPE_NONE);;
 }
 /* LCOV_EXCL_STOP */
 
@@ -424,8 +413,7 @@ EXPORT_API int notification_get_title(notification_h noti,
 	int noti_err = NOTIFICATION_ERROR_NONE;
 	char *ret_text = NULL;
 
-	noti_err =
-		notification_get_text(noti, NOTIFICATION_TEXT_TYPE_TITLE,
+	noti_err = notification_get_text(noti, NOTIFICATION_TEXT_TYPE_TITLE,
 				&ret_text);
 
 	if (title != NULL)
@@ -443,13 +431,9 @@ EXPORT_API int notification_set_content(notification_h noti,
 		const char *content,
 		const char *loc_content)
 {
-	int noti_err = NOTIFICATION_ERROR_NONE;
-
-	noti_err = notification_set_text(noti, NOTIFICATION_TEXT_TYPE_CONTENT,
-			content, loc_content,
-			NOTIFICATION_VARIABLE_TYPE_NONE);
-
-	return noti_err;
+	return notification_set_text(noti, NOTIFICATION_TEXT_TYPE_CONTENT,
+				content, loc_content,
+				NOTIFICATION_VARIABLE_TYPE_NONE);
 }
 /* LCOV_EXCL_STOP */
 
@@ -461,8 +445,7 @@ EXPORT_API int notification_get_content(notification_h noti,
 	int noti_err = NOTIFICATION_ERROR_NONE;
 	char *ret_text = NULL;
 
-	noti_err =
-		notification_get_text(noti, NOTIFICATION_TEXT_TYPE_CONTENT,
+	noti_err = notification_get_text(noti, NOTIFICATION_TEXT_TYPE_CONTENT,
 				&ret_text);
 
 	if (content != NULL)
@@ -472,20 +455,6 @@ EXPORT_API int notification_get_content(notification_h noti,
 		*loc_content = NULL;
 
 	return noti_err;
-
-#if 0
-	ret =
-		vconf_get_bool
-		(VCONFKEY_SETAPPL_STATE_TICKER_NOTI_DISPLAY_CONTENT_BOOL, &boolval);
-
-	if (ret == -1 || boolval == 0) {
-		if (content != NULL && noti->default_content != NULL)
-			*content = noti->default_content;
-
-		if (loc_content != NULL && noti->loc_default_content != NULL)
-			*loc_content = noti->loc_default_content;
-	}
-#endif
 }
 /* LCOV_EXCL_STOP */
 
@@ -686,14 +655,10 @@ EXPORT_API int notification_get_count(notification_type_e type,
 
 int notification_clear_for_uid(notification_type_e type, uid_t uid)
 {
-	int ret = 0;
-
 	if (type <= NOTIFICATION_TYPE_NONE || type >= NOTIFICATION_TYPE_MAX)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	ret = notification_ipc_request_delete_multiple(type, NULL, uid);
-
-	return ret;
+	return notification_ipc_request_delete_multiple(type, NULL, uid);
 }
 /* LCOV_EXCL_STOP */
 
@@ -738,7 +703,6 @@ EXPORT_API int notification_op_get_data(notification_op *noti_op, notification_o
 EXPORT_API int notification_set_pkgname(notification_h noti,
 		const char *pkgname)
 {
-	/* check noti and pkgname are valid data */
 	if (noti == NULL || pkgname == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
@@ -835,76 +799,59 @@ EXPORT_API int notification_set_execute_option(notification_h noti,
 			|| type >= NOTIFICATION_EXECUTE_TYPE_MAX)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Create execute option bundle if does not exist */
 	if (noti->b_execute_option == NULL)
 		noti->b_execute_option = bundle_create();
 
 	b = noti->b_execute_option;
 
-	/* Save text */
 	if (text != NULL) {
-		/* Make text key */
 		snprintf(buf_key, sizeof(buf_key), "text%d", type);
 
-		/* Check text key exist */
 		bundle_get_str(b, buf_key, &ret_val);
 		if (ret_val != NULL)
-			/* Remove previous data */
 			bundle_del(b, buf_key);
 
-		/* Add text data */
 		bundle_add_str(b, buf_key, text);
 	}
 
-	/* Save key */
 	if (key != NULL) {
-		/* Make key key */
 		snprintf(buf_key, sizeof(buf_key), "key%d", type);
 
-		/* Check key key exist */
 		bundle_get_str(b, buf_key, &ret_val);
 		if (ret_val != NULL)
-			/* Remove previous data */
 			bundle_del(b, buf_key);
 
-		/* Add text data */
 		bundle_add_str(b, buf_key, key);
 	}
 
 	switch ((int)type) {
 	case NOTIFICATION_EXECUTE_TYPE_RESPONDING:
-		/* Remove previous data if exist */
 		if (noti->b_service_responding != NULL) {
 			bundle_free(noti->b_service_responding);
 			noti->b_service_responding = NULL;
 		}
 
-		/* Save service handle */
 		if (service_handle != NULL)
 			noti->b_service_responding = bundle_dup(service_handle);
 
 		break;
 	case NOTIFICATION_EXECUTE_TYPE_SINGLE_LAUNCH:
-		/* Remove previous data if exist */
 		if (noti->b_service_single_launch != NULL) {
 			bundle_free(noti->b_service_single_launch);
 			noti->b_service_single_launch = NULL;
 		}
 
-		/* Save service handle */
 		if (service_handle != NULL)
 			noti->b_service_single_launch =
 				bundle_dup(service_handle);
 
 		break;
 	case NOTIFICATION_EXECUTE_TYPE_MULTI_LAUNCH:
-		/* Remove previous data if exist */
 		if (noti->b_service_multi_launch != NULL) {
 			bundle_free(noti->b_service_multi_launch);
 			noti->b_service_multi_launch = NULL;
 		}
 
-		/* Save service handle */
 		if (service_handle != NULL)
 			noti->b_service_multi_launch =
 				bundle_dup(service_handle);
@@ -920,22 +867,17 @@ EXPORT_API int notification_set_execute_option(notification_h noti,
 EXPORT_API int notification_get_id(notification_h noti,
 		int *group_id, int *priv_id)
 {
-	/* check noti is valid data */
 	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Check group_id is valid data */
 	if (group_id) {
-		/* Set group id */
 		if (noti->group_id < NOTIFICATION_GROUP_ID_NONE)
 			*group_id = NOTIFICATION_GROUP_ID_NONE;
 		else
 			*group_id = noti->group_id;
 	}
 
-	/* Check priv_id is valid data */
 	if (priv_id)
-		/* Set priv_id */
 		*priv_id = noti->priv_id;
 
 	return NOTIFICATION_ERROR_NONE;
@@ -1019,32 +961,25 @@ EXPORT_API int notification_get_execute_option(notification_h noti,
 	}
 
 	if (b != NULL) {
-		/* Return text */
 		if (text != NULL) {
-			/*  Get text domain and dir */
 			if (noti->domain == NULL || noti->dir == NULL)
 				_notification_get_text_domain(noti);
 
-			/* Make key */
 			snprintf(buf_key, sizeof(buf_key), "key%d", type);
 
-			/* Check key key exist */
 			bundle_get_str(b, buf_key, &ret_val);
 			if (ret_val != NULL && noti->domain != NULL
 					&& noti->dir != NULL) {
-				/* Get application string */
 				bindtextdomain(noti->domain, noti->dir);
 
 				get_str = dgettext(noti->domain, ret_val);
 
 				*text = get_str;
 			} else if (ret_val != NULL) {
-				/* Get system string */
 				get_str = dgettext("sys_string", ret_val);
 
 				*text = get_str;
 			} else {
-				/* Get basic text */
 				snprintf(buf_key, sizeof(buf_key), "text%d",
 						type);
 
@@ -1068,18 +1003,16 @@ EXPORT_API int notification_insert_for_uid(notification_h noti,
 	int ret = 0;
 	int id = 0;
 
-	/* Check noti is vaild data */
 	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Check noti type is valid type */
 	if (noti->type <= NOTIFICATION_TYPE_NONE
 			|| noti->type >= NOTIFICATION_TYPE_MAX)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	noti->uid = uid;
-	/* Save insert time */
 	noti->insert_time = time(NULL);
+
 	ret = notification_ipc_request_insert(noti, &id);
 	if (ret != NOTIFICATION_ERROR_NONE)
 		return ret;
@@ -1103,16 +1036,14 @@ EXPORT_API int notification_insert(notification_h noti,
 EXPORT_API int notification_update_async_for_uid(notification_h noti,
 		void (*result_cb)(int priv_id, int result, void *data), void *user_data, uid_t uid)
 {
-	int ret = 0;
 	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
 	noti->uid = uid;
 	/* Update insert time ? */
 	noti->insert_time = time(NULL);
-	ret = notification_ipc_request_update_async(noti, result_cb, user_data);
 
-	return ret;
+	return notification_ipc_request_update_async(noti, result_cb, user_data);
 }
 
 EXPORT_API int notification_update_async(notification_h noti,
@@ -1244,11 +1175,9 @@ EXPORT_API int notification_post_for_uid(notification_h noti, uid_t uid)
 	int ret = 0;
 	int id = 0;
 
-	/* Check noti is vaild data */
 	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	/* Check noti type is valid type */
 	if (noti->type <= NOTIFICATION_TYPE_NONE
 			|| noti->type >= NOTIFICATION_TYPE_MAX)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
@@ -1269,32 +1198,26 @@ EXPORT_API int notification_post_for_uid(notification_h noti, uid_t uid)
 
 EXPORT_API int notification_update_for_uid(notification_h noti, uid_t uid)
 {
-	int ret;
-
-	/* Check noti is valid data */
-	if (noti != NULL) {
-		noti->uid = uid;
-		/* Update insert time ? */
-		noti->insert_time = time(NULL);
-		ret = notification_ipc_request_update(noti);
-	} else {
+	if (noti == NULL) {
 		notification_ipc_request_refresh(uid);
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 	}
 
-	return ret;
+	noti->uid = uid;
+	/* Update insert time ? */
+	noti->insert_time = time(NULL);
+
+	return notification_ipc_request_update(noti);
 }
 
 EXPORT_API int notification_delete_for_uid(notification_h noti, uid_t uid)
 {
-	int ret = 0;
 
 	if (noti == NULL)
 		return NOTIFICATION_ERROR_INVALID_PARAMETER;
 
-	ret = notification_ipc_request_delete_single(NOTIFICATION_TYPE_NONE, noti->caller_pkgname, noti->priv_id, uid);
-
-	return ret;
+	return notification_ipc_request_delete_single(NOTIFICATION_TYPE_NONE,
+				noti->caller_pkgname, noti->priv_id, uid);
 }
 
 EXPORT_API int notification_delete_all_for_uid(notification_type_e type, uid_t uid)

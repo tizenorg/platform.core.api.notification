@@ -70,15 +70,12 @@ int notification_group_set_badge(const char *pkgname,
 	int ret = 0;
 	int result = NOTIFICATION_ERROR_NONE;
 
-	/* Open DB */
 	db = notification_db_open(DBPATH);
 	if (!db)
 		return get_last_result();
 
-	/* Check pkgname & group_id */
 	ret = _notification_group_check_data_inserted(pkgname, group_id, db);
 
-	/* Make query */
 	if (ret == NOTIFICATION_ERROR_NONE) {
 		/* Insert if does not exist */
 		snprintf(query, sizeof(query), "insert into noti_group_data ("
@@ -116,7 +113,6 @@ int notification_group_set_badge(const char *pkgname,
 	if (stmt)
 		sqlite3_finalize(stmt);
 
-	/* Close DB */
 	if (db)
 		notification_db_close(&db);
 
@@ -134,16 +130,12 @@ int notification_group_get_badge(const char *pkgname,
 	int ret = 0;
 	int col = 0;
 
-	/* Open DB */
 	db = notification_db_open(DBPATH);
 	if (!db)
 		return get_last_result();
 
-	/* Make query */
 	if (group_id == NOTIFICATION_GROUP_ID_NONE) {
-		/* Check Group id None is exist */
 		ret = _notification_group_check_data_inserted(pkgname, group_id, db);
-
 		if (ret == NOTIFICATION_ERROR_NONE)
 			/* Get all of pkgname count if none group id is not exist */
 			snprintf(query, sizeof(query),
@@ -157,7 +149,6 @@ int notification_group_get_badge(const char *pkgname,
 				 "from noti_group_data "
 				 "where caller_pkgname = '%s' and group_id = %d",
 				 pkgname, group_id);
-
 	} else {
 		snprintf(query, sizeof(query),
 			 "select badge "
@@ -185,7 +176,6 @@ int notification_group_get_badge(const char *pkgname,
 
 	sqlite3_finalize(stmt);
 
-	/* db close */
 	if (db)
 		notification_db_close(&db);
 

@@ -192,9 +192,7 @@ int notification_ipc_add_deffered_task(
 	task_list *list;
 	task_list *list_new;
 
-	list_new =
-	    (task_list *) malloc(sizeof(task_list));
-
+	list_new = (task_list *) malloc(sizeof(task_list));
 	if (list_new == NULL)
 		return NOTIFICATION_ERROR_OUT_OF_MEMORY;
 
@@ -215,6 +213,7 @@ int notification_ipc_add_deffered_task(
 		list->next = list_new;
 		list_new->prev = list;
 	}
+
 	return NOTIFICATION_ERROR_NONE;
 }
 
@@ -299,7 +298,6 @@ static notification_op *_ipc_create_op(notification_op_type_e type,
 		return NULL;
 
 	op_list = (notification_op *)malloc(sizeof(notification_op) * num_op);
-
 	if (op_list == NULL) {
 		NOTIFICATION_ERR("malloc failed");
 		return NULL;
@@ -326,9 +324,7 @@ static inline char *_dup_string(const char *string)
 	char *ret;
 	char err_buf[ERR_BUFFER_SIZE];
 
-	if (string == NULL)
-		return NULL;
-	if (string[0] == '\0')
+	if (string == NULL || string[0] == '\0')
 		return NULL;
 
 	ret = strdup(string);
@@ -340,9 +336,7 @@ static inline char *_dup_string(const char *string)
 
 static inline bundle *_create_bundle_from_bundle_raw(bundle_raw *string)
 {
-	if (string == NULL)
-		return NULL;
-	if (string[0] == '\0')
+	if (string == NULL || string[0] == '\0')
 		return NULL;
 
 	return bundle_decode(string, strlen((char *)string));
@@ -398,6 +392,7 @@ static void _update_noti_notify(GVariant *parameters)
 		NOTIFICATION_ERR("failed to create a notification");
 		return;
 	}
+
 	g_variant_get(parameters, "(v)", &body);
 	notification_ipc_make_noti_from_gvariant(noti, body);
 	_print_noti(noti);
@@ -408,6 +403,7 @@ static void _update_noti_notify(GVariant *parameters)
 		notification_call_changed_cb_for_uid(noti_op, 1, uid);
 		free(noti_op);
 	}
+
 	g_variant_unref(body);
 	notification_free(noti);
 }
@@ -465,11 +461,11 @@ static void _delete_multiple_notify(GVariant *parameters)
 
 	NOTIFICATION_DBG("data num deleted:%d", idx);
 	noti_op = _ipc_create_op(NOTIFICATION_OP_DELETE, idx, buf, idx, NULL);
-
 	if (noti_op == NULL) {
 		NOTIFICATION_ERR("_ipc_create_op failed");
 		return;
 	}
+
 	notification_call_changed_cb_for_uid(noti_op, idx, uid);
 	free(noti_op);
 }
@@ -528,6 +524,7 @@ static int _dbus_signal_init()
 			ret = NOTIFICATION_ERROR_NONE;
 		}
 	}
+
 	return ret;
 }
 
@@ -588,9 +585,9 @@ static int _send_sync_noti(GVariant *body, GDBusMessage **reply, char *cmd)
 		g_error_free(err);
 		return ret;
 	}
+
 	NOTIFICATION_DBG("_send_sync_noti done !!");
 	return NOTIFICATION_ERROR_NONE;
-
 }
 
 static void _send_message_with_reply_async_cb(GDBusConnection *connection,
@@ -643,7 +640,6 @@ static void _send_message_with_reply_async_cb(GDBusConnection *connection,
 
 		if (cb_item->result_cb)
 			cb_item->result_cb(priv_id, result, cb_item->data);
-
 	} else {
 		if (cb_item->result_cb)
 			cb_item->result_cb(NOTIFICATION_PRIV_ID_NONE, result, cb_item->data);
@@ -1803,7 +1799,6 @@ EXPORT_API int notification_ipc_make_setting_from_gvariant(struct notification_s
 
 static int _send_service_register(uid_t uid)
 {
-	NOTIFICATION_DBG("service register");
 	GDBusMessage *reply = NULL;
 	int result;
 	notification_op *noti_op = NULL;
@@ -1825,8 +1820,6 @@ static int _send_service_register(uid_t uid)
 
 static int _ipc_monitor_register(uid_t uid)
 {
-	NOTIFICATION_DBG("register a service\n");
-
 	return  _send_service_register(uid);
 }
 
@@ -1837,6 +1830,7 @@ static void _on_name_appeared(GDBusConnection *connection,
 		gpointer         user_data)
 {
 	int uid = GPOINTER_TO_INT(user_data);
+
 	NOTIFICATION_DBG("name appeared [%d] : %s", uid, name);
 	is_master_started = 1;
 	_ipc_monitor_register(uid);
@@ -1852,6 +1846,7 @@ static void _on_name_vanished(GDBusConnection *connection,
 		gpointer         user_data)
 {
 	int uid = GPOINTER_TO_INT(user_data);
+
 	NOTIFICATION_DBG("name vanished [%d] : %s", uid, name);
 	is_master_started = 0;
 }
