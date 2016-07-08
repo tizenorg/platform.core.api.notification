@@ -58,19 +58,23 @@ struct _notification_cb_info {
 
 static GHashTable *_noti_cb_hash = NULL;
 
+/* LCOV_EXCL_START */
 static void __free_changed_cb_info(gpointer data)
 {
 	notification_cb_info_s *noti_cb_info = (notification_cb_info_s *)data;
 	if (noti_cb_info)
 		free(noti_cb_info);
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 static void __free_changed_cb_hash(gpointer data)
 {
 	GList *changed_cb_list = (GList *)data;
 	if (changed_cb_list)
 		g_list_free_full(changed_cb_list, __free_changed_cb_info);
 }
+/* LCOV_EXCL_STOP */
 
 void notification_call_changed_cb_for_uid(notification_op *op_list, int op_num, uid_t uid)
 {

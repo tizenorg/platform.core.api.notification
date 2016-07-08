@@ -490,6 +490,7 @@ return_close_db:
 	return err;
 }
 
+/* LCOV_EXCL_START */
 EXPORT_API
 int notification_setting_db_update_do_not_disturb(int do_not_disturb, uid_t uid)
 {
@@ -523,6 +524,7 @@ return_close_db:
 
 	return err;
 }
+/* LCOV_EXCL_STOP */
 
 EXPORT_API
 int noti_system_setting_set_alarm(int week_flag, int hour, int min, alarm_cb_t handler, alarm_id_t *dnd_schedule_alarm_id)
