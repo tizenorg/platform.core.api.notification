@@ -527,9 +527,13 @@ EXPORT_API int notification_get_text(notification_h noti,
 			bindtextdomain(noti->domain, noti->dir);
 
 			get_str = dgettext(noti->domain, ret_val);
+			if (get_str == ret_val) /* not found */
+				get_str = NULL;
 		} else if (ret_val != NULL) {
 			/* Get system string */
 			get_str = dgettext("sys_string", ret_val);
+			if (get_str == ret_val) /* not found */
+				get_str = NULL;
 		} else {
 			get_str = NULL;
 		}
@@ -542,6 +546,9 @@ EXPORT_API int notification_get_text(notification_h noti,
 
 		bundle_get_str(b, buf_key, &get_str);
 	}
+
+	if (get_str == NULL && ret_val != NULL)
+		get_str = ret_val; /* fallback for printing anything */
 
 	check_type = type;
 
