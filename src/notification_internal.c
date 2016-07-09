@@ -398,11 +398,6 @@ EXPORT_API int notification_translate_localized_text(notification_h noti)
 		}
 	}
 
-	if (noti->b_key) {
-		bundle_free(noti->b_key);
-		noti->b_key = NULL;
-	}
-
 	return noti_err;
 }
 
