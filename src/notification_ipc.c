@@ -1047,7 +1047,6 @@ int notification_ipc_request_load_noti_grouping_list(notification_type_e type, i
 			notification_ipc_make_noti_from_gvariant(noti, noti_body);
 			*list = notification_list_append(*list, noti);
 			g_variant_unref(noti_body);
-			g_variant_unref(iter_body);
 		}
 		g_variant_iter_free(iter);
 	}
@@ -1100,7 +1099,6 @@ int notification_ipc_request_load_noti_detail_list(const char *pkgname,
 			notification_ipc_make_noti_from_gvariant(noti, noti_body);
 			*list = notification_list_append(*list, noti);
 			g_variant_unref(noti_body);
-			g_variant_unref(iter_body);
 		}
 		g_variant_iter_free(iter);
 	}
