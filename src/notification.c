@@ -49,6 +49,8 @@ static void (*posted_toast_message_cb) (void *data);
 #define NOTI_TEXT_RESULT_LEN 2048
 #define NOTI_PKGNAME_LEN	512
 
+#define REGULAR_UID_MIN 5000
+
 char *notification_get_pkgname_by_pid(void)
 {
 	char pkgname[NOTI_PKGNAME_LEN + 1] = { 0, };
@@ -1423,7 +1425,6 @@ static notification_h _notification_create(notification_type_e type)
 	else if (type == NOTIFICATION_TYPE_ONGOING)
 		noti->layout = NOTIFICATION_LY_ONGOING_PROGRESS;
 
-	noti->caller_pkgname = notification_get_pkgname_by_pid();
 	noti->group_id = NOTIFICATION_GROUP_ID_NONE;
 	noti->sound_type = NOTIFICATION_SOUND_TYPE_NONE;
 	noti->vibration_type = NOTIFICATION_VIBRATION_TYPE_NONE;
@@ -1432,40 +1433,48 @@ static notification_h _notification_create(notification_type_e type)
 	noti->auto_remove = true;
 	noti->ongoing_flag = false;
 
-	err_app_manager = app_manager_get_app_id(getpid(), &app_id);
-	if (err_app_manager != APP_MANAGER_ERROR_NONE || app_id == NULL) {
-		NOTIFICATION_WARN("app_manager_get_app_id failed err[%d] app_id[%p]", err_app_manager, app_id);
-		goto out;
+	if (getuid() >= REGULAR_UID_MIN) {
+		noti->caller_pkgname = notification_get_pkgname_by_pid();
+
+		err_app_manager = app_manager_get_app_id(getpid(), &app_id);
+		if (err_app_manager != APP_MANAGER_ERROR_NONE || app_id == NULL) {
+			NOTIFICATION_WARN("app_manager_get_app_id failed err[%d] app_id[%p]",
+					err_app_manager, app_id);
+			goto out;
+		}
+
+		/* app name is used as domain name */
+		/* domain_name is allocated by app_get_package_app_name */
+		err_app_manager = app_get_package_app_name(app_id, &domain_name);
+
+		if (err_app_manager != APP_ERROR_NONE || domain_name == NULL) {
+			NOTIFICATION_WARN("app_get_package_app_name failed err[%d] domain_name[%p]",
+					err_app_manager, domain_name);
+			goto out;
+		}
+
+
+		err_app_manager = package_info_create(noti->caller_pkgname, &package_info);
+
+		if (err_app_manager != PACKAGE_MANAGER_ERROR_NONE || package_info == NULL) {
+			NOTIFICATION_WARN("package_info_create failed err[%d] package_info[%p] caller_pkgname[%s]",
+					err_app_manager, package_info, noti->caller_pkgname);
+			goto out;
+		}
+
+		err_app_manager = package_info_get_root_path(package_info, &app_root_path);
+
+		if (err_app_manager != PACKAGE_MANAGER_ERROR_NONE || app_root_path == NULL) {
+			NOTIFICATION_WARN("package_info_get_root_path failed err[%d] app_root_path[%p]",
+					err_app_manager, app_root_path);
+			goto out;
+		}
+
+		snprintf(locale_directory, PATH_MAX, "%s/res/locale", app_root_path);
+
+		noti->domain = strdup(domain_name);
+		noti->dir    = strdup(locale_directory);
 	}
-
-	/* app name is used as domain name */
-	/* domain_name is allocated by app_get_package_app_name */
-	err_app_manager = app_get_package_app_name(app_id, &domain_name);
-
-	if (err_app_manager != APP_ERROR_NONE || domain_name == NULL) {
-		NOTIFICATION_WARN("app_get_package_app_name failed err[%d] domain_name[%p]", err_app_manager, domain_name);
-		goto out;
-	}
-
-	err_app_manager = package_info_create(noti->caller_pkgname, &package_info);
-
-	if (err_app_manager != PACKAGE_MANAGER_ERROR_NONE || package_info == NULL) {
-		NOTIFICATION_WARN("package_info_create failed err[%d] package_info[%p] caller_pkgname[%s]",
-				err_app_manager, package_info, noti->caller_pkgname);
-		goto out;
-	}
-
-	err_app_manager = package_info_get_root_path(package_info, &app_root_path);
-
-	if (err_app_manager != PACKAGE_MANAGER_ERROR_NONE || app_root_path == NULL) {
-		NOTIFICATION_WARN("package_info_get_root_path failed err[%d] app_root_path[%p]", err_app_manager, app_root_path);
-		goto out;
-	}
-
-	snprintf(locale_directory, PATH_MAX, "%s/res/locale", app_root_path);
-
-	noti->domain = strdup(domain_name);
-	noti->dir    = strdup(locale_directory);
 
 out:
 	if (domain_name)
