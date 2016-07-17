@@ -494,10 +494,9 @@ static int testapp_test_post_notification_with_domain_text()
 		goto FINISH_OFF;
 	}
 
-	noti_err = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_TITLE, "I'm Title", "TITLE", NOTIFICATION_VARIABLE_TYPE_NONE);
-	noti_err = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_CONTENT, "I'm Content", "[%s] *** [%s]",
-			NOTIFICATION_VARIABLE_TYPE_STRING, "IDS_MSGF_BODY_NO_SUBJECT",
-			NOTIFICATION_VARIABLE_TYPE_STRING, "IDS_MSGF_POP_NEW_MESSAGE",
+	noti_err = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_TITLE, "I'm Title", "IDS_MSGF_POP_NEW_MESSAGES", NOTIFICATION_VARIABLE_TYPE_NONE);
+	noti_err = notification_set_text(noti_handle, NOTIFICATION_TEXT_TYPE_CONTENT, "I'm Content", "IDS_MSG_TPOP_MAXIMUM_MESSAGE_SIZE_HPS_EXCEEDED_RESIZING_ATTACHMENTS_ING",
+			NOTIFICATION_VARIABLE_TYPE_STRING, "200KB",
 			NOTIFICATION_VARIABLE_TYPE_NONE);
 
 	noti_err = notification_set_display_applist(noti_handle, NOTIFICATION_DISPLAY_APP_NOTIFICATION_TRAY);
