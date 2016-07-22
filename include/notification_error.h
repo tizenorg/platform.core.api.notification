@@ -42,7 +42,7 @@ typedef enum _notification_error {
 	NOTIFICATION_ERROR_ALREADY_EXIST_ID = TIZEN_ERROR_NOTIFICATION | 0x02,	/**< Already exist private ID */
 	NOTIFICATION_ERROR_FROM_DBUS = TIZEN_ERROR_NOTIFICATION | 0x03,	/**< Error from DBus */
 	NOTIFICATION_ERROR_NOT_EXIST_ID = TIZEN_ERROR_NOTIFICATION | 0x04,	/**< Not exist private ID */
-	NOTIFICATION_ERROR_SERVICE_NOT_READY = TIZEN_ERROR_NOTIFICATION | 0x05,	/**< No reponse from notification service */
+	NOTIFICATION_ERROR_SERVICE_NOT_READY = TIZEN_ERROR_NOTIFICATION | 0x05,	/**< No response from notification service */
 	NOTIFICATION_ERROR_INVALID_OPERATION = TIZEN_ERROR_INVALID_OPERATION, /**< Function not implemented (@b Since: @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif) */
 } notification_error_e;
 
