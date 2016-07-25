@@ -103,7 +103,6 @@ static inline char *_string_get(char *string)
 
 static int _dbus_init()
 {
-	int ret = NOTIFICATION_ERROR_NONE;
 	GError *error = NULL;
 
 	if (_gdbus_conn == NULL) {
@@ -121,9 +120,8 @@ static int _dbus_init()
 
 		notification_error_quark();
 
-		ret = NOTIFICATION_ERROR_NONE;
 	}
-	return ret;
+	return NOTIFICATION_ERROR_NONE;
 }
 
 /* LCOV_EXCL_START */
