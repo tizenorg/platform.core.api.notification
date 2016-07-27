@@ -32,7 +32,6 @@
 #include <notification_setting_internal.h>
 #include <notification_setting_service.h>
 
-
 static int _get_table_field_data_int(char  **table, int *buf, int index)
 {
 	if ((table == NULL) || (buf == NULL) || (index < 0))  {
@@ -87,21 +86,6 @@ static int _get_table_field_data_string(char **table, char **buf, int ucs2, int 
 out:
 
 	return ret;
-}
-
-static int _get_current_time(struct tm *date)
-{
-	time_t now;
-
-	if (date == NULL) {
-		NOTIFICATION_ERR("NOTIFICATION_ERROR_INVALID_PARAMETER");
-		return NOTIFICATION_ERROR_INVALID_PARAMETER;
-	}
-
-	time(&now);
-	localtime_r(&now, date);
-
-	return NOTIFICATION_ERROR_NONE;
 }
 
 EXPORT_API
@@ -526,79 +510,4 @@ return_close_db:
 }
 /* LCOV_EXCL_STOP */
 
-EXPORT_API
-int noti_system_setting_set_alarm(int week_flag, int hour, int min, alarm_cb_t handler, alarm_id_t *dnd_schedule_alarm_id)
-{
-	int err = NOTIFICATION_ERROR_NONE;
-	struct tm struct_time;
-	alarm_entry_t *alarm_info = NULL;
-	alarm_date_t alarm_time;
-	alarm_id_t alarm_id = -1;
 
-	err = alarmmgr_init("notification");
-	if (err < 0) {
-		NOTIFICATION_ERR("alarmmgr_init failed (%d)", err);
-		goto out;
-	}
-
-	err = alarmmgr_set_cb(handler, NULL);
-	if (err < 0) {
-		NOTIFICATION_ERR("alarmmgr_set_cb failed (%d)", err);
-		goto out;
-	}
-
-	err = _get_current_time(&struct_time);
-	if (err != NOTIFICATION_ERROR_NONE) {
-		NOTIFICATION_ERR("get_current_time failed");
-		goto out;
-	}
-
-	alarm_info = alarmmgr_create_alarm();
-	if (alarm_info == NULL) {
-		NOTIFICATION_ERR("alarmmgr_create_alarm failed");
-		goto out;
-	}
-
-	alarm_time.year = struct_time.tm_year + 1900;
-	alarm_time.month = struct_time.tm_mon + 1;
-	alarm_time.day = struct_time.tm_mday;
-	alarm_time.hour = hour;
-	alarm_time.min = min;
-	alarm_time.sec = 0;
-
-	err = alarmmgr_set_time(alarm_info, alarm_time);
-	if (err != ALARMMGR_RESULT_SUCCESS) {
-		NOTIFICATION_ERR("alarmmgr_set_time failed (%d)", err);
-		goto out;
-	}
-
-	if (week_flag) {
-		err = alarmmgr_set_repeat_mode(alarm_info, ALARM_REPEAT_MODE_WEEKLY, week_flag);
-		if (err != ALARMMGR_RESULT_SUCCESS) {
-			NOTIFICATION_ERR("alarmmgr_set_repeat_mode failed (%d)", err);
-			goto out;
-		}
-	}
-
-	err = alarmmgr_set_type(alarm_info, ALARM_TYPE_VOLATILE);
-	if (err != ALARMMGR_RESULT_SUCCESS) {
-		NOTIFICATION_ERR("alarmmgr_set_type failed (%d)", err);
-		goto out;
-	}
-
-	err = alarmmgr_add_alarm_with_localtime(alarm_info, NULL, &alarm_id);
-	if (err != ALARMMGR_RESULT_SUCCESS) {
-		NOTIFICATION_ERR("alarmmgr_add_alarm_with_localtime failed (%d)", err);
-		goto out;
-	}
-
-	*dnd_schedule_alarm_id = alarm_id;
-
-	NOTIFICATION_DBG("alarm_id [%d]", *dnd_schedule_alarm_id);
-
-out:
-	if (alarm_info)
-		alarmmgr_free_alarm(alarm_info);
-
-	return err;
-}

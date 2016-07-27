@@ -19,7 +19,6 @@
 
 #include <sys/types.h>
 #include <notification.h>
-#include <alarm.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,7 +38,6 @@ int notification_setting_db_update_do_not_disturb(int do_not_disturb, uid_t uid)
 int noti_setting_service_get_setting_by_package_name(const char *package_name, notification_setting_h *setting, uid_t uid);
 int noti_setting_get_setting_array(notification_setting_h *setting_array, int *count, uid_t uid);
 int noti_system_setting_load_system_setting(notification_system_setting_h *system_setting, uid_t uid);
-int noti_system_setting_set_alarm(int week_flag, int hour, int min, alarm_cb_t handler, alarm_id_t *dnd_schedule_alarm_id);
 
 #ifdef __cplusplus
 }
